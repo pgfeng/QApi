@@ -10,10 +10,10 @@ class App
 {
     public static ?Application $app = null;
     public static ?string $routeDir = 'routes';
-
+    public static ?string $configDir = 'config';
 
     /**
-     *
+     * 获取当前版本
      */
     public static function getVersion(): string
     {
@@ -23,10 +23,10 @@ class App
         return (string)$_GET['_version'];
     }
 
-    public static function run($routeDir = 'routes'): void
+    public static function run($routeDir = 'routes', $configDir = 'config'): void
     {
         self::$routeDir = $routeDir;
-        define('PROJECT_PATH', $_SERVER['DOCUMENT_ROOT'].DIRECTORY_SEPARATOR);
+        define('PROJECT_PATH', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR);
         set_exception_handler(static function ($e) {
             $message = $e->getMessage();
             $file = $e->getFile();

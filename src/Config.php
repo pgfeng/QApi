@@ -21,13 +21,13 @@ class Config
         if (self::$app) {
             return self::$app;
         }
-        $configPath = PROJECT_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.php';
+        $configPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'app.php';
         if (!file_exists($configPath)) {
             mkPathDir($configPath);
             file_put_contents($configPath, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Config'
-                . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'app.php'),LOCK_EX);
+                . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'app.php'), LOCK_EX);
         }
-        $appConfig = include PROJECT_PATH . 'config' . DIRECTORY_SEPARATOR . 'app.php';
+        $appConfig = include PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'app.php';
         $appConfig = array_reverse($appConfig);
         $appHosts = array_keys($appConfig);
         $appHostPattern = str_replace('*', '(.+)', $appHosts);
@@ -44,14 +44,14 @@ class Config
     public static function versions()
     {
         if (!self::$versions) {
-            $versionConfigPath = PROJECT_PATH . 'config' . DIRECTORY_SEPARATOR . Config::app()->getRunMode()
+            $versionConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . Config::app()->getRunMode()
                 . DIRECTORY_SEPARATOR . 'version.php';
             if (!self::$version && !file_exists($versionConfigPath)) {
                 mkPathDir($versionConfigPath);
                 file_put_contents($versionConfigPath, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Config'
-                    . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'version.php'),LOCK_EX);
+                    . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'version.php'), LOCK_EX);
             }
-            self::$versions = include PROJECT_PATH . 'config' . DIRECTORY_SEPARATOR . Config::app()->getRunMode()
+            self::$versions = include PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . Config::app()->getRunMode()
                 . DIRECTORY_SEPARATOR . 'version.php';
         }
         usort(self::$versions, static function ($a, $b) {
@@ -76,7 +76,7 @@ class Config
             }
         }
         throw new \ErrorException('version ' . $versionNumber . ' not config!', 0, 1,
-            PROJECT_PATH . 'config' . DIRECTORY_SEPARATOR . Config::app()->getRunMode()
+            PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . Config::app()->getRunMode()
             . DIRECTORY_SEPARATOR . 'version.php');
         //        return self::$version;
     }
