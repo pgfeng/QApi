@@ -8,7 +8,7 @@ use QApi\Http\Request\Methods;
 
 /**
  * Class Request
- * @package GFPHP\Http
+ * @package QApi
  */
 class Request
 {
@@ -123,7 +123,6 @@ class Request
     }
 
     /**
-     * 获取客户端IP地址
      * @return string
      */
     public function getClientIp(): string
@@ -154,33 +153,25 @@ class Request
         $requestUri = '';
 
         if ('1' === $this->server->get('IIS_WasUrlRewritten') && '' !== $this->server->get('UNENCODED_URL')) {
-            // IIS7 with URL Rewrite: make sure we get the unencoded URL (double slash problem)
             $requestUri = $this->server->get('UNENCODED_URL');
             $this->server->remove('UNENCODED_URL');
             $this->server->remove('IIS_WasUrlRewritten');
         } elseif ($this->server->has('REQUEST_URI')) {
             $requestUri = $this->server->get('REQUEST_URI');
-
             if ('' !== $requestUri && str_starts_with($requestUri, '/')) {
-                // To only use path and query remove the fragment.
                 if (false !== $pos = strpos($requestUri, '#')) {
                     $requestUri = substr($requestUri, 0, $pos);
                 }
             } else {
-                // HTTP proxy reqs setup request URI with scheme and host [and port] + the URL path,
-                // only use URL path.
                 $uriComponents = parse_url($requestUri);
-
                 if (isset($uriComponents['path'])) {
                     $requestUri = $uriComponents['path'];
                 }
-
                 if (isset($uriComponents['query'])) {
                     $requestUri .= '?' . $uriComponents['query'];
                 }
             }
         } elseif ($this->server->has('ORIG_PATH_INFO')) {
-            // IIS 5.0, PHP as CGI
             $requestUri = $this->server->get('ORIG_PATH_INFO');
             if ('' !== $this->server->get('QUERY_STRING')) {
                 $requestUri .= '?' . $this->server->get('QUERY_STRING');
@@ -188,7 +179,6 @@ class Request
             $this->server->remove('ORIG_PATH_INFO');
         }
 
-        // normalize the request URI to ease creating sub-requests from this request
         $this->server->set('REQUEST_URI', $requestUri);
 
         return $requestUri;
