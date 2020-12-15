@@ -1,0 +1,29 @@
+{
+  "name": "cywl/qapi",
+  "description": "Api 快速开发。",
+  "license": "MIT",
+  "scripts": {
+    "dev": "@php -S 0.0.0.0:8889 -t test src/Route/router.php"
+  },
+  "authors": [
+    {
+      "name": "潘高峰",
+      "email": "228375325@qq.com"
+    }
+  ],
+  "require": {
+    "php": ">=8.0",
+    "ext-json": "*",
+    "ext-mbstring": "*"
+  },
+  "autoload": {
+    "files": [
+      "src/Helper/helpers.php"
+    ],
+    "psr-4": {
+      "QApi\\": "src/",
+      "App\\": "test/App",
+      "Model\\": "test/Model"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+# Created by .ignore support plugin (hsz.mobi)
+### GFPHP template
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# Visual Studio Code related
+.vscode/
+
+
+# MAC OS
+.DS_Store
+
+# Composer
+/vendor
+/Log
+composer.lock
+
+# Framework
+/runtime

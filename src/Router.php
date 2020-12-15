@@ -1,0 +1,280 @@
+<?php
+
+
+namespace QApi;
+
+
+use JetBrains\PhpStorm\NoReturn;
+use QApi;
+
+/**
+ * Class Router
+ * @package GFPHP
+ * @method static Router get(string $path, Callable|string $callback)
+ * @method static Router post(string $path, Callable|string $callback)
+ * @method static Router put(string $path, Callable|string $callback)
+ * @method static Router delete(string $path, Callable|string $callback)
+ * @method static Router options(string $path, Callable|string $callback)
+ * @method static Router head(string $path, Callable|string $callback)
+ * @method static Router all(string $path, Callable|string $callback)
+ */
+class Router
+{
+    public static array $router = [];
+    /**
+     * 存储路由
+     * 如果当前请求类型不存在会自动向ALL中查找
+     * @var array
+     */
+    public static array $routeLists = [
+        'GET' => [],
+        'POST' => [],
+        'PUT' => [],
+        'DELETE' => [],
+        'OPTIONS' => [],
+        'HEAD' => [],
+        'ALL' => [],
+    ];
+
+    /**
+     * 初始化
+     */
+    public static function init(): void
+    {
+        if (Config::app()->getRunMode() !== QApi\Enumeration\RunMode::PRODUCTION) {
+            self::BuildRoute(Config::$app->getNameSpace());
+        }
+        $versions = Config::versions();
+        foreach ($versions as $version) {
+            $base_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
+                . str_replace('.', '', $version->versionName) . DIRECTORY_SEPARATOR;
+            mkPathDir($base_path . 'builder.php');
+            $data = scandir($base_path);
+            foreach ($data as $file) {
+                if ($file !== '.' && $file !== '..') {
+                    include $base_path . $file;
+                }
+            }
+            unset($base_path);
+            if ($version->versionName === App::getVersion()) {
+                break;
+            }
+        }
+    }
+
+    /**
+     * @param string $nameSpace
+     */
+    #[NoReturn] public static function BuildRoute(string $nameSpace): void
+    {
+        $builder_file_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
+            DIRECTORY_SEPARATOR
+            . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builder.php';
+        if (file_exists($builder_file_path)){
+            unlink($builder_file_path);
+        }
+        $version_path = str_replace('.', '', App::getVersion());
+        $base_path = PROJECT_PATH . App::$app->getDir() . DIRECTORY_SEPARATOR . $version_path .
+            DIRECTORY_SEPARATOR;
+        $nameSpace .= '\\' . $version_path;
+        try {
+            self::build(scandir($base_path), $base_path, $nameSpace, $base_path);
+        } catch (\ReflectionException $e) {
+            $message = $e->getMessage();
+            $file = $e->getFile();
+            $line = $e->getLine();
+            $errorType = get_class($e);
+            error_log("\x1b[31;1m {$errorType}：" . $message . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
+                $line, 0);
+        }
+    }
+
+    /**
+     * 解析注解并且声称
+     * @param $san_files
+     * @param string $parent_path
+     * @param string $nameSpace
+     * @param string $base_path
+     * @throws \ReflectionException
+     */
+    public static function build($san_files, string $parent_path, string $nameSpace, string $base_path)
+    {
+        foreach ($san_files as $path) {
+            if ($path !== '.' && $path !== '..') {
+                if (is_dir($parent_path . $path)) {
+                    self::build(scandir($parent_path . $path . DIRECTORY_SEPARATOR), $parent_path . $path . DIRECTORY_SEPARATOR,
+                        $nameSpace, $base_path);
+                } else if (preg_match('#(.+)Controller.php#', $path, $match)) {
+                    $path_class = $nameSpace . '\\' . str_replace('/', '\\', str_replace($base_path, '',
+                            $parent_path)) . $match[1] . 'Controller';
+                    $refClass = new \ReflectionClass(new $path_class);
+                    $methods = $refClass->getMethods();
+                    foreach ($methods as $method) {
+                        $methodAttributes = $method->getAttributes();
+                        foreach ($methodAttributes as $key=>$item) {
+                            if ($item->getName() === 'QApi\Attribute\Route') {
+                                $item->newInstance()->builder($refClass, $path_class, $method->getName());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Router constructor.
+     * @param string $method
+     * @param string $path
+     * @param  $runData
+     */
+    public
+    function __construct(protected string $method, protected string $path, protected $runData)
+    {
+        self::$routeLists[$method][$path] = [
+            'callback' => $runData,
+            'pattern' => [],
+        ];
+    }
+
+    /**
+     * @param string $method
+     * @param array $params
+     * @return Router
+     */
+    public
+    static function __callStatic(string $method, array $params = []): static
+    {
+        return new static($method, $params['path'], $params['callback']);
+    }
+
+    /**
+     * @param string $paramName
+     * @param string $pattern
+     * @return Router
+     */
+    public
+    function paramPattern(string $paramName, string $pattern): self
+    {
+        self::$routeLists[$this->method][$this->path]['pattern'][$paramName] = $pattern;
+        return $this;
+    }
+
+    /**
+     * 执行
+     */
+    public
+    static function run()
+    {
+        $routeList = self::$routeLists;
+        $compileList = [];
+
+        foreach ($routeList as $key => $routeMethodData) {
+            $routeMethodData = array_reverse($routeMethodData);
+            $methodData = [];
+            foreach ($routeMethodData as $path => $route) {
+                $params = [];
+                if (preg_match_all('/\{(\w+)\}/', $path, $match)) {
+                    foreach ($match[1] as $k => $p) {
+                        if (isset($route['pattern'][$p])) {
+                            $path = str_replace($match[0][$k], '(' . $route['pattern'][$p] . ')', $path);
+                        }
+                        $params[$k + 1] = $p;
+                    }
+                    $path = preg_replace('/\{(\w+)\}/', '(\w+)', $path);
+
+                }
+                $methodData[$path] = [
+                    'callback' => $route['callback'],
+                    'params' => $params,
+                    'pattern' => $path,
+                ];
+            }
+            $compileList[strtoupper($key)] = $methodData;
+        }
+        $uri = preg_replace('#(/+)#', '/', '/' . $_SERVER["REQUEST_URI"]);
+        $uri = parse_url($uri, PHP_URL_PATH);
+        $method = $_SERVER['REQUEST_METHOD'];
+        $callback = false;
+        $params = [];
+        if (array_key_exists($uri, $compileList[$method])) {
+            $callback = $compileList[$method][$uri];
+        } elseif (array_key_exists($uri, $compileList['ALL'])) {
+            $callback = $compileList['ALL'][$uri];
+        } else {
+            $routers = array_keys($compileList[$method]);
+            foreach ($routers as $routerKey => $router) {
+                if (preg_match('#^' . $router . '$#', $uri, $params)) {
+                    $callback = $compileList[$method][$router];
+                    array_shift($params);
+                    break;
+                }
+            }
+            if (!$callback) {
+                $routers = array_keys($compileList['ALL']);
+                foreach ($routers as $routerKey => $router) {
+                    if (preg_match('#^' . $router . '$#', $uri, $params)) {
+                        $callback = $compileList['ALL'][$router];
+                        array_shift($params);
+                        break;
+                    }
+                }
+            }
+        }
+        if (!$callback) {
+            $callback = [
+                'params' => [],
+                'callback' => static function () {
+                    header($_SERVER['SERVER_PROTOCOL'] . " 404 Not Found");
+                    throw new \RuntimeException('Route Not Found!');
+                },
+            ];
+        }
+
+        if ($callback['params']) {
+            $params = array_combine($callback['params'], $params);
+        }
+        return self::runCallBack($callback['callback'], $params);
+    }
+
+    /**
+     * 执行
+     * @param $callback
+     * @param $params
+     * @return mixed
+     */
+    public
+    static function runCallBack(string|callable $callback, array $params): mixed
+    {
+        self::$router = [
+            'callback' => $callback,
+            'params' => $params,
+        ];
+        if (is_callable($callback)) {
+            if ($params) {
+                $arguments = new Data($params);
+            } else {
+                $params = array();
+                $arguments = new Data($params);
+            }
+            return $callback(new Request($arguments));
+        }
+
+        $callback = str_replace('/', '\\', $callback);
+        $segments = explode('@', $callback);
+        if (count($segments) !== 2) {
+            throw new \ErrorException('routing syntax error，' . $callback . 'unable to resolve!');
+        }
+        $controllerName = $segments[0];
+
+        /** @var Controller $controller */
+        $controller = new $controllerName();
+        $method = $segments[1];
+        if (!is_array($params)) {
+            return $controller->$method();
+        }
+
+        $arguments = new Data($params);
+        return $controller->$method(new Request($arguments));
+    }
+}
