@@ -9,7 +9,7 @@ use QApi;
 
 /**
  * Class Router
- * @package GFPHP
+ * @package QApi
  * @method static Router get(string $path, Callable|string $callback)
  * @method static Router post(string $path, Callable|string $callback)
  * @method static Router put(string $path, Callable|string $callback)
