@@ -30,7 +30,7 @@ class TestController
      * 首页
      */
     #[Route('')]
-    public function index(Request $request):void
+    public function indexAction(Request $request):void
     {
         echo $request->method;
         echo App::getVersion();

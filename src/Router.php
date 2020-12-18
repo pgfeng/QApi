@@ -70,7 +70,7 @@ class Router
         $builder_file_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
             DIRECTORY_SEPARATOR
             . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builder.php';
-        if (file_exists($builder_file_path)){
+        if (file_exists($builder_file_path)) {
             unlink($builder_file_path);
         }
         $version_path = str_replace('.', '', App::getVersion());
@@ -97,7 +97,7 @@ class Router
      * @param string $base_path
      * @throws \ReflectionException
      */
-    public static function build($san_files, string $parent_path, string $nameSpace, string $base_path)
+    public static function build($san_files, string $parent_path, string $nameSpace, string $base_path): void
     {
         foreach ($san_files as $path) {
             if ($path !== '.' && $path !== '..') {
@@ -110,10 +110,12 @@ class Router
                     $refClass = new \ReflectionClass(new $path_class);
                     $methods = $refClass->getMethods();
                     foreach ($methods as $method) {
-                        $methodAttributes = $method->getAttributes();
-                        foreach ($methodAttributes as $key=>$item) {
-                            if ($item->getName() === 'QApi\Attribute\Route') {
-                                $item->newInstance()->builder($refClass, $path_class, $method->getName());
+                        if (substr($method->getName(), -6) === 'Action') {
+                            $methodAttributes = $method->getAttributes();
+                            foreach ($methodAttributes as $key => $item) {
+                                if ($item->getName() === 'QApi\Attribute\Route') {
+                                    $item->newInstance()->builder($refClass, $path_class, $method->getName());
+                                }
                             }
                         }
                     }
@@ -222,12 +224,27 @@ class Router
             }
         }
         if (!$callback) {
+            $uri = trim($uri, '/');
+            $data = explode('/', $uri);
+            $runData = [];
+            $runData['nameSpace'] = App::$app->getNameSpace();
+            if (count($data) === 1) {
+                if ($data[0] === '') {
+                    $data[0] = 'Index';
+                }
+                $runData['controller'] = $data[0];
+                $runData['method'] = 'indexAction';
+            } else if (count($data) === 2) {
+                $runData['controller'] = $data[0];
+                $runData['method'] = $data[1] . 'Action';
+            } else {
+                $method = array_pop($data);
+                $runData['controller'] = implode('\\', $data);
+                $runData['method'] = strtolower($method);
+            }
             $callback = [
                 'params' => [],
-                'callback' => static function () {
-                    header($_SERVER['SERVER_PROTOCOL'] . " 404 Not Found");
-                    throw new \RuntimeException('Route Not Found!');
-                },
+                'callback' => $runData,
             ];
         }
 
@@ -244,37 +261,58 @@ class Router
      * @return mixed
      */
     public
-    static function runCallBack(string|callable $callback, array $params): mixed
+    static function runCallBack(string|callable|array $callback, array $params): mixed
     {
         self::$router = [
             'callback' => $callback,
             'params' => $params,
         ];
-        if (is_callable($callback)) {
-            if ($params) {
-                $arguments = new Data($params);
-            } else {
-                $params = array();
-                $arguments = new Data($params);
+        if (!is_array($callback)) {
+            if (is_callable($callback)) {
+                if ($params) {
+                    $arguments = new Data($params);
+                } else {
+                    $params = array();
+                    $arguments = new Data($params);
+                }
+                return $callback(new Request($arguments));
             }
-            return $callback(new Request($arguments));
-        }
 
-        $callback = str_replace('/', '\\', $callback);
-        $segments = explode('@', $callback);
-        if (count($segments) !== 2) {
-            throw new \ErrorException('routing syntax error，' . $callback . 'unable to resolve!');
-        }
-        $controllerName = $segments[0];
+            $callback = str_replace('/', '\\', $callback);
+            $segments = explode('@', $callback);
+            if (count($segments) !== 2) {
+                throw new \ErrorException('routing syntax error，' . $callback . 'unable to resolve!');
+            }
+            $controllerName = $segments[0];
 
-        /** @var Controller $controller */
-        $controller = new $controllerName();
-        $method = $segments[1];
-        if (!is_array($params)) {
-            return $controller->$method();
+            /** @var Controller $controller */
+            $controller = new $controllerName();
+            $method = $segments[1];
+            if (!is_array($params)) {
+                $params = [];
+            }
+            $arguments = new Data($params);
+            return $controller->$method(new Request($arguments));
         }
+        $versions = Config::versions();
+        $versions = array_reverse($versions);
+        $nowVersion = Config::version();
+        foreach ($versions as $version) {
+            if ($version->version > $nowVersion->version) {
+                continue;
+            }
+            $controllerName = App::$app->getNameSpace() . '\\' . $version->versionDir . '\\' . $callback['controller'] . 'Controller';
+            if (class_exists($controllerName)) {
+                $controller = new $controllerName;
+                if (method_exists($controller, $callback['method'])) {
+                    $params = [];
+                    $arguments = new Data($params);
+                    return $controller->{$callback['method']}(new Request($arguments));
+                }
+            }
+        }
+        header($_SERVER['SERVER_PROTOCOL'] . " 404 Not Found");
 
-        $arguments = new Data($params);
-        return $controller->$method(new Request($arguments));
+        throw new \RuntimeException('Route Not Found!');
     }
 }
