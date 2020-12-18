@@ -284,8 +284,6 @@ class Router
                 throw new \ErrorException('routing syntax error，' . $callback . 'unable to resolve!');
             }
             $controllerName = $segments[0];
-
-            /** @var Controller $controller */
             $controller = new $controllerName();
             $method = $segments[1];
             if (!is_array($params)) {
