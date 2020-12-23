@@ -44,7 +44,9 @@ class App
     public static function run(?string $timezone = 'Asia/Shanghai', $routeDir = 'routes', $configDir = 'config', $runtimeDir =
     'runtime', $uploadDir = 'Upload', ?\Closure $getVersionFunction = null): void
     {
-        define('PROJECT_PATH', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR);
+        if (!defined('PROJECT_PATH')) {
+            define('PROJECT_PATH', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR);
+        }
         date_default_timezone_set($timezone);
         self::$routeDir = trim($routeDir, '/');
         self::$runtimeDir = trim($runtimeDir, '/');
