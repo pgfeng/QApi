@@ -29,7 +29,7 @@ class TestController
     /**
      * 首页
      */
-    #[Route('')]
+//    #[Route('')]
     public function indexAction(Request $request):void
     {
         echo $request->method;

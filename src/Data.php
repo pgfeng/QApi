@@ -203,7 +203,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function toJson(): string
     {
-        return json_encode($this, JSON_THROW_ON_ERROR | JSON_ERROR_NONE | JSON_OBJECT_AS_ARRAY);
+        return json_encode($this, JSON_THROW_ON_ERROR | JSON_ERROR_NONE | JSON_OBJECT_AS_ARRAY|JSON_UNESCAPED_UNICODE);
     }
 
 

@@ -14,7 +14,14 @@
   "require": {
     "php": ">=8.0",
     "ext-json": "*",
-    "ext-mbstring": "*"
+    "ext-mbstring": "*",
+    "monolog/monolog": "^2.2.0",
+    "symfony/mime": "^5.2",
+    "gregwar/captcha": "^1.1"
+  }
+  ,
+  "require-dev": {
+    "roave/security-advisories": "dev-master"
   },
   "autoload": {
     "files": [

@@ -5,6 +5,7 @@ namespace QApi;
 
 
 use QApi\Http\Request\Methods;
+use QApi\Http\Request\MethodsEnum;
 
 /**
  * Class Request
@@ -49,6 +50,11 @@ class Request
      * @var Data
      */
     public Data $file;
+
+    /**
+     * @var string|null
+     */
+    public ?string $input;
 
     /**
      * Cookie数据
@@ -101,10 +107,26 @@ class Request
         $this->request = new Data($_REQUEST);
         $this->file = new Data($_FILES);
         $this->cookie = new Data($_COOKIE);
+        $this->input = file_get_contents('php://input');
         $_SESSION = $_SESSION ?? [];
         $this->session = new Data($_SESSION);
         $this->method = strtoupper($this->server->get('REQUEST_METHOD'));
         $this->requestUri = $this->prepareRequestUri();
+        Logger::info(' RouterStart' . ' -> ' . $this->getScheme() . '://' . $this->getHost() .
+            $this->requestUri);
+        Logger::info("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Request Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
+        Logger::info(' RequestMethod' . ' -> ' . $this->method);
+        Logger::info(' HeaderData -> ' . $this->header);
+        if ($this->method === MethodsEnum::METHOD_POST) {
+            Logger::info(' PostData -> ' . $this->post);
+            if ($this->file->count()) {
+                Logger::info(' FileData -> ' . $this->file);
+            }
+            if ($this->input) {
+                Logger::info(' InputData -> ' . $this->input);
+            }
+        }
+        Logger::info("↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑  Request Data  ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ");
     }
 
     /**

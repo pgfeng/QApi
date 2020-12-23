@@ -8,5 +8,5 @@ abstract class Database
 {
     public string $name;
     public string $driver;
-
+    
 }

@@ -5,41 +5,68 @@ namespace QApi;
 
 
 use QApi\Config\Application;
+use QApi\Enumeration\CliColor;
 
 class App
 {
     public static ?Application $app = null;
     public static ?string $routeDir = 'routes';
     public static ?string $configDir = 'config';
+    public static ?string $runtimeDir = 'runtime';
+    public static ?\DateTimeZone $timezone = null;
+    public static ?string $uploadDir = null;
+    public static ?\Closure $getVersionFunction = null;
 
     /**
      * 获取当前版本
      */
     public static function getVersion(): string
     {
-        if (!isset($_GET['_version'])) {
-            return Config::app()->getDefaultVersion();
+        if (self::$getVersionFunction === null) {
+            if (!isset($_GET['_ver'])) {
+                return Config::app()->getDefaultVersion();
+            }
+            return (string)$_GET['_ver'];
         }
-        return (string)$_GET['_version'];
+        $callback = self::$getVersionFunction;
+        return $callback(Config::app()->getDefaultVersion());
     }
 
-    public static function run($routeDir = 'routes', $configDir = 'config'): void
+    /**
+     * @param string|null $timezone
+     * @param string $routeDir
+     * @param string $configDir
+     * @param string $runtimeDir
+     * @param string $uploadDir
+     * @param \Closure|null $getVersionFunction
+     * @throws \ErrorException
+     */
+    public static function run(?string $timezone = 'Asia/Shanghai', $routeDir = 'routes', $configDir = 'config', $runtimeDir =
+    'runtime', $uploadDir = 'Upload', ?\Closure $getVersionFunction = null): void
     {
-        self::$routeDir = $routeDir;
         define('PROJECT_PATH', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR);
+        self::$routeDir = trim($routeDir, '/');
+        self::$runtimeDir = trim($runtimeDir, '/');
+        self::$uploadDir = PROJECT_PATH . DIRECTORY_SEPARATOR . trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
+        self::$app = Config::app();
+        date_default_timezone_set($timezone);
+        self::$timezone = new \DateTimeZone('Asia/Shanghai');
+        self::$app->init();
+        self::$getVersionFunction = $getVersionFunction;
         set_exception_handler(static function ($e) {
             $message = $e->getMessage();
             $file = $e->getFile();
             $line = $e->getLine();
             $errorType = get_class($e);
-            error_log("\x1b[31;1m " . $errorType . "：" . $message . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
+            error_log("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $message . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
                 $line, 0);
             $message = [
-                'code' => 500,
+                'statusCode' => 500,
+                'version' => Config::version()->versionName,
                 'status' => false,
-                'msg' => $message,
+                'message' => $message,
                 'error_msg' => $errorType . '：' . $message . ' in ' . $file . ' on line ' . $line,
-                'debug_backtrace' => debug_backtrace(),
+                //                'debug_backtrace' => debug_backtrace(),
             ];
             echo new Data($message);
             exit();
@@ -63,18 +90,18 @@ class App
                 E_USER_DEPRECATED => 'E_USER_DEPRECATED',
                 E_ALL => 'E_ALL',
             };
-            error_log("\x1b[31;1m {$errorType}：$msg\e[0m\n\t\t" . " in " . $file . ' on line ' . $line, 0);
+            error_log("\x1b[" . CliColor::ERROR . ";1m {$errorType}：$msg\e[0m\n\t\t" . " in " . $file . ' on line ' . $line, 0);
             $message = [
-                'code' => 500,
+                'statusCode' => 500,
+                'version' => Config::version()->versionName,
                 'status' => false,
-                'msg' => $msg,
+                'message' => $msg,
                 'error_msg' => $errorType . '：' . $msg . ' in ' . $file . ' on line ' . $line,
-                'debug_backtrace' => debug_backtrace(),
+                //                'debug_backtrace' => debug_backtrace(),
             ];
             echo new Data($message);
             exit();
         }, E_ALL);
-        self::$app = Config::app();
 
         Router::init();
 

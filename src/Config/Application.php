@@ -4,6 +4,9 @@
 namespace QApi\Config;
 
 
+use QApi\Enumeration\RunMode;
+use QApi\Logger;
+
 /**
  * Class Application
  * @package QApi\Config
@@ -26,6 +29,19 @@ class Application
         $this->appDir = trim($this->appDir, '/');
         if ($this->nameSpace === false) {
             $this->nameSpace = str_replace('/', '\\', $this->appDir);
+        }
+    }
+
+    /**
+     * 初始化项目
+     */
+    public function init(): void
+    {
+        Logger::init();
+        if ($this->runMode === RunMode::DEVELOPMENT) {
+            error_reporting(E_ALL);
+        } else {
+            error_reporting(E_ALL ^ E_NOTICE ^ E_WARNING);
         }
     }
 

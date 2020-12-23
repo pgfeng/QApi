@@ -267,6 +267,7 @@ class Router
             'callback' => $callback,
             'params' => $params,
         ];
+
         if (!is_array($callback)) {
             if (is_callable($callback)) {
                 if ($params) {
@@ -275,7 +276,14 @@ class Router
                     $params = array();
                     $arguments = new Data($params);
                 }
-                return $callback(new Request($arguments));
+                $request = new Request($arguments);
+                $result = $callback($request, new Response());
+                if ($result instanceof \QApi\Response) {
+                    $result->send();
+                } else {
+                    echo $result;
+                }
+                return null;
             }
 
             $callback = str_replace('/', '\\', $callback);
@@ -290,7 +298,13 @@ class Router
                 $params = [];
             }
             $arguments = new Data($params);
-            return $controller->$method(new Request($arguments));
+            $result = $controller->$method(new Request($arguments), new Response());
+            if ($result instanceof \QApi\Response) {
+                $result->send();
+            } else {
+                echo $result;
+            }
+            return null;
         }
         $versions = Config::versions();
         $versions = array_reverse($versions);
@@ -305,12 +319,21 @@ class Router
                 if (method_exists($controller, $callback['method'])) {
                     $params = [];
                     $arguments = new Data($params);
-                    return $controller->{$callback['method']}(new Request($arguments));
+                    $result = $controller->{$callback['method']}(new Request($arguments), new Response());
+                    if ($result instanceof \QApi\Response) {
+                        $result->send();
+                    } else {
+                        echo $result;
+                    }
+                    return null;
                 }
-            }
-        }
-        header($_SERVER['SERVER_PROTOCOL'] . " 404 Not Found");
 
-        throw new \RuntimeException('Route Not Found!');
+                throw new \RuntimeException($controllerName . '@' . $callback['method'] . ' Not Found!');
+            }
+            throw new \RuntimeException($controllerName . ' Not Found!');
+        }
+        throw new \RuntimeException($callback['callback'] . 'Route Not Found!');
     }
+
+
 }

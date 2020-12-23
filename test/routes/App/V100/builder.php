@@ -2,4 +2,4 @@
 
 use QApi\Router;
 
-Router::ALL(path: '/', callback: 'App\V100\TestController@indexAction');
+Router::ALL(path: '/h/2', callback: 'App\V100\IndexController@indexAction');

@@ -14,36 +14,36 @@ trait Methods
      * 是否是Get请求
      * @return bool
      */
-    #[Pure] public static function isGetMethod():bool
+    #[Pure] public function isGetMethod():bool
     {
-        return self::isMethod(MethodsEnum::METHOD_GET);
+        return $this->isMethod(MethodsEnum::METHOD_GET);
     }
 
     /**
      * 是否是Post请求
      * @return bool
      */
-    #[Pure] public static function isPostMethod():bool
+    #[Pure] public function isPostMethod():bool
     {
-        return self::isMethod(MethodsEnum::METHOD_POST);
+        return $this->isMethod(MethodsEnum::METHOD_POST);
     }
 
     /**
      * 是否是Put请求
      * @return bool
      */
-    #[Pure] public static function isPutMethod():bool
+    #[Pure] public function isPutMethod():bool
     {
-        return self::isMethod(MethodsEnum::METHOD_PUT);
+        return $this->isMethod(MethodsEnum::METHOD_PUT);
     }
 
     /**
      * 是否是Delete请求
      * @return bool
      */
-    #[Pure] public static function isDeleteMethod():bool
+    #[Pure] public function isDeleteMethod():bool
     {
-        return self::isMethod(MethodsEnum::METHOD_DELETE);
+        return $this->isMethod(MethodsEnum::METHOD_DELETE);
     }
 
     /**
@@ -51,9 +51,9 @@ trait Methods
      * @param string $request_method
      * @return bool
      */
-    #[Pure] public static function isMethod(string $request_method):bool
+    #[Pure] public function isMethod(string $request_method):bool
     {
-        return strtoupper($request_method) === Request::$method;
+        return strtoupper($request_method) === $this->getMethod();
     }
 
 
