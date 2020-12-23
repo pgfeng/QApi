@@ -76,7 +76,7 @@ class Router
         $version_path = str_replace('.', '', App::getVersion());
         $base_path = PROJECT_PATH . App::$app->getDir() . DIRECTORY_SEPARATOR . $version_path .
             DIRECTORY_SEPARATOR;
-        mkPathDir($base_path.'builder.php');
+        mkPathDir($base_path . 'builder.php');
         $nameSpace .= '\\' . $version_path;
         try {
             self::build(scandir($base_path), $base_path, $nameSpace, $base_path);
