@@ -9,6 +9,8 @@
 namespace QApi\Database;
 
 
+use QApi\Model;
+
 /**
  * 这其实只是一个静态调用Model的简写形式
  * Class DB
@@ -16,16 +18,16 @@ namespace QApi\Database;
  */
 class DB
 {
+    public static $DBC = false;
 
-	public static $DBC = false;
     /**
      * @param        $table_name
      * @param string $config_name
      * @return Model
      */
-    public static function table ( $table_name, $config_name = 'default' )
+    public static function table($table_name, $config_name = 'default'): Model
     {
-        return new Model($table_name,$config_name);
+        return new Model($table_name, $config_name);
     }
 
 }

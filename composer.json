@@ -1,5 +1,5 @@
 {
-  "name": "cywl/qapi",
+  "name": "qapi/framework",
   "description": "Api 快速开发。",
   "license": "MIT",
   "scripts": {
@@ -17,7 +17,8 @@
     "ext-mbstring": "*",
     "monolog/monolog": "^2.2.0",
     "symfony/mime": "^5.2",
-    "gregwar/captcha": "^1.1"
+    "ext-pdo": "*",
+    "ext-mysqli": "*"
   }
   ,
   "require-dev": {

@@ -3,15 +3,21 @@
 
 namespace QApi;
 
-use JetBrains\PhpStorm\ArrayShape;
 use QApi\Config\Application;
+use QApi\Config\Database\MysqliDatabase;
+use QApi\Config\Database\PdoMysqlDatabase;
+use QApi\Config\Database\PdoSqliteDatabase;
+use QApi\Config\Database\PdoSqlServDatabase;
 use QApi\Config\Version;
+use QApi\Database\Mysqli;
+use QApi\Database\PdoSqlServe;
 
 class Config
 {
     public static ?Application $app = null;
     public static ?Version $version = null;
     public static ?array $versions = [];
+    public static ?array $databases = [];
 
     /**
      * @return Application
@@ -58,6 +64,27 @@ class Config
             return ($a->version - $b->version) > 0 ? 1 : -1;
         });
         return self::$versions;
+    }
+
+    /**
+     * @param string $configName
+     */
+    public static function database(string $configName):
+    MysqliDatabase|PdoMysqlDatabase|PdoSqliteDatabase|PdoSqlServDatabase|null
+    {
+        if (!self::$databases) {
+            $versionConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . Config::app()->getRunMode()
+                . DIRECTORY_SEPARATOR . 'databases.php';
+            if (!self::$databases && !file_exists($versionConfigPath)) {
+                mkPathDir($versionConfigPath);
+                file_put_contents($versionConfigPath, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Config'
+                    . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'database.php'), LOCK_EX);
+            }
+            self::$databases = include PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . Config::app()->getRunMode()
+                . DIRECTORY_SEPARATOR . 'databases.php';
+        }
+
+        return self::$databases[$configName] ?? null;
     }
 
     /**

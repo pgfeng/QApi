@@ -3,8 +3,7 @@
 namespace QApi\Database;
 
 
-use QApi\Config\Abstracts\Database;
-use QApi\Config\Database\PdoMysqlDatabase;
+use QApi\Config\Database\PdoSqliteDatabase;
 use QApi\Data;
 use QApi\Database\DBase;
 use QApi\Logger;
@@ -12,27 +11,29 @@ use QApi\Logger;
 /**
  * Class PdoDriver
  */
-class PdoMysql extends DBase
+class PdoSqlite extends DBase
 {
 
     private \PDO $db;
     private string $configName = 'default';
 
     /**
-     * @param PdoMysqlDatabase $database
+     * @param PdoSqliteDatabase $database
      * @return bool
      */
     public function _connect(mixed $database): bool
     {
-        $this->db = new \pdo('mysql:dbname=' . $database->dbName . ';host=' . $database->host . ';port=' .
-            $database->port . ';', $database->user, $database->password, [
+
+        $this->db = new \pdo('sqlite:' . $database->filename, null, null,
+            [
             \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
             \PDO::ATTR_ORACLE_NULLS => \PDO::NULL_NATURAL,
             \PDO::ATTR_STRINGIFY_FETCHES => false,
             \PDO::ATTR_EMULATE_PREPARES => false,
-        ]);
-        $this->exec('set names ' . $database->charset);
+        ]
+        );
+        $this->exec('set names ' . $database->charset.'');
         return TRUE;
     }
 
@@ -52,9 +53,9 @@ class PdoMysql extends DBase
      *
      * @param $sql
      *
-     * @return array|Data
+     * @return array
      */
-    public function _query($sql): array|Data
+    public function _query($sql): array
     {
         $query = $this->db->query($sql);
 
@@ -85,9 +86,9 @@ class PdoMysql extends DBase
     /**
      * @param $sql
      *
-     * @return false|int
+     * @return int|bool
      */
-    public function _exec($sql): false|int
+    public function _exec($sql): int|bool
     {
         return $this->db->exec($sql);
     }
@@ -119,7 +120,7 @@ class PdoMysql extends DBase
     /**
      *
      */
-    public function close(): void
+    public function close()
     {
 
     }

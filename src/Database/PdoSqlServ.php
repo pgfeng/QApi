@@ -2,29 +2,26 @@
 
 namespace QApi\Database;
 
-
-use QApi\Config\Abstracts\Database;
-use QApi\Config\Database\PdoMysqlDatabase;
+use QApi\Config\Database\PdoSqlServDatabase;
 use QApi\Data;
 use QApi\Database\DBase;
-use QApi\Logger;
 
 /**
  * Class PdoDriver
  */
-class PdoMysql extends DBase
+class PdoSqlServ extends DBase
 {
 
     private \PDO $db;
     private string $configName = 'default';
 
     /**
-     * @param PdoMysqlDatabase $database
+     * @param PdoSqlServDatabase $database
      * @return bool
      */
     public function _connect(mixed $database): bool
     {
-        $this->db = new \pdo('mysql:dbname=' . $database->dbName . ';host=' . $database->host . ';port=' .
+        $this->db = new \pdo('sqlsrv:dbname=' . $database->dbName . ';host=' . $database->host . ';port=' .
             $database->port . ';', $database->user, $database->password, [
             \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
             \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
@@ -34,6 +31,7 @@ class PdoMysql extends DBase
         ]);
         $this->exec('set names ' . $database->charset);
         return TRUE;
+
     }
 
     /**

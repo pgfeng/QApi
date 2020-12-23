@@ -4,6 +4,10 @@
 namespace QApi\Config;
 
 
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\Handler;
+use Monolog\Handler\StreamHandler;
+use QApi\App;
 use QApi\Enumeration\RunMode;
 use QApi\Logger;
 
@@ -19,11 +23,13 @@ class Application
      * @param string $appDir
      * @param string $runMode
      * @param string $defaultVersionName
+     * @param Handler[]|null $logHandler
      * @param string|bool $nameSpace
      */
     public function __construct(private string $appDir,
                                 private string $runMode,
                                 private string $defaultVersionName,
+                                public ?array $logHandler = null,
                                 private string|bool $nameSpace = false)
     {
         $this->appDir = trim($this->appDir, '/');
@@ -38,6 +44,7 @@ class Application
     public function init(): void
     {
         Logger::init();
+        header('X-Powered-By: QApi');
         if ($this->runMode === RunMode::DEVELOPMENT) {
             error_reporting(E_ALL);
         } else {

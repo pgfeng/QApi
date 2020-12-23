@@ -45,11 +45,11 @@ class App
     'runtime', $uploadDir = 'Upload', ?\Closure $getVersionFunction = null): void
     {
         define('PROJECT_PATH', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR);
+        date_default_timezone_set($timezone);
         self::$routeDir = trim($routeDir, '/');
         self::$runtimeDir = trim($runtimeDir, '/');
         self::$uploadDir = PROJECT_PATH . DIRECTORY_SEPARATOR . trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
         self::$app = Config::app();
-        date_default_timezone_set($timezone);
         self::$timezone = new \DateTimeZone('Asia/Shanghai');
         self::$app->init();
         self::$getVersionFunction = $getVersionFunction;
@@ -61,7 +61,7 @@ class App
             error_log("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $message . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
                 $line, 0);
             $message = [
-                'statusCode' => 500,
+                'code' => 500,
                 'version' => Config::version()->versionName,
                 'status' => false,
                 'message' => $message,
@@ -92,7 +92,7 @@ class App
             };
             error_log("\x1b[" . CliColor::ERROR . ";1m {$errorType}：$msg\e[0m\n\t\t" . " in " . $file . ' on line ' . $line, 0);
             $message = [
-                'statusCode' => 500,
+                'code' => 500,
                 'version' => Config::version()->versionName,
                 'status' => false,
                 'message' => $msg,

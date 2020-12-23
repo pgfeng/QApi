@@ -278,6 +278,7 @@ class Router
                 }
                 $request = new Request($arguments);
                 $result = $callback($request, new Response());
+                Logger::info('Router -> ' . $callback);
                 if ($result instanceof \QApi\Response) {
                     $result->send();
                 } else {
@@ -285,7 +286,6 @@ class Router
                 }
                 return null;
             }
-
             $callback = str_replace('/', '\\', $callback);
             $segments = explode('@', $callback);
             if (count($segments) !== 2) {
@@ -299,6 +299,7 @@ class Router
             }
             $arguments = new Data($params);
             $result = $controller->$method(new Request($arguments), new Response());
+            Logger::info('Router -> ' . $controllerName . '@' . $method);
             if ($result instanceof \QApi\Response) {
                 $result->send();
             } else {
@@ -320,6 +321,7 @@ class Router
                     $params = [];
                     $arguments = new Data($params);
                     $result = $controller->{$callback['method']}(new Request($arguments), new Response());
+                    Logger::info('Router -> ' . $controllerName . '@' . $callback['method']);
                     if ($result instanceof \QApi\Response) {
                         $result->send();
                     } else {

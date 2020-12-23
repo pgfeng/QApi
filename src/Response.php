@@ -83,14 +83,13 @@ class Response
             }
         } else {
             $sendData = [
-                'statusCode' => $this->statusCode,
-                'status' => $this->status,
                 'version' => Config::version()->versionName,
+                'code' => $this->statusCode,
+                'status' => $this->status,
                 'message' => $this->message,
                 'data' => $this->data,
-                ...$this->extra,
             ];
-            $this->send($sendData);
+            $this->send(array_merge($sendData,$this->extra));
         }
     }
 }

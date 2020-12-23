@@ -2,4 +2,4 @@
 
 use QApi\Router;
 
-Router::ALL(path: '/h/2', callback: 'App\V100\IndexController@indexAction');
+Router::ALL(path: '/user/{id}', callback: 'App\V100\IndexController@indexAction')->paramPattern(paramName: 'id', pattern: '\d+');

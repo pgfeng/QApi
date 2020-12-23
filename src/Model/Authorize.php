@@ -56,9 +56,9 @@ abstract class Authorize extends Model
      * 重写保存
      * @param array|Data $data
      * @param bool $primary_key
-     * @return bool|int|array
+     * @return bool|int
      */
-    public function save(Data|array $data, $primary_key = false): array|bool|int
+    public function save(Data|array $data, $primary_key = false): bool|int
     {
         if (isset($data[$this->password_field])) {
             $salt = random($this->password_salt_length, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz$_=-0123456789');
@@ -74,9 +74,9 @@ abstract class Authorize extends Model
 
     /**
      * @param $account_name
-     * @return bool|DataObject
+     * @return bool|Data
      */
-    public function getAccount($account_name)
+    public function getAccount($account_name): bool|Data
     {
         $field_counter = 0;
         foreach ($this->account_field as $field) {
@@ -115,15 +115,15 @@ abstract class Authorize extends Model
 
     /**
      * 验证token是否正确,正确返回账户信息,否则返回false
-     * @param string|array|bool $token
-     * @return array|DataObject|bool
+     * @param string $token
+     * @return Data|bool
      */
-    public function checkToken($token)
+    public function checkToken(string $token):Data|bool
     {
         if (!$token) {
             return false;
         }
-        $token = explode(' || ', base64_decode($token));
+        $token = explode(' || ', string: base64_decode($token));
         if (count($token) !== 2) {
             return false;
         }
@@ -132,15 +132,10 @@ abstract class Authorize extends Model
         if (!$account) {
             return false;
         }
-        if ($account) {
-            $hash_password = md5($account[$this->password_field]);
-            if ($hash_password === $token[1]) {
-                return $account;
-            }
-
-            return false;
+        $hash_password = md5($account[$this->password_field]);
+        if ($hash_password === $token[1]) {
+            return $account;
         }
-
         return false;
     }
 }

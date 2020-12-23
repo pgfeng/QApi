@@ -4,6 +4,15 @@ namespace QApi;
 
 
 use Closure;
+
+
+use QApi\Database\DB;
+use QApi\Database\Mysqli;
+use QApi\Database\PdoMysql;
+use QApi\Database\PdoSqlite;
+use QApi\Database\PdoSqlServ;
+use QApi\Database\PdoSqlServe;
+use QApi\Enumeration\DatabaseDriver;
 use QApi\Model\filesModel;
 
 
@@ -76,10 +85,7 @@ class Model
      */
     public string $primary_key = 'id';
 
-    /**
-     * @var DBase
-     */
-    public DBase $db;
+    public PdoSqlServe|PdoMysql|PdoSqlite|Mysqli $db;
 
     /**
      * Column Example
@@ -110,9 +116,9 @@ class Model
      * 写法兼容
      * @param      $primary_value
      * @param bool $primary_key
-     * @return Data
+     * @return Data|null
      */
-    public function findByPk($primary_value, $primary_key = false): Data
+    public function findByPk($primary_value, $primary_key = false): Data|null
     {
         if (!$primary_key) {
             $primary_key = $this->primary_key;
@@ -351,7 +357,7 @@ class Model
      * @param string $configName
      * @return DBase
      */
-    final private function database($configName = 'default')
+    final function database($configName = 'default')
     {
         //--计算表名
         $tb_name = substr(get_class($this), 6);
@@ -362,12 +368,17 @@ class Model
         } else {
             $table = substr($this->model, 0, strpos($this->model, 'Model'));
         }
-
-        $config = Config::database();
-        if (!isset($config[$configName])) {
+        $this->configName = $configName;
+        $config = Config::database($configName);
+        if (!isset($config)) {
             throw new \Exception('数据库配置 [' . $configName . '] 不存在!');
         }
-        $driver = $config[$configName]['driver'];
+        $driver = match ($config->driver) {
+            DatabaseDriver::PDO_MYSQL => PdoMysql::class,
+            DatabaseDriver::PDO_SQLITE => PdoSqlite::class,
+            DatabaseDriver::MYSQLI => Mysqli::class,
+            DatabaseDriver::PDO_SQLSERV => PdoSqlServ::class,
+        };
 
         if (isset(DB::$DBC[$configName])) {
             $db = clone DB::$DBC[$configName];
@@ -376,7 +387,6 @@ class Model
             $db = new $driver;
             $db->connect($configName);
             DB::$DBC[$configName] = clone $db;
-            Debug::add('链接数据库');
         }
         if (!$db) {
             throw new \Exception('数据库配置有误!');
@@ -403,12 +413,14 @@ class Model
     /**
      * 自动保存
      * @param      $data
-     * @param bool $primary_key
+     * @param string $primary_key
      * @return bool|int
      */
-    public function save($data, $primary_key = false)
+    public function save(Data|array $data, string $primary_key = ''): bool|int
     {
-        !$primary_key && $primary_key = $this->primary_key;
+        if (!$primary_key) {
+            $primary_key = $this->primary_key;
+        }
         return $this->db->save($data, $primary_key);
     }
 
@@ -417,9 +429,9 @@ class Model
      *
      * @param $func
      * @param $val
-     * @return static
+     * @return self
      */
-    final public static function __callStatic($func, $val)
+    final public static function __callStatic($func, $val): self
     {
         $DataBase = new static();
 
@@ -450,7 +462,7 @@ class Model
         if (method_exists($this->db, $func)) {
             $res = call_user_func_array([$this->db, $func], $val);
             if (is_object($res)) {
-                if (get_class($res) === 'GFPHP\Data') {
+                if (get_class($res) === 'QApi\Data') {
                     return $res;
                 }
                 $this->db = $res;
@@ -470,12 +482,10 @@ class Model
 
     /**
      * 防止clone Model出现DB对象还原的情况
-     *
-     * @return mixed
      */
-    final public function __clone()
+    final public function __clone(): void
     {
-        return $this->db = clone $this->db;
+        $this->db = clone $this->db;
     }
 
 }

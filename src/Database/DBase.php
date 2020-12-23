@@ -1,8 +1,17 @@
 <?php
 
-namespace GFPHP;
+namespace QApi\Database;
 
 use Closure;
+use Exception;
+use QApi\Config;
+use QApi\Config\Abstracts\Database;
+use QApi\Config\Database\MysqliDatabase;
+use QApi\Config\Database\PdoMysqlDatabase;
+use QApi\Config\Database\PdoSqlServDatabase;
+use QApi\Data;
+use QApi\Database\DB;
+use QApi\Logger;
 
 /**
  * SQL语句处理类
@@ -29,13 +38,16 @@ abstract class DBase
     /**
      * @var string
      */
-    public $table = '';
-    public $config = [];
+    public string $table = '';
+    /**
+     * @var Database|MysqliDatabase|PdoMysqlDatabase|PdoSqlServDatabase
+     */
+    public mixed $config = null;
 
     /**
-     * @var string $section
+     * @var string[] $section
      */
-    public $section = [
+    public array $section = [
         'handle' => 'select',
         'select' => '*',
         'insert' => '',
@@ -43,24 +55,25 @@ abstract class DBase
         'where' => '',
         'join' => '',
         'group' => '',
-        'orderby' => '',
+        'orderBy' => '',
         'limit' => '',
     ];
     /**
      * @var string $sql
      */
-    public $sql = '';
-    public $lastSql = '';
+    public string $sql = '';
 
-    final public function lastSql()
+    public ?string $lastSql = null;
+
+    final public function lastSql(): string
     {
         return $this->lastSql;
     }
 
     /**
-     * @return String
+     * @return string|null
      */
-    final public function version()
+    final public function version(): string|null
     {
         $version = $this->query('SELECT VERSION()');
         return $version ? $version[0]['VERSION()'] : NULL;
@@ -72,27 +85,26 @@ abstract class DBase
      *
      * @param int $number
      * @param int $page
-     *
-     * @return array|mixed
+     * @return array|Data
      */
-    final public function paginate($number = 10, $page = 1)
+    final public function paginate($number = 10, $page = 1): Data|array
     {
         $page = $page > 0 ? $page : 1;
         $min = ((int)$page - 1) * $number;
 
-        return $this->limit($min, intval($number))->query();
+        return $this->limit($min, (int)$number)->query();
     }
 
     /**
      * 获取最后自增ID
      *
-     * @return boolean LAST_INSERT_ID
+     * @return int
      */
-    final public function lastInsertId()
+    final public function lastInsertId(): int
     {
         $query = $this->query('SELECT LAST_INSERT_ID()');
 
-        return $query[0]['LAST_INSERT_ID()'];
+        return (int)$query[0]['LAST_INSERT_ID()'];
     }
 
     /**
@@ -100,10 +112,10 @@ abstract class DBase
      * @param $field
      * @return string
      */
-    final public function _Field($field)
+    final public function _Field($field): string
     {
         if (is_string($field)) {
-            if (strpos($field, '.') !== FALSE) {
+            if (str_contains($field, '.')) {
                 $field = $this->config ['table_pre'] . $field;
             }
         } else if (is_array($field)) {
@@ -120,7 +132,7 @@ abstract class DBase
      * @param $field
      * @return int
      */
-    final public function max($field)
+    final public function max($field): int
     {
         $field = $this->_Field($field);
         $max = $this->getOne('max(' . $field . ')');
@@ -132,7 +144,7 @@ abstract class DBase
      * @param $field
      * @return int
      */
-    final public function min($field)
+    final public function min($field): int
     {
         $field = $this->_Field($field);
         $max = $this->getOne('min(' . $field . ')');
@@ -146,7 +158,7 @@ abstract class DBase
      *
      * @return int    获取到的数量
      */
-    final public function Count($field = '*')
+    final public function Count($field = '*'): int
     {
         $field = $this->_Field($field);
         $count = $this->getOne('count(' . $field . ')');
@@ -161,7 +173,7 @@ abstract class DBase
      *
      * @return int    获取到的数量
      */
-    final public function sum($field)
+    final public function sum($field): int
     {
         $field = $this->_Field($field);
         $sum = $this->getOne('SUM(' . $field . ')');
@@ -173,26 +185,25 @@ abstract class DBase
      *
      * @param array|string $field
      *
-     * @return bool|DataObject
+     * @return null|Data
      */
-    final public function getOne($field = '*')
+    final public function getOne($field = '*'): null|Data
     {
         $this->select($field);
         $this->limit(0, 1);
         $fetch = $this->query();
-        if (empty($fetch)) {
-            return false;
+        if (count($fetch) < 1) {
+            return null;
         }
-
         return $fetch[0];
     }
 
     /**
      * 写法兼容
      * @param string $field
-     * @return DataObject|bool
+     * @return Data|null
      */
-    public function find($field = '*')
+    public function find($field = '*'): Data|null
     {
         return $this->getOne($field);
     }
@@ -200,9 +211,9 @@ abstract class DBase
     /**
      * 写法兼容
      * @param bool $sql
-     * @return DataObject|null|array
+     * @return array
      */
-    public function findAll($sql = false)
+    public function findAll($sql = false): array
     {
         return $this->query($sql);
     }
@@ -215,7 +226,7 @@ abstract class DBase
      *
      * @return boolean
      */
-    final public function setField($field_name, $field_value)
+    final public function setField($field_name, $field_value): bool
     {
         $field_name = $this->_Field($field_name);
         return $this->update([
@@ -228,9 +239,9 @@ abstract class DBase
      *
      * @param $field_name
      *
-     * @return string|int
+     * @return mixed
      */
-    final public function getField($field_name)
+    final public function getField($field_name): mixed
     {
         $this->select($field_name);
         $this->limit(0, 1);
@@ -246,13 +257,13 @@ abstract class DBase
      * 设置查询
      * 参数为一个时设置查询字段
      * 当为多个时可看成
-     * SELECT($table,$where,$orderby,$limit,$column);
+     * SELECT($table,$where,$orderBy,$limit,$column);
      *
      * @param array|string $select
      *
-     * @return DBase|array|DataObject
+     * @return DBase|array|Data
      */
-    final public function select($select = '*')
+    final public function select($select = '*'): DBase
     {
         $this->section['handle'] = 'select';
         $arg_num = func_num_args();
@@ -473,17 +484,17 @@ abstract class DBase
                     $field = $this->_Field($field);
                     $value = func_get_arg(1);
                     if (is_array($field)) {
-                        if (is_array($value)){
+                        if (is_array($value)) {
                             throw \ErrorException('Where不允许field和value同时为Array类型。');
                         }
                         $where = '';
                         $value = $this->addslashes($value);
                         foreach ($field as &$f) {
-                            $where_str = $f . ' = '. $value;
+                            $where_str = $f . ' = ' . $value;
                             if ($where === '') {
                                 $where = $where_str;
-                            }else{
-                                $where .= ' or '.$where_str;
+                            } else {
+                                $where .= ' or ' . $where_str;
                             }
                         }
                     } else {
@@ -515,17 +526,17 @@ abstract class DBase
                     $field = $this->_Field($field);
                     $value = func_get_arg(2);
                     if (is_array($field)) {
-                        if (is_array($value)){
+                        if (is_array($value)) {
                             throw \ErrorException('Where不允许field和value同时为Array类型。');
                         }
                         $where = '';
                         $value = $this->addslashes($value);
                         foreach ($field as &$f) {
-                            $where_str = $f . ' ' . func_get_arg(1) .' '. $value;
+                            $where_str = $f . ' ' . func_get_arg(1) . ' ' . $value;
                             if ($where === '') {
                                 $where = $where_str;
-                            }else{
-                                $where .= ' or '.$where_str;
+                            } else {
+                                $where .= ' or ' . $where_str;
                             }
                         }
                     } else {
@@ -571,9 +582,9 @@ abstract class DBase
                         $orderByStr .= ',';
                     $orderByStr .= $this->_Field($item) . ' ' . $order;
                 }
-                $this->section['orderby'] = $orderByStr;
+                $this->section['orderBy'] = $orderByStr;
             } else {
-                $this->section['orderby'] = $this->_Field(func_get_arg(0)) . ' ' . func_get_arg(1);
+                $this->section['orderBy'] = $this->_Field(func_get_arg(0)) . ' ' . func_get_arg(1);
             }
         } else if (is_array($field)) {
             $order = '';
@@ -584,9 +595,9 @@ abstract class DBase
                     $order .= ',' . $this->_Field($f);
                 }
             }
-            $this->section['orderby'] = $order;
+            $this->section['orderBy'] = $order;
         } else {
-            $this->section['orderby'] = $field;
+            $this->section['orderBy'] = $field;
         }
 
         return $this;
@@ -815,10 +826,11 @@ abstract class DBase
     final public function get_table($table = FALSE)
     {
         if (!$table) {
-            return (isset($this->section['table']) && !empty($this->section['table'])) ? $this->section['table'] : $this->config ['table_pre'] . $this->table;
+            return (isset($this->section['table']) && !empty($this->section['table'])) ? $this->section['table'] :
+                $this->config->tablePrefix . $this->table;
         }
 
-        return $this->config ['table_pre'] . $table;
+        return $this->config->tablePrefix . $table;
     }
 
     /**
@@ -835,8 +847,8 @@ abstract class DBase
         //--转表前缀
         $this->parseTablePre($sql);
         $this->lastSql = $sql;
-        Debug::add($sql, 2);
         $this->_reset();
+        Logger::sql($sql);
         if ($this->_exec($sql) !== FALSE) {
             return true;
         }
@@ -849,10 +861,10 @@ abstract class DBase
      * 解析出完整的SQL命令
      * 返回解析好的SQL命令或者返回false
      *
-     * @return String or false
+     * @return string|bool or false
      */
 
-    final public function compile()
+    final public function compile(): string|bool
     {
         $this->section['table'] = $this->get_table();
         if ($this->section['handle'] === 'insert') {
@@ -866,7 +878,7 @@ abstract class DBase
                 $sql = "{$this->section['handle']} from {$this->section['table']}";
             }
             if (!empty($sql)) {
-                $sql .= ($this->section['join'] ? " " . $this->section['join'] : '') . ($this->section['where'] ? " where {$this->section['where']}" : '') . ($this->section['group'] ? " group by {$this->section['group']}" : '') . ($this->section['orderby'] ? " order by {$this->section['orderby']}" : '') . ($this->section['limit'] ? " limit  {$this->section['limit']}" : '');
+                $sql .= ($this->section['join'] ? " " . $this->section['join'] : '') . ($this->section['where'] ? " where {$this->section['where']}" : '') . ($this->section['group'] ? " group by {$this->section['group']}" : '') . ($this->section['orderBy'] ? " order by {$this->section['orderBy']}" : '') . ($this->section['limit'] ? " limit  {$this->section['limit']}" : '');
                 return $this->sql .= $sql;
             }
 
@@ -878,7 +890,7 @@ abstract class DBase
     /**
      * 重置查询
      */
-    final public function _reset()
+    final public function _reset(): void
     {
         $this->section = [
             'handle' => 'select',
@@ -889,7 +901,7 @@ abstract class DBase
             'where' => '',
             'join' => '',
             'group' => '',
-            'orderby' => '',
+            'orderBy' => '',
             'limit' => '',
         ];
         $this->sql = '';
@@ -902,9 +914,9 @@ abstract class DBase
      *
      * @param $insert
      *
-     * @return bool
+     * @return bool|int
      */
-    final public function insert($insert)
+    final public function insert($insert): bool|int
     {
         $this->section['handle'] = 'insert';
         $arg_num = func_num_args();
@@ -937,7 +949,7 @@ abstract class DBase
      *
      * @return DBase
      */
-    final public function leftJoin($table, $on1, $on2)
+    final public function leftJoin($table, $on1, $on2): DBase
     {
         return $this->join($table, $on1, $on2, 'left');
     }
@@ -950,7 +962,7 @@ abstract class DBase
      *
      * @return $this
      */
-    final public function join($table, $on1, $on2, $ori)
+    final public function join($table, $on1, $on2, $ori): DBase
     {
         if ($this->section['join'] === '') {
             $this->section['join'] = $ori . ' join ' . $this->config ['table_pre'] . $table . " on " . $this->config ['table_pre'] . $on1 . '=' . $this->config ['table_pre'] . $on2;
@@ -968,7 +980,7 @@ abstract class DBase
      *
      * @return DBase
      */
-    final public function rightJoin($table, $on1, $on2)
+    final public function rightJoin($table, $on1, $on2): DBase
     {
         return $this->join($table, $on1, $on2, 'right');
     }
@@ -980,7 +992,7 @@ abstract class DBase
      *
      * @return DBase
      */
-    final public function fullJoin($table, $on1, $on2)
+    final public function fullJoin($table, $on1, $on2): DBase
     {
         return $this->join($table, $on1, $on2, 'full');
     }
@@ -992,7 +1004,7 @@ abstract class DBase
      *
      * @return DBase
      */
-    final public function innerJoin($table, $on1, $on2)
+    final public function innerJoin($table, $on1, $on2): DBase
     {
         return $this->join($table, $on1, $on2, 'inner');
     }
@@ -1000,19 +1012,20 @@ abstract class DBase
     /**
      * @param bool $all
      *
-     * @return $this
+     * @return DBase
      */
-    final public function union($all = FALSE)
+    final public function union($all = FALSE): DBase
     {
         $handle = $this->section['handle'];
         $sql = $this->compile();
         $this->_reset();
         $this->sql = $sql;
         $this->section['handle'] = $handle;
-        if ($all)
+        if ($all) {
             $this->sql .= ' union all ';
-        else
+        } else {
             $this->sql .= ' union ';
+        }
 
         return $this;
     }
@@ -1022,12 +1035,12 @@ abstract class DBase
      *
      * @param $field
      *
-     * @return self
+     * @return DBase
      */
-    final public function notNull($field)
+    final public function notNull($field): DBase
     {
         if (strpos($field, '.')) {
-            $field = $this->config['table_pre'] . $field;
+            $field = $this->config->tablePrefix . $field;
         }
 
         return $this->where($field . ' not null');
@@ -1038,12 +1051,12 @@ abstract class DBase
      *
      * @param $field
      *
-     * @return self
+     * @return DBase
      */
-    final public function isNull($field)
+    final public function isNull($field): DBase
     {
         if (strpos($field, '.')) {
-            $field = $this->config['table_pre'] . $field;
+            $field = $this->config->tablePrefix . $field;
         }
 
         return $this->where($field . ' is null');
@@ -1053,13 +1066,13 @@ abstract class DBase
      * 删除记录
      * 一个参数设置表名
      * 多个参数参考如下
-     * DELETE($table, $where, $orderby, $limit)
+     * DELETE($table, $where, $orderBy, $limit)
      *
      * @param bool $delete
      *
      * @return bool|int
      */
-    final public function delete($delete = FALSE)
+    final public function delete($delete = FALSE): bool|int
     {
         $this->section['handle'] = 'delete';
         $arg_num = func_num_args();
@@ -1096,9 +1109,9 @@ abstract class DBase
     /**
      * @param $group
      *
-     * @return $this
+     * @return DBase
      */
-    final public function group($group)
+    final public function group($group): DBase
     {
         $this->section['group'] = $this->_Field($group);
         return $this;
@@ -1111,21 +1124,21 @@ abstract class DBase
      *
      * @return string
      */
-    private function parseTablePre(&$sql)
+    private function parseTablePre(&$sql): string
     {
-        return $sql = str_replace('_PREFIX_', $this->config['table_pre'], $sql);
+        return $sql = str_replace('_PREFIX_', $this->config->tablePrefix, $sql);
     }
 
     /**
      * 保存数据或者更新数据
      * 如果设置主键字段 $primary_key 将会判断此字段是否存在，如果存在则会为更新数据
      *
-     * @param array $data
+     * @param \ArrayAccess|array $data
      * @param String $primary_key
      *
      * @return  Bool|int
      */
-    final public function save($data, $primary_key = '')
+    final public function save(\ArrayAccess|array $data, $primary_key = ''): bool|int
     {
         if (($primary_key !== '') && isset($data[$primary_key]) && $data[$primary_key]) {
             $primary_value = $data[$primary_key];
@@ -1142,19 +1155,18 @@ abstract class DBase
      *
      * @param string|null $sql
      *
-     * @return array | DataObject
+     * @return array | Data
      */
-    final public function &query($sql = null)
+    final public function &query(string|null $sql = null): Data|array
     {
         if (!$sql) {
             $this->compile();
             $sql = $this->sql;
         }
         $this->_reset();
+        $this->lastSql = $sql;
         $this->parseTablePre($sql);
-        $this->lastSql = $sql;
-        Debug::add($sql, 2);
-        $this->lastSql = $sql;
+        Logger::sql($sql);
         $data = $this->_query($sql);
         if ($data === FALSE) {
             new Exception($this->getError());
@@ -1162,11 +1174,10 @@ abstract class DBase
         $data = $this->stripslashes($data);
         if ($data === NULL)         //防止直接返回Null
         {
-            $data = new DataObject([]);
-        } else {
-            $data = new DataObject($data);
+            return $data;
         }
-        return $data;
+        $result = new Data($data);
+        return $result;
     }            //链接数据库方法
 
     /**
@@ -1174,7 +1185,7 @@ abstract class DBase
      * @param Closure $callback
      * @return bool
      */
-    final public function transaction(Closure $callback)
+    final public function transaction(Closure $callback): bool
     {
         try {
             $this->beginTransaction();
@@ -1191,21 +1202,20 @@ abstract class DBase
      * 转义函数
      * 参数可以为多参数或数组，返回数组
      *
-     * @param string|array $var
+     * @param string|array $data
      *
      * @return string | array
      */
-    public function addslashes($var)
+    public function addslashes($data): string|array
     {
-        if (is_array($var)) {
-            foreach ($var as $k => &$v) {
+        if (is_array($data)) {
+            foreach ($data as $k => &$v) {
                 $v = $this->addslashes($v);
             }
         } else {
-            $var = $this->real_escape_string($var);
+            $data = $this->real_escape_string($data);
         }
-
-        return $var;
+        return $data;
     }
 
     /**
@@ -1213,9 +1223,9 @@ abstract class DBase
      *
      * @return string|array
      */
-    public function stripslashes($var)
+    public function stripslashes(array|string $var): array|string
     {
-        if (is_array($var)) {
+        if (!is_string($var)) {
             foreach ($var as $k => &$v) {
                 $this->stripslashes($v);
             }
@@ -1228,14 +1238,18 @@ abstract class DBase
 
     /**
      * 链接数据库
-     *
-     * @param $configName
+     * @param string $configName
+     * @return bool
      */
-    public function connect($configName = 'default')
+    public function connect(string $configName): bool
     {
-        $this->config = Config::database($configName);
+        try {
+            $this->config = Config::database($configName);
+            return $this->_connect($this->config);
+        } catch (\ErrorException $e) {
+            return false;
+        }
 
-        return $this->_connect($configName);
     }
 
     /**
@@ -1244,32 +1258,28 @@ abstract class DBase
      *
      * @param $sql
      *
-     * @return array
+     * @return array|Data
      */
+    abstract public function _query($sql): array|Data;         //返回值是查询出的数组
 
-    abstract public function _query($sql);         //返回值是查询出的数组
+    abstract public function getError(): string;            //返回上一个错误信息
 
-    /**
-     * @return string
-     */
-    abstract public function getError();            //返回上一个错误信息
-
-    abstract public function real_escape_string($string); //特殊字符转义
+    abstract public function real_escape_string($string): string; //特殊字符转义
 
     /**
      * @param $sql
      *
-     * @return mixed
+     * @return int|bool
      */
-    abstract public function _exec($sql);           //执行SQL
+    abstract public function _exec($sql): int|bool;           //执行SQL
 
-    abstract public function _connect($configName);            //返回处理后的语柄
+    abstract public function _connect(Database $database);            //返回处理后的语柄
 
-    abstract public function beginTransaction();   //开启事务
+    abstract public function beginTransaction(): bool;   //开启事务
 
-    abstract public function commit();             //关闭事务
+    abstract public function commit(): bool;             //关闭事务
 
-    abstract public function rollBack();           //回滚事务
+    abstract public function rollBack(): bool;           //回滚事务
 }
 
 //====================    END DB.class.php      ========================//

@@ -3,14 +3,13 @@
 
 namespace App\V100;
 
-
-use Gregwar\Captcha\CaptchaBuilder;
+use Model\usersModel;
 use QApi\Attribute\Route;
 use QApi\Request;
 use QApi\Response;
 
 #[Route(
-    '/h'
+    '/user'
 )]
 class IndexController
 {
@@ -20,13 +19,15 @@ class IndexController
      * @return Response
      */
     #[Route(
-        '/2'
-    )]
+        '/{id}'
+    , paramPattern: [
+        'id' => '\d+'
+    ])]
     public function indexAction(Request $request, Response $response): Response
     {
-        $response->setData([
-            '测试'
-        ])->setMessage('操作成功！');
+        $response->setData(usersModel::model()->findByPk($request->arguments['id']));
         return $response;
     }
+
+
 }
