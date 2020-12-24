@@ -222,7 +222,7 @@ use QApi\App;
      * @param array $paramPattern
      * @param array|string|null $middleware
      */
-    public function __construct(private string $path = '/', private string|array $methods = 'ALL', private array $paramPattern = [], private array|string|null $middleware = null)
+    public function __construct(private string $path = '', private string|array $methods = 'ALL', private array $paramPattern = [], private array|string|null $middleware = null)
     {
     }
 }
