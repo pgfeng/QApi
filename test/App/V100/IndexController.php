@@ -23,6 +23,4 @@ class IndexController
         $response->setData(usersModel::model()->findByPk($request->arguments['id']));
         return $response;
     }
-
-
 }
