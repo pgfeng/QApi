@@ -65,6 +65,46 @@ class Response
     }
 
     /**
+     * @return mixed
+     */
+    public function getData(): mixed
+    {
+        return $this->data;
+    }
+
+    /**
+     * @return array
+     */
+    public function getExtra(): array
+    {
+        return $this->extra;
+    }
+
+    /**
+     * @return int
+     */
+    public function getStatusCode(): int
+    {
+        return $this->statusCode;
+    }
+
+    /**
+     * @return string
+     */
+    public function getMessage(): string
+    {
+        return $this->message;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getStatus(): bool
+    {
+        return $this->status;
+    }
+
+    /**
      * @param mixed|null $sendData
      * @return mixed
      * @throws \ErrorException
@@ -89,7 +129,7 @@ class Response
                 'message' => $this->message,
                 'data' => $this->data,
             ];
-            $this->send(array_merge($sendData,$this->extra));
+            $this->send(array_merge($sendData, $this->extra));
         }
     }
 }
