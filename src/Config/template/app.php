@@ -18,5 +18,5 @@ return [
     '*' => new Application(appDir: 'App', runMode: RunMode::DEVELOPMENT, defaultVersionName: 'V1.0.0', logHandler: [
         $defaultHandle,
         //        new \Monolog\Handler\NullHandler(),
-    ]),
+    ], allowOrigin: $allowOrigin = ['*']),
 ];

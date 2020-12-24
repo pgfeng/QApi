@@ -68,6 +68,14 @@ class Application
         return $this->runMode;
     }
 
+    /**
+     * @return bool
+     */
+    public function isDev(): bool
+    {
+        return $this->runMode === RunMode::DEVELOPMENT;
+    }
+
     public function getNameSpace(): string
     {
         return $this->nameSpace;
