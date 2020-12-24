@@ -116,6 +116,7 @@ class Response
             if (is_string($sendData)) {
                 echo $sendData;
             } else {
+                header('Content-Type:application/json');
                 $responseData = new Data($sendData);
                 echo $responseData;
             }

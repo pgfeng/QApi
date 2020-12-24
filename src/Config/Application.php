@@ -25,12 +25,13 @@ class Application
      * @param string $defaultVersionName
      * @param Handler[]|null $logHandler
      * @param string|bool $nameSpace
+     * @param string|array $allowOrigin
      */
     public function __construct(private string $appDir,
                                 private string $runMode,
                                 private string $defaultVersionName,
                                 public ?array $logHandler = null,
-                                private string|bool $nameSpace = false)
+                                private string|bool $nameSpace = false, private string|array $allowOrigin = '*')
     {
         $this->appDir = trim($this->appDir, '/');
         if ($this->nameSpace === false) {
@@ -45,6 +46,11 @@ class Application
     {
         Logger::init();
         header('X-Powered-By: QApi');
+        if (is_string($this->allowOrigin) && $this->allowOrigin) {
+            header('Access-Control-Allow-Origin:' . $this->allowOrigin);
+        } else if (is_array($this->allowOrigin)) {
+            header('Access-Control-Allow-Origin:' . implode($this->allowOrigin));
+        }
         if ($this->runMode === RunMode::DEVELOPMENT) {
             error_reporting(E_ALL);
         } else {

@@ -6,6 +6,8 @@ namespace QApi;
 
 use QApi\Config\Application;
 use QApi\Enumeration\CliColor;
+use QApi\Http\Request\MethodsEnum;
+use QApi\Route\Methods;
 
 class App
 {
@@ -39,10 +41,13 @@ class App
      * @param string $runtimeDir
      * @param string $uploadDir
      * @param \Closure|null $getVersionFunction
+     * @param array $allowMethods
      * @throws \ErrorException
      */
     public static function run(?string $timezone = 'Asia/Shanghai', $routeDir = 'routes', $configDir = 'config', $runtimeDir =
-    'runtime', $uploadDir = 'Upload', ?\Closure $getVersionFunction = null): void
+    'runtime', $uploadDir = 'Upload', ?\Closure $getVersionFunction = null, array $allowMethods = [
+        Methods::GET, Methods::POST, Methods::DELETE, Methods::HEAD, Methods::PUT
+    ]): void
     {
         if (!defined('PROJECT_PATH')) {
             define('PROJECT_PATH', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR);
@@ -54,6 +59,7 @@ class App
         self::$app = Config::app();
         self::$timezone = new \DateTimeZone('Asia/Shanghai');
         self::$app->init();
+        header('Access-Control-Allow-Methods:' . implode(',', $allowMethods));
         self::$getVersionFunction = $getVersionFunction;
         set_exception_handler(static function ($e) {
             $message = $e->getMessage();
