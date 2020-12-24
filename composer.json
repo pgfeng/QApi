@@ -28,7 +28,9 @@
       "src/Helper/helpers.php"
     ],
     "psr-4": {
-      "QApi\\": "src/"
+      "QApi\\": "src/",
+      "Test\\App\\": "test/App/",
+      "Test\\Model\\": "test/Model/"
     }
   }
 }

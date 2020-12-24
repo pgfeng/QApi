@@ -6,8 +6,9 @@ namespace QApi\Attribute;
 
 use QApi\App;
 
-#[\Attribute(\Attribute::TARGET_CLASS | \Attribute::TARGET_METHOD)] class Route
+#[\Attribute(\Attribute::TARGET_METHOD | \Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)] class Route
 {
+
 
     /**
      * 生成路由规则
@@ -40,6 +41,20 @@ use QApi\App;
                             . '@'
                             . $methodName
                             . '\')';
+                        if (is_string($classRoute->middleware) && $classRoute->middleware) {
+                            $write_data .= '->addMiddleware(middleware: \'' . $classRoute->middleware . '\')';
+                        } else if (is_array($classRoute->middleware)) {
+                            foreach ($classRoute->middleware as $middleware) {
+                                $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
+                            }
+                        }
+                        if (is_string($this->middleware) && $this->middleware) {
+                            $write_data .= '->addMiddleware(middleware: \'' . $this->middleware . '\')';
+                        } else if (is_array($this->middleware)) {
+                            foreach ($this->middleware as $middleware) {
+                                $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
+                            }
+                        }
                         foreach ($classRoute->paramPattern as $key => $pattern) {
                             $write_data .= '->paramPattern(paramName: \'' . $key . '\', pattern: \'' . $pattern . '\')';
                         }
@@ -49,23 +64,53 @@ use QApi\App;
                             . '@'
                             . $methodName
                             . '\')';
+                        if (is_string($this->middleware) && $this->middleware) {
+                            $write_data .= '->addMiddleware(middleware: \'' . $this->middleware . '\')';
+                        } else if (is_array($this->middleware)) {
+                            foreach ($this->middleware as $middleware) {
+                                $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
+                            }
+                        }
                     }
                 } else if ($classRoute) {
                     $write_data = 'Router::' . $method . '(path: \'' . $classRoute->path . $this->path . '\', callback: \'' . $class->getName()
                         . '@'
                         . $methodName
                         . '\')';
+                    if (is_string($classRoute->middleware) && $classRoute->middleware) {
+                        $write_data .= '->addMiddleware(middleware: \'' . $classRoute->middleware . '\')';
+                    } else if (is_array($classRoute->middleware)) {
+                        foreach ($classRoute->middleware as $middleware) {
+                            $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
+                        }
+                    }
+                    if (is_string($this->middleware) && $this->middleware) {
+                        $write_data .= '->addMiddleware(middleware: \'' . $this->middleware . '\')';
+                    } else if (is_array($this->middleware)) {
+                        foreach ($this->middleware as $middleware) {
+                            $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
+                        }
+                    }
+
                     foreach ($classRoute->paramPattern as $key => $pattern) {
                         $write_data .= '->paramPattern(paramName: \'' . $key . '\', pattern: \'' . $pattern . '\')';
                     }
                     foreach ($this->paramPattern as $key => $pattern) {
                         $write_data .= '->paramPattern(paramName: \'' . $key . '\', pattern: \'' . $pattern . '\')';
                     }
+
                 } else {
                     $write_data = 'Router::' . $method . '(path: \'' . $this->path . '\', callback: \'' . $class->getName()
                         . '@'
                         . $methodName
                         . '\')';
+                    if (is_string($this->middleware) && $this->middleware) {
+                        $write_data .= '->addMiddleware(middleware: \'' . $this->middleware . '\')';
+                    } else if (is_array($this->middleware)) {
+                        foreach ($this->middleware as $middleware) {
+                            $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
+                        }
+                    }
                     foreach ($this->paramPattern as $key => $pattern) {
                         $write_data .= '->paramPattern(paramName: \'' . $key . '\', pattern: \'' . $pattern . '\')';
                     }
@@ -82,6 +127,20 @@ use QApi\App;
                     . '@'
                     . $methodName
                     . '\')';
+                if (is_string($classRoute->middleware) && $classRoute->middleware) {
+                    $write_data .= '->addMiddleware(middleware: \'' . $classRoute->middleware . '\')';
+                } else if (is_array($classRoute->middleware)) {
+                    foreach ($classRoute->middleware as $middleware) {
+                        $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
+                    }
+                }
+                if (is_string($this->middleware) && $this->middleware) {
+                    $write_data .= '->addMiddleware(middleware: \'' . $this->middleware . '\')';
+                } else if (is_array($this->middleware)) {
+                    foreach ($this->middleware as $middleware) {
+                        $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
+                    }
+                }
                 foreach ($classRoute->paramPattern as $key => $pattern) {
                     $write_data .= '->paramPattern(paramName: \'' . $key . '\', pattern: \'' . $pattern . '\')';
                 }
@@ -91,6 +150,14 @@ use QApi\App;
                     . '@'
                     . $methodName
                     . '\')';
+
+                if (is_string($this->middleware) && $this->middleware) {
+                    $write_data .= '->addMiddleware(middleware: \'' . $this->middleware . '\')';
+                } else {
+                    foreach ($this->middleware as $middleware) {
+                        $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
+                    }
+                }
             }
             $write_data .= ';';
             if (!str_contains($data, $write_data)) {
@@ -109,12 +176,33 @@ use QApi\App;
                 foreach ($this->paramPattern as $key => $pattern) {
                     $write_data .= '->paramPattern(paramName: \'' . $key . '\', pattern: \'' . $pattern . '\')';
                 }
+                if (is_string($classRoute->middleware) && $classRoute->middleware) {
+                    $write_data .= '->addMiddleware(middleware: \'' . $classRoute->middleware . '\')';
+                } else if (is_array($classRoute->middleware)) {
+                    foreach ($classRoute->middleware as $middleware) {
+                        $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
+                    }
+                }
+                if (is_string($this->middleware) && $this->middleware) {
+                    $write_data .= '->addMiddleware(middleware: \'' . $this->middleware . '\')';
+                } else if (is_array($this->middleware)) {
+                    foreach ($this->middleware as $middleware) {
+                        $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
+                    }
+                }
             } else {
                 $write_data = 'Router::' . $this->methods . '(path: \'' . $this->path . '\', callback: \'' .
                     $class->getName()
                     . '@'
                     . $methodName
                     . '\')';
+                if (is_string($this->middleware) && $this->middleware) {
+                    $write_data .= '->addMiddleware(middleware: \'' . $this->middleware . '\')';
+                } else if (is_array($this->middleware)) {
+                    foreach ($this->middleware as $middleware) {
+                        $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
+                    }
+                }
                 foreach ($this->paramPattern as $key => $pattern) {
                     $write_data .= '->paramPattern(paramName: \'' . $key . '\', pattern: \'' . $pattern . '\')';
                 }
@@ -132,8 +220,10 @@ use QApi\App;
      * @param string $path
      * @param string|array $methods
      * @param array $paramPattern
+     * @param array|string|null $middleware
      */
-    public function __construct(private string $path = '/', private string|array $methods = 'ALL', private array $paramPattern = [])
+    public function __construct(private string $path = '/', private string|array $methods = 'ALL', private array $paramPattern = [], private array|string|null $middleware = null)
     {
+
     }
 }

@@ -1,16 +1,15 @@
 <?php
 
 
-namespace App\V100;
+namespace Test\App\V100;
 
-use Model\usersModel;
 use QApi\Attribute\Route;
 use QApi\Request;
 use QApi\Response;
+use Test\App\Middleware\TestMiddleware;
+use Test\Model\usersModel;
 
-#[Route(
-    '/user'
-)]
+#[Route('/user', middleware: TestMiddleware::class)]
 class IndexController
 {
     /**
@@ -18,11 +17,7 @@ class IndexController
      * @param Response $response
      * @return Response
      */
-    #[Route(
-        '/{id}'
-    , paramPattern: [
-        'id' => '\d+'
-    ])]
+    #[Route(path: '/{id}', methods: ['ALL'], paramPattern: ['id' => '\d+'])]
     public function indexAction(Request $request, Response $response): Response
     {
         $response->setData(usersModel::model()->findByPk($request->arguments['id']));

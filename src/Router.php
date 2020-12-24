@@ -137,6 +137,7 @@ class Router
         self::$routeLists[$method][$path] = [
             'callback' => $runData,
             'pattern' => [],
+            'middleware' => [],
         ];
     }
 
@@ -160,6 +161,18 @@ class Router
     function paramPattern(string $paramName, string $pattern): self
     {
         self::$routeLists[$this->method][$this->path]['pattern'][$paramName] = $pattern;
+        return $this;
+    }
+
+    /**
+     * @param string $middleware
+     * @return $this
+     */
+    public function addMiddleware(string $middleware): self
+    {
+        if (!in_array($middleware, self::$routeLists[$this->method][$this->path]['middleware'], true)) {
+            self::$routeLists[$this->method][$this->path]['middleware'][] = $middleware;
+        }
         return $this;
     }
 
@@ -189,6 +202,7 @@ class Router
                 }
                 $methodData[$path] = [
                     'callback' => $route['callback'],
+                    'middleware' => $route['middleware'],
                     'params' => $params,
                     'pattern' => $path,
                 ];
@@ -246,29 +260,31 @@ class Router
             $callback = [
                 'params' => [],
                 'callback' => $runData,
+                'middleware' => [],
             ];
         }
-
         if ($callback['params']) {
             $params = array_combine($callback['params'], $params);
         }
-        return self::runCallBack($callback['callback'], $params);
+        return self::runCallBack($callback['callback'], $params, $callback['middleware']);
     }
 
     /**
      * 执行
-     * @param $callback
-     * @param $params
+     * @param string|callable|array $callback
+     * @param array $params
+     * @param array $middleware
      * @return mixed
+     * @throws \ErrorException
      */
     public
-    static function runCallBack(string|callable|array $callback, array $params): mixed
+    static function runCallBack(string|callable|array $callback, array $params, array $middleware = []): mixed
     {
         self::$router = [
             'callback' => $callback,
             'params' => $params,
+            'middleware' => $middleware,
         ];
-
         if (!is_array($callback)) {
             if (is_callable($callback)) {
                 if ($params) {
@@ -278,8 +294,22 @@ class Router
                     $arguments = new Data($params);
                 }
                 $request = new Request($arguments);
+                $response = new Response();
                 $result = $callback($request, new Response());
                 Logger::info('Router -> ' . $callback);
+                Logger::info('RouterOriginal -> ' . json_encode(self::$router));
+                if ($middleware) {
+                    /**
+                     * @var QApi\Http\MiddlewareHandler $middlewareObject
+                     */
+                    $middlewareObject = null;
+                    foreach ($middleware as $item) {
+                        $middlewareObject = new $item;
+                        $result = $middlewareObject->handle($request, $response, $callback);
+                    }
+                } else {
+                    $result = $callback($request, $response);
+                }
                 if ($result instanceof \QApi\Response) {
                     $result->send();
                 } else {
@@ -299,8 +329,25 @@ class Router
                 $params = [];
             }
             $arguments = new Data($params);
-            $result = $controller->$method(new Request($arguments), new Response());
+            $request = new Request($arguments);
+            $response = new Response();
             Logger::info('Router -> ' . $controllerName . '@' . $method);
+            Logger::info('RouterOriginal -> ' . json_encode(self::$router));
+            $result = '';
+            if ($middleware) {
+                /**
+                 * @var QApi\Http\MiddlewareHandler $middlewareObject
+                 */
+                $middlewareObject = null;
+                foreach ($middleware as $item) {
+                    $middlewareObject = new $item;
+                    $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use ($controller, $method) {
+                        return $controller->$method($request, $response);
+                    });
+                }
+            } else {
+                $result = $controller->$method(new Request($arguments), $response);
+            }
             if ($result instanceof \QApi\Response) {
                 $result->send();
             } else {

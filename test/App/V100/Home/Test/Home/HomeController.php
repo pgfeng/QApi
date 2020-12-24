@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\V100\Home\Test\Home;
+namespace Test\App\V100\Home\Test\Home;
 
 
 use QApi\Attribute\Route;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\V100\Home;
+namespace Test\App\V100\Home;
 
 use QApi\Attribute\Route;
 use QApi\Request;

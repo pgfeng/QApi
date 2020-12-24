@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Model;
+namespace Test\Model;
 
 
 use QApi\Model;
