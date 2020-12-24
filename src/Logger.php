@@ -50,10 +50,10 @@ class Logger
         if (is_array($message)) {
             $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
-        if (Config::$app->getRunMode() !== RunMode::PRODUCTION) {
+        if (Config::$app && Config::$app->getRunMode() !== RunMode::PRODUCTION) {
             error_log(self::getData(' SQL => ' . $message, CliColor::WARNING));
+            self::$logger->warning(' SQL => ' . $message);
         }
-        self::$logger->warning(' SQL => ' . $message);
     }
 
 

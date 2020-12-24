@@ -67,6 +67,16 @@ function parseDir(): string
 }
 
 /**
+ * CLI模式运行
+ * @return bool
+ */
+#[Pure] function is_cli(): bool
+{
+
+    return false !== stripos(PHP_SAPI, "cli");
+}
+
+/**
  * 创建文件所在目录
  *
  * @param     $path

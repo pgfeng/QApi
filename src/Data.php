@@ -17,6 +17,25 @@ class Data extends ArrayObject implements JsonSerializableAlias
     }
 
     /**
+     * 将数据转为primary_key为键名并返回
+     *
+     * @param $primary_key
+     *
+     * @return Data
+     */
+    public function transPrimaryIndex($primary_key): Data
+    {
+        $newData = [];
+        $data = $this->toArray();
+        if ($data) {
+            foreach ($data as $item) {
+                $newData[$item[$primary_key]] = $item;
+            }
+        }
+        return new Data($newData);
+    }
+
+    /**
      * 获取数据
      * @param $key
      * @param null $default_value
@@ -203,7 +222,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function toJson(): string
     {
-        return json_encode($this, JSON_THROW_ON_ERROR | JSON_ERROR_NONE | JSON_OBJECT_AS_ARRAY|JSON_UNESCAPED_UNICODE);
+        return json_encode($this, JSON_THROW_ON_ERROR | JSON_ERROR_NONE | JSON_OBJECT_AS_ARRAY | JSON_UNESCAPED_UNICODE);
     }
 
 

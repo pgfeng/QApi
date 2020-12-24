@@ -9,8 +9,7 @@ use QApi\Config\Database\PdoMysqlDatabase;
 use QApi\Config\Database\PdoSqliteDatabase;
 use QApi\Config\Database\PdoSqlServDatabase;
 use QApi\Config\Version;
-use QApi\Database\Mysqli;
-use QApi\Database\PdoSqlServe;
+use QApi\Enumeration\RunMode;
 
 class Config
 {
@@ -47,6 +46,27 @@ class Config
             $configPath);
     }
 
+    /**
+     * @param $name
+     * @return array|string
+     */
+    public static function command($name): string|array|null
+    {
+        $configPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'command.php';
+        if (!file_exists($configPath)) {
+            mkPathDir($configPath);
+            file_put_contents($configPath, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Config'
+                . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'command.php'), LOCK_EX);
+        }
+        $commandConfig = include PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'command.php';
+        if ($name) {
+
+            return $commandConfig[$name] ?? null;
+        }
+
+        return $commandConfig;
+    }
+
     public static function versions()
     {
         if (!self::$versions) {
@@ -67,23 +87,33 @@ class Config
     }
 
     /**
-     * @param string $configName
+     * @param string|null $configName
+     * @param string|null $runMode
+     * @return MysqliDatabase|PdoMysqlDatabase|PdoSqliteDatabase|PdoSqlServDatabase|array|null
+     * @throws \ErrorException
      */
-    public static function database(string $configName):
-    MysqliDatabase|PdoMysqlDatabase|PdoSqliteDatabase|PdoSqlServDatabase|null
+    public static function database(string $configName = null, ?string $runMode = null):
+    MysqliDatabase|PdoMysqlDatabase|PdoSqliteDatabase|PdoSqlServDatabase|null|array
     {
+        if (!is_cli()) {
+            $runMode = Config::app()->getRunMode();
+        } else {
+            $runMode = RunMode::DEVELOPMENT;
+        }
         if (!self::$databases) {
-            $versionConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . Config::app()->getRunMode()
+            $versionConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
                 . DIRECTORY_SEPARATOR . 'databases.php';
             if (!self::$databases && !file_exists($versionConfigPath)) {
                 mkPathDir($versionConfigPath);
                 file_put_contents($versionConfigPath, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Config'
                     . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'database.php'), LOCK_EX);
             }
-            self::$databases = include PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . Config::app()->getRunMode()
+            self::$databases = include PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
                 . DIRECTORY_SEPARATOR . 'databases.php';
         }
-
+        if (!$configName) {
+            return self::$databases;
+        }
         return self::$databases[$configName] ?? null;
     }
 
