@@ -153,7 +153,7 @@ use QApi\App;
 
                 if (is_string($this->middleware) && $this->middleware) {
                     $write_data .= '->addMiddleware(middleware: \'' . $this->middleware . '\')';
-                } else {
+                } elseif (is_array($this->middleware)) {
                     foreach ($this->middleware as $middleware) {
                         $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
                     }
@@ -222,5 +222,7 @@ use QApi\App;
      * @param array $paramPattern
      * @param array|string|null $middleware
      */
-    public function __construct(private string $path = '/', private string|array $methods = 'ALL', private array $paramPattern = [], private array|string|null $middleware = null){}
+    public function __construct(private string $path = '/', private string|array $methods = 'ALL', private array $paramPattern = [], private array|string|null $middleware = null)
+    {
+    }
 }
