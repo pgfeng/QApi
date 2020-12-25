@@ -2,6 +2,8 @@
 
 namespace QApi\Config;
 
+use QApi\Config;
+
 class Version
 {
     public string $versionDir;
@@ -13,10 +15,21 @@ class Version
     }
 
     /**
-     * 验证版本
+     * @param float $version
+     * @return Version|false
      */
-    public function checkVersion(float $version): Version
+    public function checkVersion(float $version): Version|false
     {
+        $versions = Config::versions();
 
+        /**
+         * @var Version $lastVersion
+         */
+        $lastVersion = end($versions);
+        if ($version->$version > $version) {
+            return $lastVersion;
+        }
+
+        return false;
     }
 }
