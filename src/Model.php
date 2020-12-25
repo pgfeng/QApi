@@ -40,11 +40,11 @@ use QApi\Model\filesModel;
  * @method $this orderBy(string|array $field = '', string $by = '')
  * @method $this limit(int $offset, int $size = '')
  * @method $this orWhere(string $field, string|array $comPar = '', string $val = '')
- * @method bool|int update(array $update)
+ * @method bool|int update(array|Data $update)
  * @method bool|int exec(string $sql = '')
  * @method bool|int count(string $field = '*')
  * @method bool|int sum(string $field)
- * @method bool|int insert(array $insert)
+ * @method bool|int insert(array|Data $insert)
  * @method $this leftJoin(string $table, string $on1, string $on2)
  * @method $this rightJoin(string $table, string $on1, string $on2)
  * @method $this Join(string $table, string $on1, string $on2)
@@ -422,6 +422,9 @@ class Model
         if (!$primary_key) {
             $primary_key = $this->primary_key;
         }
+        if ($data instanceof Data){
+            $data = $data->toArray();
+        }
         return $this->db->save($data, $primary_key);
     }
 
@@ -457,7 +460,7 @@ class Model
      *
      * @return bool|DBase|Data|array|self|string
      */
-    final public function __call($func, $val): Data|bool|array|DBase|self|string
+    final public function __call($func, $val): Data|bool|array|DBase|self|string|null
     {
         /** @var array $val */
         if (method_exists($this->db, $func)) {

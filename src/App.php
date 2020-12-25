@@ -55,7 +55,7 @@ class App
         date_default_timezone_set($timezone);
         self::$routeDir = trim($routeDir, '/');
         self::$runtimeDir = trim($runtimeDir, '/');
-        self::$uploadDir = PROJECT_PATH . DIRECTORY_SEPARATOR . trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
+        self::$uploadDir =  trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
         self::$app = Config::app();
         self::$timezone = new \DateTimeZone('Asia/Shanghai');
         self::$app->init();

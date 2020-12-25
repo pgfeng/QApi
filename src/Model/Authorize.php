@@ -96,7 +96,7 @@ abstract class Authorize extends Model
      * @param string $password
      * @return array|boolean
      */
-    public function getToken($account, $password)
+    public function getToken(string $account, string $password): bool|array
     {
         $account_data = $this->getAccount($account);
         if (!$account) {

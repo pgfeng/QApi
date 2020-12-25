@@ -10,6 +10,8 @@ namespace QApi\Model;
 
 
 
+use QApi\Data;
+
 /**
  * 分表模型 自动分表处理
  * Class Model
@@ -59,11 +61,10 @@ abstract class Partition extends \QApi\Model
 
     /**
      * 添加数据
-     * @param array $insert
+     * @param array|Data $insert
      * @return bool|int
-     * @throws Exception
      */
-    public function insert(array $insert)
+    public function insert(array|Data $insert): bool|int
     {
         if (!isset($insert[$this->partition_field])) {
             throw new Exception('必须传入 [ ' . $this->partition_field . ' ] 字段！', 0);
@@ -77,13 +78,12 @@ abstract class Partition extends \QApi\Model
      * 保存数据或者更新数据
      * 如果设置主键字段 $primary_key 将会判断此字段是否存在，如果存在则会为更新数据
      *
-     * @param array $data
+     * @param array|Data $data
      * @param String $primary_key
      *
      * @return  Bool|int
-     * @throws Exception
      */
-    final public function save($data, $primary_key = '')
+    final public function save(array|Data $data, $primary_key = ''):bool|int
     {
         if (!is_array($data)) {
             return FALSE;

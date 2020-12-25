@@ -9,6 +9,7 @@
 namespace QApi\Model;
 
 use QApi\App;
+use QApi\Data;
 use QApi\Model;
 use Symfony\Component\Mime\MimeTypes;
 
@@ -338,7 +339,7 @@ class filesModel extends Model
      * @param bool $all
      * @return array|bool
      */
-    public function getFileByMd5($md5, $all = FALSE): array|bool
+    public function getFileByMd5($md5, $all = FALSE): Data|bool|null
     {
         $this->Where('file_md5', $md5);
         if ($all) {
@@ -353,7 +354,7 @@ class filesModel extends Model
      * @param bool $all
      * @return array|bool
      */
-    public function getFileById($file_id, $all = FALSE): bool|array
+    public function getFileById($file_id, $all = FALSE): bool|array|null
     {
         $this->Where('file_id', $file_id);
         if ($all) {
