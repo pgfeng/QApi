@@ -23,6 +23,7 @@ class Router
     public static array $router = [];
 
     public static array $middlewareList = [];
+    public static array $classMiddlewareList = [];
 
     /**
      * 存储路由
@@ -115,9 +116,16 @@ class Router
                     $methods = $refClass->getMethods();
                     foreach ($methods as $method) {
                         if (substr($method->getName(), -6) === 'Action') {
-                            $methodAttributes = $method->getAttributes();
-                            foreach ($methodAttributes as $key => $item) {
-                                if ($item->getName() === 'QApi\Attribute\Route') {
+                            $methodAttributes = $method->getAttributes(QApi\Attribute\Route::class);
+                            if (!$methodAttributes) {
+                                $classAttrbutes = $refClass->getAttributes(QApi\Attribute\Route::class);
+                                if ($classAttrbutes) {
+                                    foreach ($classAttrbutes as $item) {
+                                        $item->newInstance()->builder($refClass, $path_class, $method->getName());
+                                    }
+                                }
+                            } else {
+                                foreach ($methodAttributes as $key => $item) {
                                     $item->newInstance()->builder($refClass, $path_class, $method->getName());
                                 }
                             }
@@ -171,12 +179,17 @@ class Router
      * @param string $middleware
      * @return $this
      */
-    public function addMiddleware(string $middleware): self
+    public function addMiddleware(string $middleware, bool $isClass = false): self
     {
         if (!in_array($middleware, self::$routeLists[$this->method][$this->path]['middleware'], true)) {
             self::$routeLists[$this->method][$this->path]['middleware'][] = $middleware;
             if (is_string(self::$routeLists[$this->method][$this->path]['callback'])) {
                 self::$middlewareList[self::$routeLists[$this->method][$this->path]['callback']][] = $middleware;
+            }
+            if (is_string(self::$routeLists[$this->method][$this->path]['callback'])) {
+                $className = substr(self::$routeLists[$this->method][$this->path]['callback'], 0, stripos
+                (self::$routeLists[$this->method][$this->path]['callback'], '@'));
+                self::$classMiddlewareList[$className][] = $middleware;
             }
         }
         return $this;
@@ -373,19 +386,21 @@ class Router
                 $controller = new $controllerName;
                 if (method_exists($controller, $callback['method'])) {
                     $params = [];
+                    $classMiddleware = self::$classMiddlewareList[$controllerName] ?? [];
+                    $methodMiddleware = self::$middlewareList[$controllerName . '@' . $callback['method']] ?? [];
+                    self::$router['middleware'] = array_unique(array_merge($classMiddleware, $methodMiddleware));
+                    Logger::info('Router -> ' . $controllerName . '@' . $callback['method']);
+                    Logger::info('RouterOriginal -> ' . json_encode(self::$router));
+
                     $arguments = new Data($params);
                     $request = new Request($arguments);
                     $response = new Response();
-                    Logger::info('Router -> ' . $controllerName . '@' . $callback['method']);
-                    //                                        dump(self::$middlewareList);
-                    //                                        dump($controllerName . '@' . $callback['method']);exit;
-                    if (array_key_exists($controllerName . '@' . $callback['method'], self::$middlewareList)) {
-                        //                        exit;
+                    if (self::$router['middleware']) {
                         /**
                          * @var QApi\Http\MiddlewareHandler $middlewareObject
                          */
                         $middlewareObject = null;
-                        foreach (self::$middlewareList[$controllerName . '@' . $callback['method']] as $item) {
+                        foreach (self::$router['middleware'] as $item) {
                             $middlewareObject = new $item;
                             $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use (
                                 $controller,

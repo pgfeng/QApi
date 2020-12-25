@@ -42,10 +42,10 @@ use QApi\App;
                             . $methodName
                             . '\')';
                         if (is_string($classRoute->middleware) && $classRoute->middleware) {
-                            $write_data .= '->addMiddleware(middleware: \'' . $classRoute->middleware . '\')';
+                            $write_data .= '->addMiddleware(middleware: \'' . $classRoute->middleware . '\',isClass: true)';
                         } else if (is_array($classRoute->middleware)) {
                             foreach ($classRoute->middleware as $middleware) {
-                                $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
+                                $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\',isClass: true)';
                             }
                         }
                         if (is_string($this->middleware) && $this->middleware) {
@@ -78,10 +78,10 @@ use QApi\App;
                         . $methodName
                         . '\')';
                     if (is_string($classRoute->middleware) && $classRoute->middleware) {
-                        $write_data .= '->addMiddleware(middleware: \'' . $classRoute->middleware . '\')';
+                        $write_data .= '->addMiddleware(middleware: \'' . $classRoute->middleware . '\',isClass: true)';
                     } else if (is_array($classRoute->middleware)) {
                         foreach ($classRoute->middleware as $middleware) {
-                            $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
+                            $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\',isClass: true)';
                         }
                     }
                     if (is_string($this->middleware) && $this->middleware) {
@@ -128,10 +128,10 @@ use QApi\App;
                     . $methodName
                     . '\')';
                 if (is_string($classRoute->middleware) && $classRoute->middleware) {
-                    $write_data .= '->addMiddleware(middleware: \'' . $classRoute->middleware . '\')';
+                    $write_data .= '->addMiddleware(middleware: \'' . $classRoute->middleware . '\',isClass: true)';
                 } else if (is_array($classRoute->middleware)) {
                     foreach ($classRoute->middleware as $middleware) {
-                        $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\')';
+                        $write_data .= '->addMiddleware(middleware: \'' . $middleware . '\',isClass: true)';
                     }
                 }
                 if (is_string($this->middleware) && $this->middleware) {
