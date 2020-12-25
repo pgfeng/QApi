@@ -9,16 +9,16 @@ class Response
     private bool $status = true;
     private int $statusCode = 200;
     private mixed $data = [];
-    private string $message = 'Ok';
+    private string $msg = 'Ok';
     private array $extra = [];
 
     /**
-     * @param string $message
+     * @param string $msg
      * @return Response
      */
-    public function setMessage(string $message): Response
+    public function setMsg(string $msg): Response
     {
-        $this->message = $message;
+        $this->msg = $msg;
         return $this;
     }
 
@@ -91,9 +91,9 @@ class Response
     /**
      * @return string
      */
-    public function getMessage(): string
+    public function getMsg(): string
     {
-        return $this->message;
+        return $this->msg;
     }
 
     /**
@@ -128,7 +128,7 @@ class Response
             'version' => Config::version()->versionName,
             'code' => $this->statusCode,
             'status' => $this->status,
-            'message' => $this->message,
+            'msg' => $this->msg,
             'data' => $this->data,
         ];
         $this->send(array_merge($sendData, $this->extra));

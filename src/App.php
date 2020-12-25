@@ -63,21 +63,21 @@ class App
         header('Access-Control-Allow-Methods: ' . implode(',', $allowMethods));
         self::$getVersionFunction = $getVersionFunction;
         set_exception_handler(static function ($e) {
-            $message = $e->getMessage();
+            $msg = $e->getmsg();
             $file = $e->getFile();
             $line = $e->getLine();
             $errorType = get_class($e);
-            error_log("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $message . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
+            error_log("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
                 $line, 0);
-            $message = [
+            $msg = [
                 'code' => 500,
                 'version' => Config::version()->versionName,
                 'status' => false,
-                'message' => $message,
-                'error_msg' => $errorType . '：' . $message . ' in ' . $file . ' on line ' . $line,
+                'msg' => $msg,
+                'error_msg' => $errorType . '：' . $msg . ' in ' . $file . ' on line ' . $line,
                 //                'debug_backtrace' => debug_backtrace(),
             ];
-            echo new Data($message);
+            echo new Data($msg);
             exit();
         });
         set_error_handler(static function ($no, $msg, $file, $line) {
@@ -100,15 +100,15 @@ class App
                 E_ALL => 'E_ALL',
             };
             error_log("\x1b[" . CliColor::ERROR . ";1m {$errorType}：$msg\e[0m\n\t\t" . " in " . $file . ' on line ' . $line, 0);
-            $message = [
+            $msg = [
                 'code' => 500,
                 'version' => Config::version()->versionName,
                 'status' => false,
-                'message' => $msg,
+                'msg' => $msg,
                 'error_msg' => $errorType . '：' . $msg . ' in ' . $file . ' on line ' . $line,
                 //                'debug_backtrace' => debug_backtrace(),
             ];
-            echo new Data($message);
+            echo new Data($msg);
             exit();
         }, E_ALL);
 
