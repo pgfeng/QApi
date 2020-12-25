@@ -11,7 +11,7 @@ class Response
     private mixed $data = [];
     private string $message = 'Ok';
     private array $extra = [];
-
+    
     /**
      * @param string $message
      * @return Response
