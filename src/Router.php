@@ -217,7 +217,6 @@ class Router
                         $params[$k + 1] = $p;
                     }
                     $path = preg_replace('/\{(\w+)\}/', '(\w+)', $path);
-
                 }
                 $methodData[$path] = [
                     'callback' => $route['callback'],
