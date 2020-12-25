@@ -261,7 +261,7 @@ class Router
             } else {
                 $method = array_pop($data);
                 $runData['controller'] = implode('\\', $data);
-                $runData['method'] = strtolower($method);
+                $runData['method'] = strtolower($method) . 'Action';
             }
             $callback = [
                 'params' => [],
