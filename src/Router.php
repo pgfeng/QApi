@@ -322,9 +322,16 @@ class Router
                      * @var QApi\Http\MiddlewareHandler $middlewareObject
                      */
                     $middlewareObject = null;
-                    foreach ($middleware as $item) {
+                    $middlewareNumber = count($middleware);
+                    foreach ($middleware as $index => $item) {
                         $middlewareObject = new $item;
-                        $result = $middlewareObject->handle($request, $response, $callback);
+                        if ($middlewareNumber === $index + 1) {
+                            $result = $middlewareObject->handle($request, $response, $callback);
+                        } else {
+                            $result = $middlewareObject->handle($request, $response, function ($resquest, $response) {
+                                return $response;
+                            });
+                        }
                     }
                 } else {
                     $result = $callback($request, $response);
@@ -358,11 +365,19 @@ class Router
                  * @var QApi\Http\MiddlewareHandler $middlewareObject
                  */
                 $middlewareObject = null;
-                foreach ($middleware as $item) {
+
+                $middlewareNumber = count($middleware);
+                foreach ($middleware as $index=>$item) {
                     $middlewareObject = new $item;
-                    $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use ($controller, $method) {
-                        return $controller->$method($request, $response);
-                    });
+                    if ($middlewareNumber === $index + 1) {
+                        $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use ($controller, $method) {
+                            return $controller->$method($request, $response);
+                        });
+                    } else {
+                        $result = $middlewareObject->handle($request, $response, function ($request, $response) {
+                            return $response;
+                        });
+                    }
                 }
             } else {
                 $result = $controller->$method(new Request($arguments), $response);
@@ -400,15 +415,23 @@ class Router
                          * @var QApi\Http\MiddlewareHandler $middlewareObject
                          */
                         $middlewareObject = null;
-                        foreach (self::$router['middleware'] as $item) {
+                        $middlewareNumber = count(self::$router['middleware']);
+                        foreach (self::$router['middleware'] as $index => $item) {
                             $middlewareObject = new $item;
-                            $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use (
-                                $controller,
-                                $callback
-                            ) {
-                                return $controller->{$callback['method']}($request, $response);
-                            });
+                            if ($middlewareNumber === $index + 1) {
+                                $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use (
+                                    $controller,
+                                    $callback
+                                ) {
+                                    return $controller->{$callback['method']}($request, $response);
+                                });
+                            } else {
+                                $result = $middlewareObject->handle($request, $response, function ($resquest, $response) {
+                                    return $response;
+                                });
+                            }
                         }
+
                     } else {
                         $result = $controller->{$callback['method']}($request, $response);
                     }

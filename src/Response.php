@@ -11,7 +11,7 @@ class Response
     private mixed $data = [];
     private string $message = 'Ok';
     private array $extra = [];
-    
+
     /**
      * @param string $message
      * @return Response
@@ -122,15 +122,16 @@ class Response
             }
             Logger::success($sendData);
             Logger::success("↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑  Response Data ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ");
-        } else {
-            $sendData = [
-                'version' => Config::version()->versionName,
-                'code' => $this->statusCode,
-                'status' => $this->status,
-                'message' => $this->message,
-                'data' => $this->data,
-            ];
-            $this->send(array_merge($sendData, $this->extra));
+            exit;
         }
+
+        $sendData = [
+            'version' => Config::version()->versionName,
+            'code' => $this->statusCode,
+            'status' => $this->status,
+            'message' => $this->message,
+            'data' => $this->data,
+        ];
+        $this->send(array_merge($sendData, $this->extra));
     }
 }
