@@ -63,7 +63,7 @@ class App
         header('Access-Control-Allow-Methods: ' . implode(',', $allowMethods));
         self::$getVersionFunction = $getVersionFunction;
         set_exception_handler(static function ($e) {
-            $msg = $e->getmsg();
+            $msg = $e->getMessage();
             $file = $e->getFile();
             $line = $e->getLine();
             $errorType = get_class($e);
