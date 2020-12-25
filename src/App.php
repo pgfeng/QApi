@@ -41,12 +41,13 @@ class App
      * @param string $uploadDir
      * @param \Closure|null $getVersionFunction
      * @param array $allowMethods
+     * @param array $allowHeaders
      * @throws \ErrorException
      */
     public static function run(?string $timezone = 'Asia/Shanghai', $routeDir = 'routes', $configDir = 'config', $runtimeDir =
     'runtime', $uploadDir = 'Upload', ?\Closure $getVersionFunction = null, array $allowMethods = [
         Methods::GET, Methods::POST, Methods::DELETE, Methods::HEAD, Methods::PUT
-    ]): void
+    ], array $allowHeaders = ['*']): void
     {
         if (!defined('PROJECT_PATH')) {
             define('PROJECT_PATH', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR);
@@ -58,6 +59,7 @@ class App
         self::$app = Config::app();
         self::$timezone = new \DateTimeZone('Asia/Shanghai');
         self::$app->init();
+        header('Access-Control-Allow-Headers', implode(',', $allowHeaders));
         header('Access-Control-Allow-Methods:' . implode(',', $allowMethods));
         self::$getVersionFunction = $getVersionFunction;
         set_exception_handler(static function ($e) {
