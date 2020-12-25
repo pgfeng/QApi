@@ -6,37 +6,31 @@
  * Time: 12:14
  */
 
-namespace GFPHP\Model;
+namespace QApi\Model;
 
 
-use GFPHP\Exception;
 
 /**
  * 分表模型 自动分表处理
  * Class Model
  * @package Model
  */
-abstract class Partition extends \GFPHP\Model
+abstract class Partition extends \QApi\Model
 {
     /**
      * @var string 分表字段
      */
-    protected $partition_field = 'uid';
+    protected string $partition_field = 'uid';
     /**
      * @var int 分表数量
      */
-    protected $partition_num = 10;
-
-    public function __construct($model = FALSE, $configName = 'default')
-    {
-        parent::__construct($model, $configName);
-    }
+    protected int $partition_num = 10;
 
     /**
      * 设置分表
      * @param $partition_value
      */
-    private function set_table($partition_value)
+    private function set_table($partition_value): void
     {
         $num = ((int)$partition_value % $this->partition_num) + 1;
         $table = $this->db->table . '_' . $num;
@@ -44,10 +38,10 @@ abstract class Partition extends \GFPHP\Model
     }
 
     /**
-     * @return \GFPHP\Model
+     * @return self
      * @throws Exception
      */
-    public function where()
+    public function where(): self
     {
         if (func_get_arg(0) === $this->partition_field) {
             if (func_num_args() !== 2) {

@@ -48,7 +48,7 @@ class Config
 
     /**
      * @param $name
-     * @return array|string
+     * @return array|string|null
      */
     public static function command($name): string|array|null
     {

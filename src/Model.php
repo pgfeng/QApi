@@ -7,6 +7,7 @@ use Closure;
 
 
 use QApi\Database\DB;
+use QApi\Database\DBase;
 use QApi\Database\Mysqli;
 use QApi\Database\PdoMysql;
 use QApi\Database\PdoSqlite;
@@ -85,7 +86,7 @@ class Model
      */
     public string $primary_key = 'id';
 
-    public PdoSqlServe|PdoMysql|PdoSqlite|Mysqli $db;
+    public PdoSqlServ|PdoMysql|PdoSqlite|Mysqli $db;
 
     /**
      * Column Example
@@ -100,14 +101,14 @@ class Model
      */
     protected array $Column = [];
 
-    protected $model;
+    protected string $model;
 
-    protected $configName = 'default';
+    protected string $configName = 'default';
 
     /**
      * 获取配置
      */
-    public function getConfig()
+    public function getConfig(): Config\Database\PdoSqliteDatabase|array|Config\Database\MysqliDatabase|Config\Database\PdoMysqlDatabase|Config\Database\PdoSqlServDatabase|null
     {
         return Config::database($this->configName);
     }
@@ -130,11 +131,13 @@ class Model
      * 写法兼容
      * @param      $primary_value
      * @param bool $primary_key
-     * @return bool|Data|int
+     * @return bool|int
      */
-    public function deleteByPk($primary_value, $primary_key = false)
+    public function deleteByPk($primary_value, $primary_key = false): bool|int
     {
-        !$primary_key && $primary_key = $this->primary_key;
+        if (isset($this->primary_key)) {
+            !$primary_key && $primary_key = $this->primary_key;
+        }
         return $this->where($primary_key, $primary_value)->delete();
     }
 
@@ -259,26 +262,25 @@ class Model
      */
     public function __construct($model = FALSE, $configName = 'default')
     {
-        if ($configName === FALSE)
+        if ($configName === FALSE) {
             $configName = $this->configName;
+        }
         $this->database($configName);
 
-        if ($model) $this->table($model);
+        if ($model) {
+            $this->table($model);
+        }
 
         /**
          * 添加自动上传验证规则
          */
         $this->addCheckRule('file', static function ($Column, &$value) {
             $filesModel = new filesModel();
-            if (isset($Column['allow_type'])) {
-                $allow_type = $Column['allow_type'];
-            } else {
-                $allow_type = [];
-            }
+            $allow_type = $Column['allow_type'] ?? [];
             $value = $filesModel->upload($value, $allow_type);
-            $status = isset($value['status']) ? $value['status'] : FALSE;
-            $path = isset($value['path']) ? $value['path'] : FALSE;
-            $msg = isset($value['msg']) ? $value['msg'] : '';
+            $status = $value['status'] ?? FALSE;
+            $path = $value['path'] ?? FALSE;
+            $msg = $value['msg'] ?? '';
             if (isset($status)) {
                 if ($status === 'false') {
                     return $Column['ColumnName'] . '上传出现错误：' . $msg;
@@ -286,11 +288,11 @@ class Model
                 $value = $path;
 
                 return NULL;
-            } else {
-                $value = $path;
-
-                return NULL;
             }
+
+            $value = $path;
+
+            return NULL;
         }, NULL);
     }
 
@@ -301,14 +303,14 @@ class Model
      *
      * @return String|Null
      */
-    final public function checkColumn(&$data)
+    final public function checkColumn(&$data): ?string
     {
         foreach ($data as $column => &$value) {
             if (isset($this->Column[$column])) {
                 if (is_callable($this->Column[$column]['rule'])) {
                     if ($res = $this->Column[$column]['rule']($this->Column[$column], $value)) {
                         if (isset($this->Column[$column]['msg']) && $this->Column[$column]['msg'] !== '') {
-                            return str_replace('%ColumnName%', $this->Column[$column]['ColumnName'], isset($this->validate[$this->Column[$column]['rule']]['msg']) ? $this->validate[$this->Column[$column]['rule']]['msg'] : '请输入正确的%ColumnName%');
+                            return str_replace('%ColumnName%', $this->Column[$column]['ColumnName'], $this->validate[$this->Column[$column]['rule']]['msg'] ?? '请输入正确的%ColumnName%');
                         }
 
                         return $res;
@@ -317,19 +319,18 @@ class Model
                     if (isset($this->validate[$this->Column[$column]['rule']])) {
                         if (is_callable($this->validate[$this->Column[$column]['rule']]['rule'])) {
                             if ($res = $this->validate[$this->Column[$column]['rule']]['rule']($this->Column[$column], $value)) {
-                                if (isset($this->validate[$this->Column[$column]['rule']]['msg']) && $this->validate[$this->Column[$column]['rule']]['msg'] != '') {
-                                    return str_replace('%ColumnName%', $this->Column[$column]['ColumnName'], isset($this->validate[$this->Column[$column]['rule']]['msg']) ? $this->validate[$this->Column[$column]['rule']]['msg'] : '请输入正确的%ColumnName%');
-                                } else {
-                                    return $res;
+                                if (isset($this->validate[$this->Column[$column]['rule']]['msg']) &&
+                                    $this->validate[$this->Column[$column]['rule']]['msg'] !== '') {
+                                    return str_replace('%ColumnName%', $this->Column[$column]['ColumnName'], $this->validate[$this->Column[$column]['rule']]['msg'] ?? '请输入正确的%ColumnName%');
                                 }
+
+                                return $res;
                             }
-                        } else {
-                            if (preg_match($this->validate[$this->Column[$column]['rule']]['rule'], $value) !== 1) {
-                                return str_replace('%ColumnName%', $this->Column[$column]['ColumnName'], isset($this->validate[$this->Column[$column]['rule']]['msg']) ? $this->validate[$this->Column[$column]['rule']]['msg'] : '请输入正确的%ColumnName%');
-                            }
+                        } else if (preg_match($this->validate[$this->Column[$column]['rule']]['rule'], $value) !== 1) {
+                            return str_replace('%ColumnName%', $this->Column[$column]['ColumnName'], $this->validate[$this->Column[$column]['rule']]['msg'] ?? '请输入正确的%ColumnName%');
                         }
                     } else {
-                        Debug::add('Model: 验证规则' . $this->Column[$column]['rule'] . '未定义。');
+                        Logger::error('Model: 验证规则' . $this->Column[$column]['rule'] . '未定义。');
                     }
             }
         }
@@ -343,7 +344,7 @@ class Model
      * @param $rule
      * @param $msg
      */
-    final public function addCheckRule($ruleName, $rule, $msg)
+    final public function addCheckRule($ruleName, $rule, $msg): void
     {
         $this->validate[$ruleName] = [
             'rule' => $rule,
@@ -357,7 +358,7 @@ class Model
      * @param string $configName
      * @return DBase
      */
-    final function database($configName = 'default')
+    final public function database($configName = 'default'): DBase
     {
         //--计算表名
         $tb_name = substr(get_class($this), 6);
@@ -443,7 +444,7 @@ class Model
      * 其实不调用也可以用，但是IDE有黄杠杠，强迫症不能忍
      * @return static
      */
-    public static function model()
+    public static function model(): static
     {
         return new static();
     }
@@ -451,18 +452,18 @@ class Model
     /**
      * 不存在的方法将执行DB类中的方法
      *
-     * @param $func DBase
-     * @param $val  DBase
+     * @param $func
+     * @param $val
      *
      * @return bool|DBase|Data|array|Model
      */
-    final public function __call($func, $val)
+    final public function __call($func, $val): Data|bool|array|DBase|static
     {
         /** @var array $val */
         if (method_exists($this->db, $func)) {
             $res = call_user_func_array([$this->db, $func], $val);
             if (is_object($res)) {
-                if (get_class($res) === 'QApi\Data') {
+                if ($res instanceof \QApi\Data) {
                     return $res;
                 }
                 $this->db = $res;

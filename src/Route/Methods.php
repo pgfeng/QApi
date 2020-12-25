@@ -4,17 +4,17 @@ namespace QApi\Route;
 
 class Methods
 {
-    const ALL = 'ALL';
+    public const ALL = 'ALL';
 
-    const OPTIONS = 'OPTIONS';
+    public const OPTIONS = 'OPTIONS';
 
-    const GET = 'GET';
+    public const GET = 'GET';
 
-    const HEAD = 'GET';
+    public const HEAD = 'GET';
 
-    const POST = 'POST';
+    public const POST = 'POST';
 
-    const PUT = 'PUT';
+    public const PUT = 'PUT';
 
-    const DELETE = 'DELETE';
+    public const DELETE = 'DELETE';
 }

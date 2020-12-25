@@ -22,17 +22,18 @@ class Mysqli extends DBase
      *
      * @return bool
      */
-    public function _connect(mixed $database)
+    public function _connect(mixed $database): bool
     {
         //=====使用长连接
         $mysqli = new \mysqli($database->host, $database->user, $database->password, $database->dbName, $database->port);
         if ($mysqli->connect_error) {
             new \ErrorException('连接数据库失败：' . $mysqli->connect_error);
-        } else {
-            $this->mysqli = $mysqli;
-            $this->mysqli->set_charset($database->charset);
-            return TRUE;
+            return false;
         }
+
+        $this->mysqli = $mysqli;
+        $this->mysqli->set_charset($database->charset);
+        return TRUE;
     }
 
     /**
@@ -45,9 +46,9 @@ class Mysqli extends DBase
         $string = mysqli_real_escape_string($this->mysqli, $string);
         if (is_numeric($string)) {
             return $string;
-        } else {
-            return '\'' . $string . '\'';
         }
+
+        return '\'' . $string . '\'';
     }
 
     /**

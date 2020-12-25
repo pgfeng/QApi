@@ -9,7 +9,6 @@ use QApi\App;
 #[\Attribute(\Attribute::TARGET_METHOD | \Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)] class Route
 {
 
-
     /**
      * 生成路由规则
      * @param \ReflectionClass $class
@@ -26,9 +25,10 @@ use QApi\App;
             file_put_contents($save_path, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '../Route/buildTemplate.php'), LOCK_EX);
         }
         $data = file_get_contents($save_path);
-        $classRoute = $class->getAttributes('QApi\Attribute\Route');
+        $classRoute = $class->getAttributes(__CLASS__);
         if ($classRoute) {
             $classRoute = $classRoute[0]->newInstance();
+
         } else {
             $classRoute = null;
         }

@@ -5,7 +5,6 @@ namespace Test\App\Middleware;
 
 
 use QApi\Http\MiddlewareHandler;
-use QApi\Http\Request\MethodsEnum;
 use QApi\Request;
 use QApi\Response;
 use Test\Model\usersModel;
@@ -14,8 +13,8 @@ class TestMiddleware extends MiddlewareHandler
 {
     public function handle(Request $request, Response $response, \Closure $next): Response
     {
-        if ($request->method !== MethodsEnum::METHOD_GET) {
-            return $response->fail()->setMessage('请求类型错误！');
+        if (!$request->arguments['id']){
+            $request->arguments['id'] = 1;
         }
         $user = usersModel::model()->findByPk($request->arguments['id']);
         if (!$user) {

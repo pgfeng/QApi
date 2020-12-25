@@ -26,14 +26,14 @@ class PdoSqlite extends DBase
 
         $this->db = new \pdo('sqlite:' . $database->filename, null, null,
             [
-            \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
-            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
-            \PDO::ATTR_ORACLE_NULLS => \PDO::NULL_NATURAL,
-            \PDO::ATTR_STRINGIFY_FETCHES => false,
-            \PDO::ATTR_EMULATE_PREPARES => false,
-        ]
+                \PDO::ATTR_CASE => \PDO::CASE_NATURAL,
+                \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                \PDO::ATTR_ORACLE_NULLS => \PDO::NULL_NATURAL,
+                \PDO::ATTR_STRINGIFY_FETCHES => false,
+                \PDO::ATTR_EMULATE_PREPARES => false,
+            ]
         );
-        $this->exec('set names ' . $database->charset.'');
+        $this->exec('set names ' . $database->charset . '');
         return TRUE;
     }
 
@@ -120,8 +120,7 @@ class PdoSqlite extends DBase
     /**
      *
      */
-    public function close()
+    public function close(): void
     {
-
     }
 }

@@ -6,7 +6,6 @@ namespace QApi;
 
 use QApi\Config\Application;
 use QApi\Enumeration\CliColor;
-use QApi\Http\Request\MethodsEnum;
 use QApi\Route\Methods;
 
 class App

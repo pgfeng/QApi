@@ -21,6 +21,9 @@ use QApi;
 class Router
 {
     public static array $router = [];
+
+    public static array $middlewareList = [];
+
     /**
      * 存储路由
      * 如果当前请求类型不存在会自动向ALL中查找
@@ -172,6 +175,9 @@ class Router
     {
         if (!in_array($middleware, self::$routeLists[$this->method][$this->path]['middleware'], true)) {
             self::$routeLists[$this->method][$this->path]['middleware'][] = $middleware;
+            if (is_string(self::$routeLists[$this->method][$this->path]['callback'])) {
+                self::$middlewareList[self::$routeLists[$this->method][$this->path]['callback']][] = $middleware;
+            }
         }
         return $this;
     }
@@ -362,19 +368,39 @@ class Router
             if ($version->version > $nowVersion->version) {
                 continue;
             }
-            $controllerName = App::$app->getNameSpace() . '\\' . $version->versionDir . '\\' . $callback['controller'] . 'Controller';
+            $controllerName = App::$app->getNameSpace() . '\\' . $version->versionDir . '\\' . ($callback['controller']) . 'Controller';
             if (class_exists($controllerName)) {
                 $controller = new $controllerName;
                 if (method_exists($controller, $callback['method'])) {
                     $params = [];
                     $arguments = new Data($params);
-                    $result = $controller->{$callback['method']}(new Request($arguments), new Response());
+                    $request = new Request($arguments);
+                    $response = new Response();
                     Logger::info('Router -> ' . $controllerName . '@' . $callback['method']);
-                    if ($result instanceof \QApi\Response) {
-                        $result->send();
+                    //                                        dump(self::$middlewareList);
+                    //                                        dump($controllerName . '@' . $callback['method']);exit;
+                    if (array_key_exists($controllerName . '@' . $callback['method'], self::$middlewareList)) {
+                        //                        exit;
+                        /**
+                         * @var QApi\Http\MiddlewareHandler $middlewareObject
+                         */
+                        $middlewareObject = null;
+                        foreach (self::$middlewareList[$controllerName . '@' . $callback['method']] as $item) {
+                            $middlewareObject = new $item;
+                            $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use (
+                                $controller,
+                                $callback
+                            ) {
+                                return $controller->{$callback['method']}($request, $response);
+                            });
+                        }
                     } else {
-                        echo $result;
+                        $result = $controller->{$callback['method']}($request, $response);
                     }
+                    if ($result instanceof \QApi\Response) {
+                        return $result->send();
+                    }
+                    echo $result;
                     return null;
                 }
 

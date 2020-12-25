@@ -123,7 +123,7 @@ abstract class Authorize extends Model
         if (!$token) {
             return false;
         }
-        $token = explode(' || ', string: base64_decode($token));
+        $token = explode(' || ', base64_decode($token));
         if (count($token) !== 2) {
             return false;
         }

@@ -1,10 +1,5 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: PGF(592472116@qq.com)
- * Date: 2016/12/5
- * Time: 10:47
- */
+
 
 namespace QApi\Database;
 
@@ -12,9 +7,8 @@ namespace QApi\Database;
 use QApi\Model;
 
 /**
- * 这其实只是一个静态调用Model的简写形式
  * Class DB
- * @package GFPHP
+ * @package QApi\Database
  */
 class DB
 {
