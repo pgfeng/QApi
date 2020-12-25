@@ -59,8 +59,8 @@ class App
         self::$app = Config::app();
         self::$timezone = new \DateTimeZone('Asia/Shanghai');
         self::$app->init();
-        header('Access-Control-Allow-Headers', implode(',', $allowHeaders));
-        header('Access-Control-Allow-Methods:' . implode(',', $allowMethods));
+        header('Access-Control-Allow-Headers: ' . implode(',', $allowHeaders));
+        header('Access-Control-Allow-Methods: ' . implode(',', $allowMethods));
         self::$getVersionFunction = $getVersionFunction;
         set_exception_handler(static function ($e) {
             $message = $e->getMessage();
