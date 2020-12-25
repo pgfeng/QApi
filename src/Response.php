@@ -107,7 +107,6 @@ class Response
     /**
      * @param mixed|null $sendData
      * @return mixed
-     * @throws \ErrorException
      */
     public function send(mixed $sendData = null): void
     {
