@@ -112,9 +112,9 @@ class Data extends ArrayObject implements JsonSerializableAlias
 
     /**
      * @param mixed $offset
-     * @return mixed
+     * @return void
      */
-    public function offsetUnset($offset): mixed
+    public function offsetUnset(mixed $offset): void
     {
         unset($this->data[$offset]);
     }
