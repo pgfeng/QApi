@@ -186,7 +186,7 @@ class Router
             if (is_string(self::$routeLists[$this->method][$this->path]['callback'])) {
                 self::$middlewareList[self::$routeLists[$this->method][$this->path]['callback']][] = $middleware;
             }
-            if (is_string(self::$routeLists[$this->method][$this->path]['callback'])) {
+            if ($isClass && is_string(self::$routeLists[$this->method][$this->path]['callback'])) {
                 $className = substr(self::$routeLists[$this->method][$this->path]['callback'], 0, stripos
                 (self::$routeLists[$this->method][$this->path]['callback'], '@'));
                 self::$classMiddlewareList[$className][] = $middleware;
@@ -321,10 +321,10 @@ class Router
                      * @var QApi\Http\MiddlewareHandler $middlewareObject
                      */
                     $middlewareObject = null;
-                    $middlewareNumber = count($middleware);
+                    $middlewareNumber = array_key_last($middleware);
                     foreach ($middleware as $index => $item) {
                         $middlewareObject = new $item;
-                        if ($middlewareNumber === $index + 1) {
+                        if ($middlewareNumber === $index) {
                             $result = $middlewareObject->handle($request, $response, $callback);
                         } else {
                             $result = $middlewareObject->handle($request, $response, function ($resquest, $response) {
@@ -365,10 +365,10 @@ class Router
                  */
                 $middlewareObject = null;
 
-                $middlewareNumber = count($middleware);
-                foreach ($middleware as $index=>$item) {
+                $middlewareNumber = array_key_last($middleware);
+                foreach ($middleware as $index => $item) {
                     $middlewareObject = new $item;
-                    if ($middlewareNumber === $index + 1) {
+                    if ($middlewareNumber === $index) {
                         $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use ($controller, $method) {
                             return $controller->$method($request, $response);
                         });
@@ -402,10 +402,11 @@ class Router
                     $params = [];
                     $classMiddleware = self::$classMiddlewareList[$controllerName] ?? [];
                     $methodMiddleware = self::$middlewareList[$controllerName . '@' . $callback['method']] ?? [];
-                    self::$router['middleware'] = array_unique(array_merge($classMiddleware, $methodMiddleware));
+                    $middlewareLists = array_unique(array_merge($classMiddleware, $methodMiddleware));
+                    ksort($middlewareLists);
+                    self::$router['middleware'] = &$middlewareLists;
                     Logger::info('Router -> ' . $controllerName . '@' . $callback['method']);
                     Logger::info('RouterOriginal -> ' . json_encode(self::$router));
-
                     $arguments = new Data($params);
                     $request = new Request($arguments);
                     $response = new Response();
@@ -414,10 +415,10 @@ class Router
                          * @var QApi\Http\MiddlewareHandler $middlewareObject
                          */
                         $middlewareObject = null;
-                        $middlewareNumber = count(self::$router['middleware']);
+                        $middlewareNumber = array_key_last(self::$router['middleware']);
                         foreach (self::$router['middleware'] as $index => $item) {
                             $middlewareObject = new $item;
-                            if ($middlewareNumber === $index + 1) {
+                            if ($middlewareNumber === $index) {
                                 $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use (
                                     $controller,
                                     $callback

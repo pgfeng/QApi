@@ -455,9 +455,9 @@ class Model
      * @param $func
      * @param $val
      *
-     * @return bool|DBase|Data|array|Model
+     * @return bool|DBase|Data|array|self|string
      */
-    final public function __call($func, $val): Data|bool|array|DBase|static
+    final public function __call($func, $val): Data|bool|array|DBase|self|string
     {
         /** @var array $val */
         if (method_exists($this->db, $func)) {
