@@ -10,7 +10,7 @@
 如果未安装请前往 [https://getcomposer.org/](https://getcomposer.org/) 下载安装。
 
 ## 快速创建项目
-通过 composer 快速创建一个项目
+您可以通过 composer 快速创建一个模板项目
 ```
 composer create-project qapi/project project_dir
 cd project_dir
