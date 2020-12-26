@@ -76,7 +76,7 @@ abstract class Authorize extends Model
      * @param $account_name
      * @return bool|Data
      */
-    public function getAccount($account_name): bool|Data
+    public function getAccount($account_name): null|Data
     {
         $field_counter = 0;
         foreach ($this->account_field as $field) {
@@ -96,7 +96,7 @@ abstract class Authorize extends Model
      * @param string $password
      * @return array|boolean
      */
-    public function getToken(string $account, string $password): bool|array
+    public function getToken(string $account, string $password): bool|string
     {
         $account_data = $this->getAccount($account);
         if (!$account) {
@@ -116,9 +116,9 @@ abstract class Authorize extends Model
     /**
      * 验证token是否正确,正确返回账户信息,否则返回false
      * @param string $token
-     * @return Data|bool
+     * @return Data|bool|null
      */
-    public function checkToken(string $token):Data|bool
+    public function checkToken(string $token):Data|bool|null
     {
         if (!$token) {
             return false;
