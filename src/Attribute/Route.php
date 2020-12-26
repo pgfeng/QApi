@@ -14,9 +14,11 @@ use QApi\App;
      * @param \ReflectionClass $class
      * @param string $controllerName
      * @param string $methodName
+     * @param bool $attr
      * @return mixed
      */
-    public function builder(\ReflectionClass $class, string $controllerName, string $methodName): mixed
+    public function builder(\ReflectionClass $class, string $controllerName, string $methodName, bool $attr = true):
+    mixed
     {
         $save_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
             . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builder.php';
@@ -28,7 +30,6 @@ use QApi\App;
         $classRoute = $class->getAttributes(__CLASS__);
         if ($classRoute) {
             $classRoute = $classRoute[0]->newInstance();
-
         } else {
             $classRoute = null;
         }
@@ -36,11 +37,8 @@ use QApi\App;
             foreach ($this->methods as $method) {
                 if ($this->paramPattern === []) {
                     if ($classRoute) {
-                        $write_data = 'Router::' . $method . '(path: \'' . $classRoute->path . $this->path . '\', callback: \'' .
-                            $class->getName()
-                            . '@'
-                            . $methodName
-                            . '\')';
+                        $write_data = $this->getRouterData($method, $classRoute->path . ($attr ? $this->path : ''),
+                            $class->getName() . '@' . $methodName);
                         if (is_string($classRoute->middleware) && $classRoute->middleware) {
                             $write_data .= '->addMiddleware(middleware: \'' . $classRoute->middleware . '\',isClass: true)';
                         } else if (is_array($classRoute->middleware)) {
@@ -73,10 +71,10 @@ use QApi\App;
                         }
                     }
                 } else if ($classRoute) {
-                    $write_data = 'Router::' . $method . '(path: \'' . $classRoute->path . $this->path . '\', callback: \'' . $class->getName()
-                        . '@'
-                        . $methodName
-                        . '\')';
+
+                    $write_data = $this->getRouterData($method, $classRoute->path . ($attr?$this->path:''),
+                        $class->getName() .
+                        '@' . $methodName);
                     if (is_string($classRoute->middleware) && $classRoute->middleware) {
                         $write_data .= '->addMiddleware(middleware: \'' . $classRoute->middleware . '\',isClass: true)';
                     } else if (is_array($classRoute->middleware)) {
@@ -100,10 +98,8 @@ use QApi\App;
                     }
 
                 } else {
-                    $write_data = 'Router::' . $method . '(path: \'' . $this->path . '\', callback: \'' . $class->getName()
-                        . '@'
-                        . $methodName
-                        . '\')';
+                    $write_data = $this->getRouterData($method, $this->path, $class->getName() . '@' . $methodName);
+
                     if (is_string($this->middleware) && $this->middleware) {
                         $write_data .= '->addMiddleware(middleware: \'' . $this->middleware . '\')';
                     } else if (is_array($this->middleware)) {
@@ -122,11 +118,8 @@ use QApi\App;
             }
         } else if ($this->paramPattern === []) {
             if ($classRoute) {
-                $write_data = 'Router::' . $this->methods . '(path: \'' . $classRoute->path . $this->path . '\', callback: \'' .
-                    $class->getName()
-                    . '@'
-                    . $methodName
-                    . '\')';
+                $write_data = $this->getRouterData($this->methods, $classRoute->path . ($attr ? $this->path : ''),
+                    $class->getName() . '@' . $methodName);
                 if (is_string($classRoute->middleware) && $classRoute->middleware) {
                     $write_data .= '->addMiddleware(middleware: \'' . $classRoute->middleware . '\',isClass: true)';
                 } else if (is_array($classRoute->middleware)) {
@@ -145,12 +138,9 @@ use QApi\App;
                     $write_data .= '->paramPattern(paramName: \'' . $key . '\', pattern: \'' . $pattern . '\')';
                 }
             } else {
-                $write_data = 'Router::' . $this->methods . '(path: \'' . $this->path . '\', callback: \'' .
-                    $class->getName()
+                $write_data = $this->getRouterData($this->methods, $this->path, $class->getName()
                     . '@'
-                    . $methodName
-                    . '\')';
-
+                    . $methodName);
                 if (is_string($this->middleware) && $this->middleware) {
                     $write_data .= '->addMiddleware(middleware: \'' . $this->middleware . '\')';
                 } elseif (is_array($this->middleware)) {
@@ -165,11 +155,10 @@ use QApi\App;
             }
         } else {
             if ($classRoute) {
-                $write_data = 'Router::' . $this->methods . '(path: \'' . $classRoute->path . $this->path . '\', callback: \'' .
+                $write_data = $this->getRouterData($this->methods, $classRoute->path . ($attr ? $this->path : ''),
                     $class->getName()
                     . '@'
-                    . $methodName
-                    . '\')';
+                    . $methodName);
                 foreach ($classRoute->paramPattern as $key => $pattern) {
                     $write_data .= '->paramPattern(paramName: \'' . $key . '\', pattern: \'' . $pattern . '\')';
                 }
@@ -191,11 +180,7 @@ use QApi\App;
                     }
                 }
             } else {
-                $write_data = 'Router::' . $this->methods . '(path: \'' . $this->path . '\', callback: \'' .
-                    $class->getName()
-                    . '@'
-                    . $methodName
-                    . '\')';
+                $write_data = $this->getRouterData($this->methods, $this->path, $class->getName() . '@' . $methodName);
                 if (is_string($this->middleware) && $this->middleware) {
                     $write_data .= '->addMiddleware(middleware: \'' . $this->middleware . '\')';
                 } else if (is_array($this->middleware)) {
@@ -213,6 +198,15 @@ use QApi\App;
             }
         }
         return null;
+    }
+
+    public function getRouterData(?string $method, ?string $path, string $callback): string
+    {
+        if ($path) {
+            return 'Router::' . $method . '(path: \'' . $path . '\', callback: \'' . $callback . '\')';
+        }
+
+        return 'Router::' . $method . '(callback: \'' . $callback . '\')';
     }
 
     /**

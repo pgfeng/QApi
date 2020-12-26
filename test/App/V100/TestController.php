@@ -5,32 +5,34 @@ namespace Test\App\V100;
 use QApi\App;
 use QApi\Attribute\Route;
 use QApi\Request;
+use QApi\Response;
 use QApi\Route\Methods;
+use Test\App\Middleware\TestMiddleware;
 
 /**
  * Class TestController
  */
-#[Route('/', paramPattern: [])]
+#[Route(middleware: TestMiddleware::class)]
 class TestController
 {
     /**
      * @param Request $request
+     * @param Response $response
+     * @return Response
      */
-    #[Route('test/{id}', [Methods::ALL], paramPattern: [
+    #[Route(path:'/test/{id}', methods:Methods::ALL, paramPattern: [
         'id' => '\d+'
     ])]
-    public function test(Request $request): void
+    public function testAction(Request $request,Response $response): Response
     {
-        echo $request->arguments;
-        echo $request->method;
-        echo 'V1.0.0';
+        $response->setData($request->arguments['id']);
+        return $response;
     }
 
     /**
      * 首页
      */
-//    #[Route('')]
-    public function indexAction(Request $request):void
+    public function indexAction(Request $request): void
     {
         echo $request->method;
         echo App::getVersion();

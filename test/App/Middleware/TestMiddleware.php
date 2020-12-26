@@ -18,16 +18,16 @@ class TestMiddleware extends MiddlewareHandler
         }
         $user = usersModel::model()->findByPk($request->arguments['id']);
         if (!$user) {
-            return $response->setMessage('用户不存在')->fail();
+            return $response->setMsg('用户不存在')->fail();
         }
         /**
          * @var Response $response
          */
         $response = $next($request, $response);
         if ($response->getStatus() === false) {
-            $response->setMessage('操作失败！');
+            $response->setMsg('操作失败！');
         } else {
-            $response->setMessage('操作成功！');
+            $response->setMsg('操作成功！');
         }
         return $response;
     }

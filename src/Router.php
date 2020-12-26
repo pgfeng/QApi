@@ -10,13 +10,13 @@ use QApi;
 /**
  * Class Router
  * @package QApi
- * @method static Router get(string $path, Callable|string $callback)
- * @method static Router post(string $path, Callable|string $callback)
- * @method static Router put(string $path, Callable|string $callback)
- * @method static Router delete(string $path, Callable|string $callback)
- * @method static Router options(string $path, Callable|string $callback)
- * @method static Router head(string $path, Callable|string $callback)
- * @method static Router all(string $path, Callable|string $callback)
+ * @method static Router get(string|null $path = null, Callable|string|null $callback = null)
+ * @method static Router post(string|null $path = null, Callable|string|null $callback = null)
+ * @method static Router put(string|null $path = null, Callable|string|null $callback = null)
+ * @method static Router delete(string|null $path = null, Callable|string|null $callback = null)
+ * @method static Router options(string|null $path = null, Callable|string|null $callback = null)
+ * @method static Router head(string|null $path = null, Callable|string|null $callback = null)
+ * @method static Router all(string|null $path = null, Callable|string|null $callback = null)
  */
 class Router
 {
@@ -121,7 +121,7 @@ class Router
                                 $classAttrbutes = $refClass->getAttributes(QApi\Attribute\Route::class);
                                 if ($classAttrbutes) {
                                     foreach ($classAttrbutes as $item) {
-                                        $item->newInstance()->builder($refClass, $path_class, $method->getName());
+                                        $item->newInstance()->builder($refClass, $path_class, $method->getName(),false);
                                     }
                                 }
                             } else {
@@ -139,11 +139,11 @@ class Router
     /**
      * Router constructor.
      * @param string $method
-     * @param string $path
+     * @param string|null $path
      * @param  $runData
      */
     public
-    function __construct(protected string $method, protected string $path, protected $runData)
+    function __construct(protected string $method, protected string|null $path, protected $runData)
     {
         self::$routeLists[$method][$path] = [
             'callback' => $runData,
@@ -160,7 +160,7 @@ class Router
     public
     static function __callStatic(string $method, array $params = []): static
     {
-        return new static($method, $params['path'], $params['callback']);
+        return new static($method, $params['path']??null, $params['callback']);
     }
 
     /**
@@ -177,6 +177,7 @@ class Router
 
     /**
      * @param string $middleware
+     * @param bool $isClass
      * @return $this
      */
     public function addMiddleware(string $middleware, bool $isClass = false): self
