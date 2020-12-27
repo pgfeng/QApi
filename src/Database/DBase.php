@@ -14,7 +14,6 @@ use QApi\Database\DB;
 use QApi\Logger;
 
 
-
 /**
  * 本类所有表名字段名为了符合大部分数据库的SQL规范字段未加转义符号
  * 构造数据库时请注意所使用的数据库的保留字
@@ -96,9 +95,9 @@ abstract class DBase
     /**
      * 获取完整字段
      * @param $field
-     * @return string
+     * @return string|array
      */
-    final public function _Field($field): string
+    final public function _Field($field): string|array
     {
         if (is_string($field)) {
             if (str_contains($field, '.')) {
@@ -428,6 +427,7 @@ abstract class DBase
      */
     final public function where($where)
     {
+        $hasOr = $hasAnd = 0;
         if (func_num_args() > 1) {
             $field = func_get_arg(0);
             if (is_string($field)) {
