@@ -63,6 +63,7 @@ class Mysqli extends DBase
     /**
      * @param $sql
      * @return array | Data
+     * @throws \ErrorException
      */
     public function &_query($sql): Data|array
     {
@@ -77,7 +78,8 @@ class Mysqli extends DBase
             unset($query);
             return $result;
         }
-        return $result;
+
+        throw new \ErrorException($this->getError());
     }
 
     /**
