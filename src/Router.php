@@ -315,7 +315,7 @@ class Router
                 $request = new Request($arguments);
                 $response = new Response();
                 $result = $callback($request, new Response());
-                Logger::info('Router -> ' . $callback);
+                Logger::info('Router -> ' . 'Callable()');
                 Logger::info('RouterOriginal -> ' . json_encode(self::$router));
                 if ($middleware) {
                     /**
