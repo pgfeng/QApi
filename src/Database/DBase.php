@@ -231,7 +231,7 @@ abstract class DBase
         $this->select($field_name);
         $this->limit(0, 1);
         $fetch = $this->query();
-        if (empty($fetch)) {
+        if (count($fetch)===0) {
             return FALSE;
         }
 
