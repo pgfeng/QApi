@@ -99,7 +99,7 @@ abstract class Authorize extends Model
     public function getToken(string $account, string $password): bool|string
     {
         $account_data = $this->getAccount($account);
-        if (!$account) {
+        if ($account===null) {
             return false;
         }
         $hash_password = $account_data[$this->password_field];
