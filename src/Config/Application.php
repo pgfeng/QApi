@@ -10,6 +10,7 @@ use Monolog\Handler\StreamHandler;
 use QApi\App;
 use QApi\Enumeration\RunMode;
 use QApi\Logger;
+use QApi\Response;
 
 /**
  * Class Application
@@ -45,11 +46,13 @@ class Application
     public function init(): void
     {
         Logger::init();
-        header('X-Powered-By: QApi');
-        if (is_string($this->allowOrigin) && $this->allowOrigin) {
-            header('Access-Control-Allow-Origin:' . $this->allowOrigin);
-        } else if (is_array($this->allowOrigin)) {
-            header('Access-Control-Allow-Origin:' . implode($this->allowOrigin));
+        if (PHP_SAPI !== 'cli') {
+            header('X-Powered-By: QApi');
+            if (is_string($this->allowOrigin) && $this->allowOrigin) {
+                header('Access-Control-Allow-Origin:' . $this->allowOrigin);
+            } else if (is_array($this->allowOrigin)) {
+                header('Access-Control-Allow-Origin:' . implode($this->allowOrigin));
+            }
         }
         if ($this->runMode === RunMode::DEVELOPMENT) {
             error_reporting(E_ALL);
