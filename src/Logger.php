@@ -18,10 +18,12 @@ class Logger
      */
     public static function init($name = 'QApi'): void
     {
-        self::$logger = new \Monolog\Logger('QApi');
-        self::$logger->setTimezone(App::$timezone);
-        foreach (Config::$app->logHandler as $item) {
-            self::$logger->pushHandler($item);
+        if (Logger::$logger === null) {
+            self::$logger = new \Monolog\Logger('QApi');
+            self::$logger->setTimezone(App::$timezone);
+            foreach (Config::$app->logHandler as $item) {
+                self::$logger->pushHandler($item);
+            }
         }
     }
 

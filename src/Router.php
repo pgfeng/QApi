@@ -48,20 +48,22 @@ class Router
         if (Config::app()->getRunMode() !== QApi\Enumeration\RunMode::PRODUCTION) {
             self::BuildRoute(Config::$app->getNameSpace());
         }
-        $versions = Config::versions();
-        foreach ($versions as $version) {
-            $base_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
-                . str_replace('.', '', $version->versionName) . DIRECTORY_SEPARATOR;
-            mkPathDir($base_path . 'builder.php');
-            $data = scandir($base_path);
-            foreach ($data as $file) {
-                if ($file !== '.' && $file !== '..') {
-                    include $base_path . $file;
+        if (self::$router !== []) {
+            $versions = Config::versions();
+            foreach ($versions as $version) {
+                $base_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
+                    . str_replace('.', '', $version->versionName) . DIRECTORY_SEPARATOR;
+                mkPathDir($base_path . 'builder.php');
+                $data = scandir($base_path);
+                foreach ($data as $file) {
+                    if ($file !== '.' && $file !== '..') {
+                        include $base_path . $file;
+                    }
                 }
-            }
-            unset($base_path);
-            if ($version->versionName === App::getVersion()) {
-                break;
+                unset($base_path);
+                if ($version->versionName === App::getVersion()) {
+                    break;
+                }
             }
         }
     }
