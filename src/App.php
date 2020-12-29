@@ -47,7 +47,7 @@ class App
     public static function run(?string $timezone = 'Asia/Shanghai', $routeDir = 'routes', $configDir = 'config', $runtimeDir =
     'runtime', $uploadDir = 'Upload', ?\Closure $getVersionFunction = null, array $allowMethods = [
         Methods::GET, Methods::POST, Methods::DELETE, Methods::HEAD, Methods::PUT
-    ], array $allowHeaders = ['*']): void
+    ], array $allowHeaders = ['*']): Response|string
     {
         if (!defined('PROJECT_PATH')) {
             define('PROJECT_PATH', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR);
@@ -55,66 +55,67 @@ class App
         date_default_timezone_set($timezone);
         self::$routeDir = trim($routeDir, '/');
         self::$runtimeDir = trim($runtimeDir, '/');
-        self::$uploadDir =  trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
+        self::$uploadDir = trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
         self::$app = Config::app();
         self::$timezone = new \DateTimeZone('Asia/Shanghai');
         self::$app->init();
-        header('Access-Control-Allow-Headers: ' . implode(',', $allowHeaders));
-        header('Access-Control-Allow-Methods: ' . implode(',', $allowMethods));
         self::$getVersionFunction = $getVersionFunction;
-        set_exception_handler(static function ($e) {
-            $msg = $e->getMessage();
-            $file = $e->getFile();
-            $line = $e->getLine();
-            $errorType = get_class($e);
-            error_log("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
-                $line, 0);
-            $msg = [
-                'code' => 500,
-                'version' => Config::version()->versionName,
-                'status' => false,
-                'msg' => $msg,
-                'error_msg' => $errorType . '：' . $msg . ' in ' . $file . ' on line ' . $line,
-                //                'debug_backtrace' => debug_backtrace(),
-            ];
-            echo new Data($msg);
-            exit();
-        });
-        set_error_handler(static function ($no, $msg, $file, $line) {
-            $errorType = match ($no) {
-                E_ERROR => 'E_ERROR',
-                E_WARNING => 'E_WARNING',
-                E_PARSE => 'E_PARSE',
-                E_NOTICE => 'E_NOTICE',
-                E_CORE_ERROR => 'E_CORE_ERROR',
-                E_CORE_WARNING => 'E_CORE_WARNING',
-                E_COMPILE_ERROR => 'E_COMPILE_ERROR',
-                E_COMPILE_WARNING => 'E_COMPILE_WARNING',
-                E_USER_ERROR => 'E_USER_ERROR',
-                E_USER_WARNING => 'E_USER_WARNING',
-                E_USER_NOTICE => 'E_USER_NOTICE',
-                E_STRICT => 'E_STRICT',
-                E_RECOVERABLE_ERROR => 'E_RECOVERABLE_ERROR',
-                E_DEPRECATED => 'E_DEPRECATED',
-                E_USER_DEPRECATED => 'E_USER_DEPRECATED',
-                E_ALL => 'E_ALL',
-            };
-            error_log("\x1b[" . CliColor::ERROR . ";1m {$errorType}：$msg\e[0m\n\t\t" . " in " . $file . ' on line ' . $line, 0);
-            $msg = [
-                'code' => 500,
-                'version' => Config::version()->versionName,
-                'status' => false,
-                'msg' => $msg,
-                'error_msg' => $errorType . '：' . $msg . ' in ' . $file . ' on line ' . $line,
-                //                'debug_backtrace' => debug_backtrace(),
-            ];
-            echo new Data($msg);
-            exit();
-        }, E_ALL);
-
+        if (PHP_SAPI !== 'cli') {
+            header('Access-Control-Allow-Headers: ' . implode(',', $allowHeaders));
+            header('Access-Control-Allow-Methods: ' . implode(',', $allowMethods));
+            set_exception_handler(static function ($e) {
+                $msg = $e->getMessage();
+                $file = $e->getFile();
+                $line = $e->getLine();
+                $errorType = get_class($e);
+                error_log("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
+                    $line, 0);
+                $msg = [
+                    'code' => 500,
+                    'version' => Config::version()->versionName,
+                    'status' => false,
+                    'msg' => $msg,
+                    'error_msg' => $errorType . '：' . $msg . ' in ' . $file . ' on line ' . $line,
+                    //                'debug_backtrace' => debug_backtrace(),
+                ];
+                echo new Data($msg);
+                exit();
+            });
+            set_error_handler(static function ($no, $msg, $file, $line) {
+                $errorType = match ($no) {
+                    E_ERROR => 'E_ERROR',
+                    E_WARNING => 'E_WARNING',
+                    E_PARSE => 'E_PARSE',
+                    E_NOTICE => 'E_NOTICE',
+                    E_CORE_ERROR => 'E_CORE_ERROR',
+                    E_CORE_WARNING => 'E_CORE_WARNING',
+                    E_COMPILE_ERROR => 'E_COMPILE_ERROR',
+                    E_COMPILE_WARNING => 'E_COMPILE_WARNING',
+                    E_USER_ERROR => 'E_USER_ERROR',
+                    E_USER_WARNING => 'E_USER_WARNING',
+                    E_USER_NOTICE => 'E_USER_NOTICE',
+                    E_STRICT => 'E_STRICT',
+                    E_RECOVERABLE_ERROR => 'E_RECOVERABLE_ERROR',
+                    E_DEPRECATED => 'E_DEPRECATED',
+                    E_USER_DEPRECATED => 'E_USER_DEPRECATED',
+                    E_ALL => 'E_ALL',
+                };
+                error_log("\x1b[" . CliColor::ERROR . ";1m {$errorType}：$msg\e[0m\n\t\t" . " in " . $file . ' on line ' . $line, 0);
+                $msg = [
+                    'code' => 500,
+                    'version' => Config::version()->versionName,
+                    'status' => false,
+                    'msg' => $msg,
+                    'error_msg' => $errorType . '：' . $msg . ' in ' . $file . ' on line ' . $line,
+                    //                'debug_backtrace' => debug_backtrace(),
+                ];
+                echo new Data($msg);
+                exit();
+            }, E_ALL);
+        }
         Router::init();
 
-        \QApi\Router::run();
+        return \QApi\Router::run();
     }
 
 }

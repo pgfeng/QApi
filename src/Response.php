@@ -11,7 +11,11 @@ class Response
     private mixed $data = [];
     private string $msg = 'Ok';
     private array $extra = [];
+    private array $headers = [];
 
+    /**
+     *
+     */
     /**
      * @param string $msg
      * @return Response
@@ -102,6 +106,23 @@ class Response
     public function getStatus(): bool
     {
         return $this->status;
+    }
+
+    public function __toString(): string
+    {
+
+        $sendData = [
+            'version' => Config::version()->versionName,
+            'code' => $this->statusCode,
+            'status' => $this->status,
+            'msg' => $this->msg,
+            'data' => $this->data,
+        ];
+        Logger::success("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Response Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
+        Logger::success($sendData);
+        Logger::success("↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑  Response Data ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ");
+
+        return json_encode(array_merge($sendData, $this->extra), JSON_THROW_ON_ERROR);
     }
 
     /**

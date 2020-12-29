@@ -121,7 +121,7 @@ class Router
                                 $classAttrbutes = $refClass->getAttributes(QApi\Attribute\Route::class);
                                 if ($classAttrbutes) {
                                     foreach ($classAttrbutes as $item) {
-                                        $item->newInstance()->builder($refClass, $path_class, $method->getName(),false);
+                                        $item->newInstance()->builder($refClass, $path_class, $method->getName(), false);
                                     }
                                 }
                             } else {
@@ -160,7 +160,7 @@ class Router
     public
     static function __callStatic(string $method, array $params = []): static
     {
-        return new static($method, $params['path']??null, $params['callback']);
+        return new static($method, $params['path'] ?? null, $params['callback']);
     }
 
     /**
@@ -317,31 +317,34 @@ class Router
                 $result = $callback($request, new Response());
                 Logger::info('Router -> ' . 'Callable()');
                 Logger::info('RouterOriginal -> ' . json_encode(self::$router));
+
                 if ($middleware) {
                     /**
                      * @var QApi\Http\MiddlewareHandler $middlewareObject
                      */
                     $middlewareObject = null;
-                    $middlewareNumber = array_key_last($middleware);
-                    foreach ($middleware as $index => $item) {
+                    foreach ($middleware as $item) {
                         $middlewareObject = new $item;
-                        if ($middlewareNumber === $index) {
-                            $result = $middlewareObject->handle($request, $response, $callback);
-                        } else {
-                            $result = $middlewareObject->handle($request, $response, function ($resquest, $response) {
-                                return $response;
-                            });
+                        $result = $middlewareObject->handle($request, $response, static function (Request $request,
+                                                                                                  Response $response)
+                        use ($callback) {
+                            return $callback($request, $response);
+                        });
+                        if ($result instanceof Response) {
+                            break;
                         }
                     }
                 } else {
                     $result = $callback($request, $response);
                 }
                 if ($result instanceof \QApi\Response) {
-                    $result->send();
-                } else {
-                    echo $result;
+                    return $result;
                 }
-                return null;
+                if ($result instanceof \Closure) {
+                    return $result($request, $response);
+                }
+
+                return $result;
             }
             $callback = str_replace('/', '\\', $callback);
             $segments = explode('@', $callback);
@@ -365,29 +368,26 @@ class Router
                  * @var QApi\Http\MiddlewareHandler $middlewareObject
                  */
                 $middlewareObject = null;
-
-                $middlewareNumber = array_key_last($middleware);
-                foreach ($middleware as $index => $item) {
+                foreach ($middleware as $item) {
                     $middlewareObject = new $item;
-                    if ($middlewareNumber === $index) {
-                        $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use ($controller, $method) {
-                            return $controller->$method($request, $response);
-                        });
-                    } else {
-                        $result = $middlewareObject->handle($request, $response, function ($request, $response) {
-                            return $response;
-                        });
+                    $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use ($controller, $method) {
+                        return $controller->$method($request, $response);
+                    });
+                    if ($result instanceof Response) {
+                        break;
                     }
                 }
             } else {
                 $result = $controller->$method(new Request($arguments), $response);
             }
             if ($result instanceof \QApi\Response) {
-                $result->send();
-            } else {
-                echo $result;
+                return $result;
             }
-            return null;
+            if ($result instanceof \Closure) {
+                return $result($request, $response);
+            }
+
+            return $result;
         }
         $versions = Config::versions();
         $versions = array_reverse($versions);
@@ -416,20 +416,13 @@ class Router
                          * @var QApi\Http\MiddlewareHandler $middlewareObject
                          */
                         $middlewareObject = null;
-                        $middlewareNumber = array_key_last(self::$router['middleware']);
-                        foreach (self::$router['middleware'] as $index => $item) {
+                        foreach (self::$router['middleware'] as $item) {
                             $middlewareObject = new $item;
-                            if ($middlewareNumber === $index) {
-                                $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use (
-                                    $controller,
-                                    $callback
-                                ) {
-                                    return $controller->{$callback['method']}($request, $response);
-                                });
-                            } else {
-                                $result = $middlewareObject->handle($request, $response, function ($resquest, $response) {
-                                    return $response;
-                                });
+                            $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use ($controller, $callback) {
+                                return $controller->$callback['method']($request, $response);
+                            });
+                            if ($result instanceof Response) {
+                                break;
                             }
                         }
 
@@ -437,10 +430,13 @@ class Router
                         $result = $controller->{$callback['method']}($request, $response);
                     }
                     if ($result instanceof \QApi\Response) {
-                        return $result->send();
+                        return $result;
                     }
-                    echo $result;
-                    return null;
+                    if ($result instanceof \Closure) {
+                        return $result($request, $response);
+                    }
+
+                    return $result;
                 }
 
                 throw new \RuntimeException($controllerName . '@' . $callback['method'] . ' Not Found!');
@@ -449,6 +445,4 @@ class Router
         }
         throw new \RuntimeException($callback['callback'] . 'Route Not Found!');
     }
-
-
 }

@@ -9,5 +9,5 @@ use QApi\Response;
 
 abstract class MiddlewareHandler
 {
-    abstract public function handle(Request $request, Response $response, \Closure $next): Response;
+    abstract public function handle(Request $request, Response $response, \Closure $next): Response|\Closure;
 }
