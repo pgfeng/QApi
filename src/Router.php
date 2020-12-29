@@ -419,7 +419,7 @@ class Router
                         foreach (self::$router['middleware'] as $item) {
                             $middlewareObject = new $item;
                             $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use ($controller, $callback) {
-                                return $controller->$callback['method']($request, $response);
+                                return $controller->{$callback['method']}($request, $response);
                             });
                             if ($result instanceof Response) {
                                 break;
