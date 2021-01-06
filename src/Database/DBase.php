@@ -162,7 +162,7 @@ abstract class DBase
     {
         $field = $this->_Field($field);
         $sum = $this->getOne('SUM(' . $field . ')');
-        return $sum ? $sum['SUM(' . $field . ')'] : 0;
+        return $sum ? (int)$sum['SUM(' . $field . ')'] : 0;
     }
 
     /**
