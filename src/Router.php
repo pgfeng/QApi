@@ -48,7 +48,7 @@ class Router
         if (Config::app()->getRunMode() !== QApi\Enumeration\RunMode::PRODUCTION) {
             self::BuildRoute(Config::$app->getNameSpace());
         }
-        if (self::$router !== []) {
+        if (empty(self::$router)) {
             $versions = Config::versions();
             foreach ($versions as $version) {
                 $base_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
