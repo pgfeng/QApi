@@ -162,7 +162,7 @@ class Router
     public
     static function __callStatic(string $method, array $params = []): static
     {
-        return new static($method, $params['path'] ?? null, $params['callback']);
+        return new static(strtoupper($method), $params['path'] ?? null, $params['callback']);
     }
 
     /**
