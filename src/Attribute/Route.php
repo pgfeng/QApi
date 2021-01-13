@@ -72,7 +72,7 @@ use QApi\App;
                     }
                 } else if ($classRoute) {
 
-                    $write_data = $this->getRouterData($method, $classRoute->path . ($attr?$this->path:''),
+                    $write_data = $this->getRouterData($method, $classRoute->path . ($attr ? $this->path : ''),
                         $class->getName() .
                         '@' . $methodName);
                     if (is_string($classRoute->middleware) && $classRoute->middleware) {
@@ -113,7 +113,7 @@ use QApi\App;
                 }
                 $write_data .= ';';
                 if (!str_contains($data, $write_data)) {
-                    file_put_contents($save_path, "\n" . $write_data, FILE_APPEND);
+                    file_put_contents($save_path, "\n" . $write_data, FILE_APPEND | LOCK_EX);
                 }
             }
         } else if ($this->paramPattern === []) {
@@ -151,7 +151,7 @@ use QApi\App;
             }
             $write_data .= ';';
             if (!str_contains($data, $write_data)) {
-                file_put_contents($save_path, "\n" . $write_data, FILE_APPEND);
+                file_put_contents($save_path, "\n" . $write_data, FILE_APPEND | LOCK_EX);
             }
         } else {
             if ($classRoute) {
@@ -194,7 +194,7 @@ use QApi\App;
             }
             $write_data .= ';';
             if (!str_contains($data, $write_data)) {
-                file_put_contents($save_path, "\n" . $write_data, FILE_APPEND);
+                file_put_contents($save_path, "\n" . $write_data, FILE_APPEND | LOCK_EX);
             }
         }
         return null;
