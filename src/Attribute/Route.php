@@ -1,13 +1,24 @@
-<?php
+<?php /** @noinspection ALL */
 
 
 namespace QApi\Attribute;
 
 
+use Attribute;
 use QApi\App;
 
-#[\Attribute(\Attribute::TARGET_METHOD | \Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)] class Route
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)] class Route
 {
+
+    /**
+     * @param $path
+     * @return bool|string
+     */
+    public function getData($path): bool|string
+    {
+
+        return file_get_contents($path);
+    }
 
     /**
      * 生成路由规则
@@ -26,7 +37,6 @@ use QApi\App;
             mkPathDir($save_path);
             file_put_contents($save_path, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '../Route/buildTemplate.php'), LOCK_EX);
         }
-        $data = file_get_contents($save_path);
         $classRoute = $class->getAttributes(__CLASS__);
         if ($classRoute) {
             $classRoute = $classRoute[0]->newInstance();
@@ -112,7 +122,7 @@ use QApi\App;
                     }
                 }
                 $write_data .= ';';
-                if (!str_contains($data, $write_data)) {
+                if (!str_contains($this->getData($save_path), $write_data)) {
                     file_put_contents($save_path, "\n" . $write_data, FILE_APPEND | LOCK_EX);
                 }
             }
@@ -150,7 +160,7 @@ use QApi\App;
                 }
             }
             $write_data .= ';';
-            if (!str_contains($data, $write_data)) {
+            if (!str_contains($this->getData($save_path), $write_data)) {
                 file_put_contents($save_path, "\n" . $write_data, FILE_APPEND | LOCK_EX);
             }
         } else {
@@ -193,7 +203,7 @@ use QApi\App;
                 }
             }
             $write_data .= ';';
-            if (!str_contains($data, $write_data)) {
+            if (!str_contains($this->getData($save_path), $write_data)) {
                 file_put_contents($save_path, "\n" . $write_data, FILE_APPEND | LOCK_EX);
             }
         }
