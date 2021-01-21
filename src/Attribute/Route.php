@@ -31,8 +31,10 @@ use QApi\App;
     public function builder(\ReflectionClass $class, string $controllerName, string $methodName, bool $attr = true):
     mixed
     {
+        $tmpControllerName = trim(str_replace(App::$app->getNameSpace(),'',$controllerName),'\\');
+        $versionDir = substr($tmpControllerName,0,stripos($tmpControllerName,'\\'));
         $save_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
-            . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builder.php';
+            . $versionDir . DIRECTORY_SEPARATOR . 'builder.php';
         if (!file_exists($save_path)) {
             mkPathDir($save_path);
             file_put_contents($save_path, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '../Route/buildTemplate.php'), LOCK_EX);
