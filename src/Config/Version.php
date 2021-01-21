@@ -9,7 +9,7 @@ class Version
     public string $versionDir;
 
     public function __construct(public float $version, public string $versionName, public string $versionDescription
-    = '', public array $versionOtherData = [])
+    = '', public array $versionOtherData = [], public bool $force = false)
     {
         $this->versionDir = str_replace('.', '', $this->versionName);
     }
@@ -26,13 +26,22 @@ class Version
         $versions = Config::versions();
 
         /**
-         * @var Version $lastVersion
+         * @var Version $v
+         * @var Version|bool $upgradeVersion
          */
-        $lastVersion = end($versions);
-        if ($lastVersion->version > $version) {
-            return $lastVersion;
+        $upgradeVersion = false;
+        foreach ($versions as $v) {
+            if ($v->version > $version) {
+                if (!$upgradeVersion) {
+                    $upgradeVersion = $v;
+                } else if ($upgradeVersion->force) {
+                    $upgradeVersion = $v;
+                    $upgradeVersion->force = true;
+                } else {
+                    $upgradeVersion = $v;
+                }
+            }
         }
-
-        return false;
+        return $upgradeVersion;
     }
 }
