@@ -22,15 +22,23 @@ $http->on("request", function ($request, $response) {
     foreach ($request->header as $key => $item) {
         $_SERVER['HTTP_' . strtoupper($key)] = $item;
     }
-    foreach ($request->get as $key => $item) {
-        $_GET[$key] = $item;
+    if ($request->get) {
+        foreach ($request->get as $key => $item) {
+            $_GET[$key] = $item;
+        }
     }
-    foreach ($request->post as $key => $item) {
-        $_POST[$key] = $item;
+    if ($request->post) {
+        foreach ($request->post as $key => $item) {
+            $_POST[$key] = $item;
+        }
     }
-    foreach ($request->files as $key => $item) {
-        $_FILES[$key] = $item;
+
+    if ($request->files) {
+        foreach ($request->files as $key => $item) {
+            $_FILES[$key] = $item;
+        }
     }
+    \QApi\Config::flush();
     $response->end(\QApi\App::run());
 });
 

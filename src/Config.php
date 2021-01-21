@@ -135,6 +135,14 @@ class Config
         throw new \ErrorException('version ' . $versionNumber . ' not config!', 0, 1,
             PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . Config::app()->getRunMode()
             . DIRECTORY_SEPARATOR . 'version.php');
-        //        return self::$version;
+    }
+
+    /**
+     *
+     */
+    public static function flush(): void
+    {
+        self::$app = null;
+        self::$version = null;
     }
 }

@@ -3,7 +3,7 @@
   "description": "Api 快速开发。",
   "license": "MIT",
   "scripts": {
-    "dev": "@php -S 0.0.0.0:8889 -t test src/Route/router.php"
+    "dev": "@php -S 0.0.0.0:8899 -t test src/Route/router.php"
   },
   "authors": [
     {
