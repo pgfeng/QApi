@@ -1,0 +1,26 @@
+#!/usr/bin/env php
+<?php
+
+use QApi\Enumeration\CliColor;
+
+require dirname(__DIR__) . "/vendor/autoload.php";
+$http = new Swoole\Http\Server("127.0.0.1", 9501);
+
+$http->on("start", function ($server) {
+    echo "Swoole http server is started at http://127.0.0.1:9501\n";
+});
+
+$http->on("request", function ($request, $response) {
+    $_SERVER = $request->server;
+    $_SERVER['DOCUMENT_ROOT'] = __DIR__;
+    foreach ($request->server as $key => $item) {
+        $_SERVER[strtoupper($key)] = $item;
+    }
+    $_SERVER['SERVER_NAME'] = $request->server['remote_addr'];
+    foreach ($request->header as $key => $item) {
+        $_SERVER['HTTP_' . strtoupper($key)] = $item;
+    }
+    $response->end(\QApi\App::run());
+});
+
+$http->start();

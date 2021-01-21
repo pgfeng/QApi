@@ -18,7 +18,7 @@ class Logger
      */
     public static function init($name = 'QApi'): void
     {
-        if (Logger::$logger === null) {
+        if (self::$logger === null) {
             self::$logger = new \Monolog\Logger('QApi');
             self::$logger->setTimezone(App::$timezone);
             foreach (Config::$app->logHandler as $item) {
@@ -38,7 +38,7 @@ class Logger
         if (Config::$app->getRunMode() !== RunMode::PRODUCTION) {
             error_log(self::getData($message, CliColor::INFO));
         }
-        self::$logger->info($message);
+        self::$logger->info(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
     }
 
     /**
@@ -51,7 +51,7 @@ class Logger
         }
         if (Config::$app && Config::$app->getRunMode() !== RunMode::PRODUCTION) {
             error_log(self::getData(' SQL => ' . $message, CliColor::WARNING));
-            self::$logger->warning(' SQL => ' . $message);
+            self::$logger->info(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
     }
 
@@ -68,7 +68,7 @@ class Logger
 
             error_log(self::getData($message, CliColor::WARNING));
         }
-        self::$logger->warning($message);
+        self::$logger->warning(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
     }
 
     /**
@@ -83,7 +83,7 @@ class Logger
             error_log(self::getData($message, CliColor::SUCCESS));
         }
 
-        self::$logger->alert($message);
+        self::$logger->alert(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
 
     }
 
@@ -100,8 +100,7 @@ class Logger
         if (Config::$app->getRunMode() !== RunMode::PRODUCTION) {
             error_log(self::getData($message, CliColor::ERROR));
         }
-
-        self::$logger->error($message);
+        self::$logger->error(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
     }
 
     /**
@@ -120,7 +119,7 @@ class Logger
             error_log(self::getData($message, CliColor::ERROR));
         }
 
-        self::$logger->error($message);
+        self::$logger->error(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
 
     }
 

@@ -12,24 +12,11 @@ use QApi\Database\Mysqli;
 use QApi\Database\PdoMysql;
 use QApi\Database\PdoSqlite;
 use QApi\Database\PdoSqlServ;
-use QApi\Database\PdoSqlServe;
 use QApi\Enumeration\DatabaseDriver;
 use QApi\Model\filesModel;
 
 
 /**
- * Model基类
- * 所有模型必须继承此类
- * 你也可以仅仅使用此类 或者你牛掰也可以不用 O(∩_∩)O哈！
- * 为了完美的IDE提示，建议在没有模型类的时候，使用new tableModel()实例化模型
- * 创建时间：2014-08-10 07:52 PGF
- * 修改时间：2015-06-18 10:31 PGF            function __Clone(){}
- * 修改时间：2015-04-13 13:45 PGF            function Save(){}
- * 修改时间: 2016-08-01 08:42 PGF            Update PHPDOC
- * 修改时间: 2017-05-11 22:23 PGF            添加了直接主键操作的方法
- * @package Model
- *
- *
  * @method $this select(string|array $field = '')
  * @method bool|int max(string $field = '')
  * @method bool|int min(string $field = '')
@@ -54,8 +41,8 @@ use QApi\Model\filesModel;
  * @method bool|int delete(string $table = '', string $where = '', string $orderBy = '', string $limit = '')
  * @method $this group(string $group = '')
  * @method Data|bool|array query(string $sql = '')
- * @method Data|bool getOne(string $field = '*')
- * @method Data|bool find(string $field = '*')
+ * @method Data|null getOne(string $field = '*')
+ * @method Data|null find(string $field = '*')
  * @method Data|null|array findAll(string $field = '*')
  * @method string getField(string $column)
  * @method string setField(string $column, string $value)
