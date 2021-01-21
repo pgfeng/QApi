@@ -16,9 +16,20 @@ $http->on("request", function ($request, $response) {
     foreach ($request->server as $key => $item) {
         $_SERVER[strtoupper($key)] = $item;
     }
+    $response->header('Access-Control-Allow-Origin', '*', true);
+    $response->header('Access-Control-Allow-Headers', '*', true);
     $_SERVER['SERVER_NAME'] = $request->server['remote_addr'];
     foreach ($request->header as $key => $item) {
         $_SERVER['HTTP_' . strtoupper($key)] = $item;
+    }
+    foreach ($request->get as $key => $item) {
+        $_GET[$key] = $item;
+    }
+    foreach ($request->post as $key => $item) {
+        $_POST[$key] = $item;
+    }
+    foreach ($request->files as $key => $item) {
+        $_FILES[$key] = $item;
     }
     $response->end(\QApi\App::run());
 });
