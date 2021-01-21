@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-use QApi\Enumeration\CliColor;
+use QApi\Config;
 
 require dirname(__DIR__) . "/vendor/autoload.php";
 $http = new Swoole\Http\Server("127.0.0.1", 9501);
@@ -38,7 +38,7 @@ $http->on("request", function ($request, $response) {
             $_FILES[$key] = $item;
         }
     }
-    \QApi\Config::flush();
+    Config::flush();
     $response->end(\QApi\App::run());
 });
 
