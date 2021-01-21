@@ -440,11 +440,11 @@ class Router
 
                     return $result;
                 }
-
-                throw new \RuntimeException($controllerName . '@' . $callback['method'] . ' Not Found!');
             }
-            throw new \RuntimeException($controllerName . ' Not Found!');
         }
-        throw new \RuntimeException($callback['callback'] . 'Route Not Found!');
+        throw new \RuntimeException($callback['nameSpace'] . '\\' . $nowVersion->versionDir . '\\' . $callback['controller']
+            . 'Controller@'
+            . $callback['method']
+            . ' Not Found.');
     }
 }
