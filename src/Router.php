@@ -412,7 +412,7 @@ class Router
                     Logger::info('RouterOriginal -> ' . json_encode(self::$router));
                     $arguments = new Data($params);
                     $request = new Request($arguments);
-                    $response = new Response();
+                    $response = new Response($version->versionName);
                     if (self::$router['middleware']) {
                         /**
                          * @var QApi\Http\MiddlewareHandler $middlewareObject

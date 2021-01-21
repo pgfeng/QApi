@@ -14,6 +14,14 @@ class Response
     private array $headers = [];
 
     /**
+     * Response constructor.
+     * @param string|null $version
+     */
+    public function __construct(private ?string $version = null)
+    {
+    }
+
+    /**
      *
      */
     /**
@@ -112,7 +120,7 @@ class Response
     {
 
         $sendData = [
-            'version' => Config::version()->versionName,
+            'version' => $this->version ?? Config::version()->versionName,
             'code' => $this->statusCode,
             'status' => $this->status,
             'msg' => $this->msg,
