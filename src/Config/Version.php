@@ -15,18 +15,21 @@ class Version
     }
 
     /**
-     * @param float $version
+     * @param float|null $version
      * @return Version|false
      */
-    public function checkVersion(float $version): Version|false
+    public function checkVersion(float $version = null): Version|false
     {
+        if (!$version) {
+            $version = $this->version;
+        }
         $versions = Config::versions();
 
         /**
          * @var Version $lastVersion
          */
         $lastVersion = end($versions);
-        if ($version->$version > $version) {
+        if ($lastVersion->version > $version) {
             return $lastVersion;
         }
 
