@@ -81,18 +81,6 @@ abstract class DBase
     }
 
     /**
-     * 获取最后自增ID
-     *
-     * @return int
-     */
-    final public function lastInsertId(): int
-    {
-        $query = $this->query('SELECT LAST_INSERT_ID()');
-
-        return (int)$query[0]['LAST_INSERT_ID()'];
-    }
-
-    /**
      * 获取完整字段
      * @param $field
      * @return string|array
@@ -143,11 +131,10 @@ abstract class DBase
      *
      * @return int    获取到的数量
      */
-    final public function Count($field = '*'): int
+    public function Count($field = '*'): int
     {
         $field = $this->_Field($field);
         $count = $this->getOne('count(' . $field . ')');
-
         return $count ? $count['count(' . $field . ')'] : 0;
     }
 
@@ -175,7 +162,7 @@ abstract class DBase
     final public function getOne($field = '*'): null|Data
     {
         $this->select($field);
-        $this->limit(0, 1);
+        $this->limit(1);
         $fetch = $this->query();
         if (count($fetch) < 1) {
             return null;
@@ -231,7 +218,7 @@ abstract class DBase
         $this->select($field_name);
         $this->limit(0, 1);
         $fetch = $this->query();
-        if (count($fetch)===0) {
+        if (count($fetch) === 0) {
             return FALSE;
         }
 
@@ -850,7 +837,7 @@ abstract class DBase
      * @return string|bool or false
      */
 
-    final public function compile(): string|bool
+    public function compile(): string|bool
     {
         $this->section['table'] = $this->get_table();
         if ($this->section['handle'] === 'insert') {
@@ -1251,6 +1238,12 @@ abstract class DBase
     abstract public function getError(): string;            //返回上一个错误信息
 
     abstract public function real_escape_string($string): string; //特殊字符转义
+
+    /**
+     * 获取上次插入数据
+     * @return int|null
+     */
+    abstract public function lastInsertId(): int|null;
 
     /**
      * @param $sql

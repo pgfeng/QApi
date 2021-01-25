@@ -37,6 +37,18 @@ class PdoMysql extends DBase
     }
 
     /**
+     * 获取最后自增ID
+     *
+     * @return int|null
+     */
+    final public function lastInsertId(): int|null
+    {
+        $query = $this->query('SELECT LAST_INSERT_ID()');
+
+        return $query[0]['LAST_INSERT_ID()'];
+    }
+
+    /**
      * 返回错误信息
      *
      * @return string

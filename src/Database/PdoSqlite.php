@@ -123,4 +123,16 @@ class PdoSqlite extends DBase
     public function close(): void
     {
     }
+
+    /**
+     * 获取最后自增ID
+     *
+     * @return int|null
+     */
+    final public function lastInsertId(): int|null
+    {
+        $query = $this->query('SELECT last_insert_rowid()');
+
+        return $query[0]['last_insert_rowid()'];
+    }
 }

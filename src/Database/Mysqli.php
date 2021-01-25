@@ -122,4 +122,16 @@ class Mysqli extends DBase
     {
         return $this->mysqli->autocommit(FALSE);
     }
+
+    /**
+     * 获取最后自增ID
+     *
+     * @return int|null
+     */
+    final public function lastInsertId(): int|null
+    {
+        $query = $this->query('SELECT LAST_INSERT_ID()');
+
+        return $query[0]['LAST_INSERT_ID()'];
+    }
 }

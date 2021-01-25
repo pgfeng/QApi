@@ -77,7 +77,7 @@ class App
             $response = new Response(Config::version()->versionName);
             $response->setCode(500)->setExtra([
                 'status' => false,
-                'msg' => $msg,
+                'msg' => $errorType . '：' . $msg,
                 'error_msg' => $errorType . '：' . $msg . ' in ' . $file . ' on line ' . $line,
                 'data' => null,
             ]);
@@ -92,7 +92,7 @@ class App
             $response = new Response(Config::version()->versionName);
             $response->setCode(500)->setExtra([
                 'status' => false,
-                'msg' => $msg,
+                'msg' => $errorType . '：' . $msg,
                 'error_msg' => $errorType . '：' . $msg . ' in ' . $file . ' on line ' . $line,
                 'data' => null,
             ]);
