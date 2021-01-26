@@ -74,7 +74,11 @@ class App
             $errorType = get_class($e);
             Logger::error("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
                 $line);
-            $response = new Response(Config::version()->versionName);
+            try {
+                $response = new Response(Config::version()->versionName);
+            } catch (\ErrorException $e){
+                $response = new Response('NotFound');
+            }
             $response->setCode(500)->setExtra([
                 'status' => false,
                 'msg' => $errorType . '：' . $msg,
@@ -89,7 +93,11 @@ class App
             $errorType = get_class($e);
             Logger::error("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
                 $line);
-            $response = new Response(Config::version()->versionName);
+            try {
+                $response = new Response(Config::version()->versionName);
+            } catch (\ErrorException $e){
+                $response = new Response('NotFound');
+            }
             $response->setCode(500)->setExtra([
                 'status' => false,
                 'msg' => $errorType . '：' . $msg,
