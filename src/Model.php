@@ -226,8 +226,8 @@ class Model
         ],
         #昵称 常用正则 中文字母数字下划线
         'nickerName' => [
-            'rule' => '/^[\x80-\xff_a-zA-Z0-9]{1,16}$/',
-            'msg' => '%ColumnName%只允许中英文下划线1-16个字符',
+            'rule' => '/^[\x80-\xff_a-zA-Z0-9]{1,20}$/',
+            'msg' => '%ColumnName%只允许中英文下划线1-20个字符',
         ],
         #身份证
         'idCard' => [
