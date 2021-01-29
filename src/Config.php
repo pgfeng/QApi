@@ -97,8 +97,10 @@ class Config
     {
         if (!is_cli()) {
             $runMode = Config::app()->getRunMode();
-        } else {
+        } else if (defined('DEV_MODE') && DEV_MODE === true) {
             $runMode = RunMode::DEVELOPMENT;
+        } else {
+            $runMode = RunMode::PRODUCTION;
         }
         if (!self::$databases) {
             $versionConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
