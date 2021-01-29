@@ -21,8 +21,10 @@ class Logger
         if (self::$logger === null) {
             self::$logger = new \Monolog\Logger('QApi');
             self::$logger->setTimezone(App::$timezone);
-            foreach (Config::$app->logHandler as $item) {
-                self::$logger->pushHandler($item);
+            if (Config::$app){
+                foreach (Config::$app->logHandler as $item) {
+                    self::$logger->pushHandler($item);
+                }
             }
         }
     }
@@ -92,15 +94,15 @@ class Logger
      */
     public static function error(array|string $message): void
     {
-
+        self::init();
         if (is_array($message)) {
             $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
 
-        if (Config::$app->getRunMode() !== RunMode::PRODUCTION) {
+        if (Config::$app?->getRunMode() !== RunMode::PRODUCTION) {
             error_log(self::getData($message, CliColor::ERROR));
         }
-        self::$logger->error(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+        self::$logger?->error(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
     }
 
     /**

@@ -53,12 +53,21 @@ class App
             if (!defined('PROJECT_PATH')) {
                 define('PROJECT_PATH', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR);
             }
+            self::$timezone = new \DateTimeZone($timezone);
             date_default_timezone_set($timezone);
             self::$routeDir = trim($routeDir, '/');
             self::$runtimeDir = trim($runtimeDir, '/');
             self::$uploadDir = trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
-            self::$app = Config::app();
-            self::$timezone = new \DateTimeZone('Asia/Shanghai');
+            try {
+                self::$app = Config::app();
+            }catch (\ErrorException $e){
+                exit(json_encode([
+                    'status' => false,
+                    'code' => 500,
+                    'msg' => get_class($e) . '：' . $e->getMessage(),
+                    'data' => null,
+                ], JSON_THROW_ON_ERROR));
+            }
             self::$app->init();
             self::$getVersionFunction = $getVersionFunction;
             if (PHP_SAPI !== 'cli') {
