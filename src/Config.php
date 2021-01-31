@@ -120,7 +120,7 @@ class Config
     }
 
     /**
-     *
+     * @return Version
      */
     public static function version(): Version
     {
@@ -129,14 +129,16 @@ class Config
         }
         $versions = self::versions();
         $versionNumber = App::getVersion();
+        /**
+         * @var Version $version
+         */
         foreach ($versions as $version) {
             if ($versionNumber === $version->versionName) {
                 return self::$version = $version;
             }
         }
-        throw new \ErrorException('version ' . $versionNumber . ' not config!', 0, 1,
-            PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . Config::app()->getRunMode()
-            . DIRECTORY_SEPARATOR . 'version.php');
+        Logger::error('version ' . $versionNumber . ' not config!');
+        return $version;
     }
 
     /**
