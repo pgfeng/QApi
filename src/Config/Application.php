@@ -51,7 +51,11 @@ class Application
             if (is_string($this->allowOrigin) && $this->allowOrigin) {
                 header('Access-Control-Allow-Origin:' . $this->allowOrigin);
             } else if (is_array($this->allowOrigin)) {
-                header('Access-Control-Allow-Origin:' . implode($this->allowOrigin));
+                if (in_array('*', $this->allowOrigin, true)) {
+                    header('Access-Control-Allow-Origin: * ');
+                } else if (in_array($_SERVER['HTTP_HOST'], $this->allowOrigin, true)) {
+                    header('Access-Control-Allow-Origin: ' . $_SERVER['HTTP_HOST']);
+                }
             }
         }
         if ($this->runMode === RunMode::DEVELOPMENT) {
