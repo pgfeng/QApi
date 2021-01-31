@@ -46,7 +46,7 @@ class Application
     public function init(): void
     {
         Logger::init();
-        if (PHP_SAPI !== 'cli') {
+        if (!is_cli()) {
             header('X-Powered-By: QApi');
             if (is_string($this->allowOrigin) && $this->allowOrigin) {
                 header('Access-Control-Allow-Origin:' . $this->allowOrigin);
