@@ -53,8 +53,8 @@ class Logger
         }
         if (Config::$app && Config::$app->getRunMode() !== RunMode::PRODUCTION) {
             error_log(self::getData(' SQL => ' . $message, CliColor::WARNING));
-            self::$logger->info(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
+        self::$logger->info(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
     }
 
 
