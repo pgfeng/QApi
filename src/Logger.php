@@ -21,7 +21,7 @@ class Logger
         if (self::$logger === null) {
             self::$logger = new \Monolog\Logger('QApi');
             self::$logger->setTimezone(App::$timezone);
-            if (Config::$app){
+            if (Config::$app) {
                 foreach (Config::$app->logHandler as $item) {
                     self::$logger->pushHandler($item);
                 }
@@ -54,7 +54,7 @@ class Logger
         if (Config::$app && Config::$app->getRunMode() !== RunMode::PRODUCTION) {
             error_log(self::getData(' SQL => ' . $message, CliColor::WARNING));
         }
-        self::$logger->info(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+        self::$logger->info(' SQL => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message));
     }
 
 
