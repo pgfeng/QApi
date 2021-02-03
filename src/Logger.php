@@ -54,7 +54,10 @@ class Logger
         if (Config::$app && Config::$app->getRunMode() !== RunMode::PRODUCTION) {
             error_log(self::getData(' SQL => ' . $message, CliColor::WARNING));
         }
-        self::$logger->info(' SQL => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+        if (!is_cli()){
+
+            self::$logger->info(' SQL => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+        }
     }
 
 
