@@ -148,7 +148,7 @@ class Config
      * @param $config_key
      * @return mixed
      */
-    public static function other($config_name, $config_key = null): mixed
+    public static function other(string $config_name, string $config_key = null): mixed
     {
         if (!is_cli()) {
             $runMode = self::app()->getRunMode();
