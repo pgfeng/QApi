@@ -17,6 +17,7 @@ class Config
     public static ?Version $version = null;
     public static ?array $versions = [];
     public static ?array $databases = [];
+    public static ?array $other = [];
 
     /**
      * @return Application
@@ -142,11 +143,44 @@ class Config
     }
 
     /**
-     *
+     * 获取其他配置
+     * @param $config_name
+     * @param $config_key
+     * @return mixed
+     */
+    public static function other($config_name, $config_key = null): mixed
+    {
+        if (!is_cli()) {
+            $runMode = self::app()->getRunMode();
+        } else if (defined('DEV_MODE') && DEV_MODE === true) {
+            $runMode = RunMode::DEVELOPMENT;
+        } else {
+            $runMode = RunMode::PRODUCTION;
+        }
+        if (!isset(self::$other[$config_name])) {
+            $otherConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
+                . DIRECTORY_SEPARATOR . $config_name . '.php';
+            if (file_exists($otherConfigPath)) {
+                mkPathDir($otherConfigPath);
+                file_put_contents($otherConfigPath, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Config'
+                    . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'config.php'), LOCK_EX);
+            }
+            self::$other[$config_name] = include $otherConfigPath;
+        }
+        if ($config_key) {
+            return self::$other[$config_name][$config_key] ?? null;
+        }
+        return self::$other[$config_name];
+    }
+
+    /**
+     * 清空
      */
     public static function flush(): void
     {
         self::$app = null;
         self::$version = null;
+        self::$databases = [];
+        self::$other = [];
     }
 }
