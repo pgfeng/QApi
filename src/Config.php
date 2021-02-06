@@ -160,10 +160,10 @@ class Config
         if (!isset(self::$other[$config_name])) {
             $otherConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
                 . DIRECTORY_SEPARATOR . $config_name . '.php';
-            if (file_exists($otherConfigPath)) {
+            if (!file_exists($otherConfigPath)) {
                 mkPathDir($otherConfigPath);
                 file_put_contents($otherConfigPath, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Config'
-                    . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR .$config_name. '.php'), LOCK_EX);
+                    . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'config.php'), LOCK_EX);
             }
             self::$other[$config_name] = include $otherConfigPath;
         }
