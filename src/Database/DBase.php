@@ -89,7 +89,7 @@ abstract class DBase
     {
         if (is_string($field)) {
             if (str_contains($field, '.')) {
-                $field = $this->config ['table_pre'] . $field;
+                $field = $this->config->tablePrefix . $field;
             }
         } else if (is_array($field)) {
             foreach ($field as &$item) {
@@ -292,9 +292,9 @@ abstract class DBase
     final public function setTable($table, $forget = 1)
     {
         if ($forget === 0) {
-            $this->table = $this->config ['table_pre'] . $table;
+            $this->table = $this->config->tablePrefix . $table;
         }
-        $this->_set($this->config ['table_pre'] . $table, 'table');
+        $this->_set($this->config->tablePrefix . $table, 'table');
         $this->compile();
 
         return $this;
@@ -938,9 +938,9 @@ abstract class DBase
     final public function join($table, $on1, $on2, $ori): DBase
     {
         if ($this->section['join'] === '') {
-            $this->section['join'] = $ori . ' join ' . $this->config ['table_pre'] . $table . " on " . $this->config ['table_pre'] . $on1 . '=' . $this->config ['table_pre'] . $on2;
+            $this->section['join'] = $ori . ' join ' . $this->config->tablePrefix . $table . " on " . $this->config->tablePrefix . $on1 . '=' . $this->config->tablePrefix . $on2;
         } else {
-            $this->section['join'] .= ' ' . $ori . ' join ' . $this->config ['table_pre'] . $table . " on " . $this->config ['table_pre'] . $on1 . '=' . $this->config ['table_pre'] . $on2;
+            $this->section['join'] .= ' ' . $ori . ' join ' . $this->config->tablePrefix . $table . " on " . $this->config->tablePrefix . $on1 . '=' . $this->config->tablePrefix . $on2;
         }
 
         return $this;
