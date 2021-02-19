@@ -409,7 +409,7 @@ class Model
         if (!$primary_key) {
             $primary_key = $this->primary_key;
         }
-        if ($data instanceof Data){
+        if ($data instanceof Data) {
             $data = $data->toArray();
         }
         return $this->db->save($data, $primary_key);
@@ -464,11 +464,8 @@ class Model
             return $res;
         }
 
-        $error = debug_backtrace()[1];
-        $error['message'] = get_class($this) . ' 不存在 ' . $func . '方法!';
-        new \Exception($error);
-
-        return FALSE;
+        $message = get_class($this) . ' 不存在 ' . $func . '方法!';
+        throw  new \RuntimeException($message);
     }
 
     /**

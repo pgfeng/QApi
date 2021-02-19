@@ -114,6 +114,21 @@ abstract class Authorize extends Model
     }
 
     /**
+     * 根据用户账号信息获取Token
+     * @param Data $account
+     * @param string $account_field
+     * @return array|boolean
+     */
+    public function getAccountToken(Data $account, string $account_field): bool|string
+    {
+        if (!$account) {
+            return false;
+        }
+
+        return base64_encode($account[$account_field] . ' || ' . md5($account[$this->password_field]));
+    }
+
+    /**
      * 验证token是否正确,正确返回账户信息,否则返回false
      * @param string $token
      * @return Data|bool|null
