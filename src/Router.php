@@ -190,7 +190,7 @@ class Router
                 self::$middlewareList[self::$routeLists[$this->method][$this->path]['callback']][] = $middleware;
             }
             if ($isClass && is_string(self::$routeLists[$this->method][$this->path]['callback'])) {
-                $className = substr(self::$routeLists[$this->method][$this->path]['callback'], 0, stripos
+                $className = substr(self::$routeLists[$this->method][$this->path]['callback'], 0, strpos
                 (self::$routeLists[$this->method][$this->path]['callback'], '@'));
                 self::$classMiddlewareList[$className][] = $middleware;
             }
@@ -316,9 +316,8 @@ class Router
                 }
                 $request = new Request($arguments);
                 $response = new Response();
-                $result = $callback($request, new Response());
                 Logger::info('Router -> ' . 'Callable()');
-                Logger::info('RouterOriginal -> ' . json_encode(self::$router));
+                Logger::info('RouterOriginal -> ' . json_encode(self::$router, JSON_THROW_ON_ERROR));
 
                 if ($middleware) {
                     /**
