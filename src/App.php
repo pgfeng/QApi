@@ -4,12 +4,28 @@
 namespace QApi;
 
 
+use ErrorException;
 use QApi\Config\Application;
 use QApi\Enumeration\CliColor;
+use QApi\Exception\CompileErrorException;
+use QApi\Exception\CoreErrorException;
+use QApi\Exception\CoreWarningException;
+use QApi\Exception\DeprecatedException;
+use QApi\Exception\NoticeException;
+use QApi\Exception\ParseException;
+use QApi\Exception\RecoverableErrorException;
+use QApi\Exception\StrictException;
+use QApi\Exception\UserDeprecatedException;
+use QApi\Exception\UserErrorException;
+use QApi\Exception\UserNoticeException;
+use QApi\Exception\UserWarningException;
+use QApi\Exception\WarningException;
 use QApi\Route\Methods;
+
 
 class App
 {
+
     public static ?Application $app = null;
     public static ?string $routeDir = 'routes';
     public static ?string $configDir = 'config';
@@ -23,6 +39,7 @@ class App
      */
     public static function getVersion(): string
     {
+        //        error_reporting(0);
         if (self::$getVersionFunction === null) {
             if (!isset($_GET['_ver'])) {
                 return Config::app()->getDefaultVersion();
@@ -43,12 +60,34 @@ class App
      * @param array $allowMethods
      * @param array $allowHeaders
      * @return Response|string
+     * @throws ErrorException
      */
     public static function run(?string $timezone = 'Asia/Shanghai', $routeDir = 'routes', $configDir = 'config', $runtimeDir =
     'runtime', $uploadDir = 'Upload', ?\Closure $getVersionFunction = null, array $allowMethods = [
         Methods::GET, Methods::POST, Methods::DELETE, Methods::HEAD, Methods::PUT
     ], array $allowHeaders = ['*']): Response|string
     {
+        set_error_handler(callback: static function ($err_severity, $err_msg, $err_file, $err_line) {
+            if (0 === error_reporting()) {
+                return false;
+            }
+            match ($err_severity) {
+                E_ERROR => throw new ErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                E_WARNING => throw new WarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                E_PARSE => throw new ParseException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                E_NOTICE => throw new NoticeException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                E_CORE_ERROR => throw new CoreErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                E_CORE_WARNING, E_COMPILE_WARNING => throw new CoreWarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                E_COMPILE_ERROR => throw new CompileErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                E_USER_ERROR => throw new UserErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                E_USER_WARNING => throw new UserWarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                E_USER_NOTICE => throw new UserNoticeException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                E_STRICT => throw new StrictException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                E_RECOVERABLE_ERROR => throw new RecoverableErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                E_DEPRECATED => throw new DeprecatedException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                E_USER_DEPRECATED => throw new UserDeprecatedException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+            };
+        }, error_levels: E_ALL);
         try {
             if (!defined('PROJECT_PATH')) {
                 define('PROJECT_PATH', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR);
@@ -60,7 +99,7 @@ class App
             self::$uploadDir = trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
             try {
                 self::$app = Config::app();
-            }catch (\ErrorException $e){
+            } catch (\ErrorException $e) {
                 exit(json_encode([
                     'status' => false,
                     'code' => 500,
@@ -80,12 +119,12 @@ class App
             $msg = $e->getMessage();
             $file = $e->getFile();
             $line = $e->getLine();
-            $errorType = get_class($e);
+            $errorType = str_replace('QApi\\Exception\\', '', get_class($e));
             Logger::error("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
                 $line);
             try {
                 $response = new Response(Config::version()->versionName);
-            } catch (\ErrorException $e){
+            } catch (\ErrorException $e) {
                 $response = new Response('NotFound');
             }
             $response->setCode(500)->setExtra([
@@ -99,12 +138,12 @@ class App
             $msg = $e->getMessage();
             $file = $e->getFile();
             $line = $e->getLine();
-            $errorType = get_class($e);
+            $errorType = str_replace('QApi\\Exception\\', '', get_class($e));
             Logger::error("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
                 $line);
             try {
                 $response = new Response(Config::version()->versionName);
-            } catch (\ErrorException $e){
+            } catch (\ErrorException $e) {
                 $response = new Response('NotFound');
             }
             $response->setCode(500)->setExtra([
