@@ -317,7 +317,7 @@ class Model
                             return str_replace('%ColumnName%', $this->Column[$column]['ColumnName'], $this->validate[$this->Column[$column]['rule']]['msg'] ?? '请输入正确的%ColumnName%');
                         }
                     } else {
-                        Logger::error('Model: 验证规则' . $this->Column[$column]['rule'] . '未定义。');
+                        Logger::error('Model: rule [' . $this->Column[$column]['rule'] . '] is Undefined!');
                     }
             }
         }
@@ -359,7 +359,7 @@ class Model
         $this->configName = $configName;
         $config = Config::database($configName);
         if (!isset($config)) {
-            throw new \Exception('数据库配置 [' . $configName . '] 不存在!');
+            throw new \Exception('Database config [' . $configName . '] not found!');
         }
         $driver = match ($config->driver) {
             DatabaseDriver::PDO_MYSQL => PdoMysql::class,
@@ -464,7 +464,7 @@ class Model
             return $res;
         }
 
-        $message = get_class($this) . ' 不存在 ' . $func . '方法!';
+        $message = get_class($this) . '->' . $func . '(' . implode(', ', $val) . ') is Undefined!';
         throw  new \RuntimeException($message);
     }
 

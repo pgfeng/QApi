@@ -12,7 +12,7 @@ use QApi\Model;
  */
 class DB
 {
-    public static $DBC = false;
+    public static array $DBC = [];
 
     /**
      * @param        $table_name
