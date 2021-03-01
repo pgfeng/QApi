@@ -85,7 +85,7 @@ abstract class DBase
      * @param $field
      * @return string|array
      */
-    final public function _Field($field): string|array
+    final public function _Field(string|array $field): string|array
     {
         if (is_string($field)) {
             if (str_contains($field, '.')) {
@@ -105,11 +105,11 @@ abstract class DBase
      * @param $field
      * @return int
      */
-    final public function max($field): int
+    final public function max($field): mixed
     {
         $field = $this->_Field($field);
         $max = $this->getOne('max(' . $field . ')');
-        return $max ? $max['max(' . $field . ')'] : 0;
+        return $max ? $max['max(' . $field . ')'] : null;
     }
 
     /**
@@ -411,10 +411,13 @@ abstract class DBase
      * @param $where
      *
      * @return DBase
+     * @throws Exception
      */
     final public function where($where)
     {
         $hasOr = $hasAnd = 0;
+        $fieldOr = [];
+        $fieldAnd = [];
         if (func_num_args() > 1) {
             $field = func_get_arg(0);
             if (is_string($field)) {
@@ -424,8 +427,7 @@ abstract class DBase
                 $fieldOr = explode('|', $field);
                 $hasOr = count($fieldOr) > 1;
                 if ($hasAnd && $hasOr) {
-                    //TODO 待解决 同时处理OR和AND
-                    new Exception('Where 字段目前不能同时包含&和|');
+                    throw new \RuntimeException('Where 字段目前不能同时包含&和|');
                 }
             }
             if (func_num_args() === 2) {
@@ -435,8 +437,9 @@ abstract class DBase
                     $value = $this->addslashes($value);
                     foreach ($fieldOr as $f) {
                         $f = $this->_Field($f);
-                        if (is_array($value))
+                        if (is_array($value)) {
                             $value = implode(' or ' . $f . '=', $value);
+                        }
                         $wheres[] = '' . $f . '=' . $value;
                     }
                     $where = implode(' or ', $wheres);
@@ -458,7 +461,7 @@ abstract class DBase
                     $value = func_get_arg(1);
                     if (is_array($field)) {
                         if (is_array($value)) {
-                            throw \ErrorException('Where不允许field和value同时为Array类型。');
+                            throw new \RuntimeException('Where不允许field和value同时为Array类型。');
                         }
                         $where = '';
                         $value = $this->addslashes($value);
@@ -473,8 +476,9 @@ abstract class DBase
                     } else {
                         if (is_array($value)) {
                             $value = implode(' or ' . $field . '=', $this->addslashes($value));
-                        } else
+                        } else {
                             $value = $this->addslashes($value);
+                        }
                         $where = '' . $field . '=' . $value;
                     }
                 }
@@ -500,7 +504,7 @@ abstract class DBase
                     $value = func_get_arg(2);
                     if (is_array($field)) {
                         if (is_array($value)) {
-                            throw \ErrorException('Where不允许field和value同时为Array类型。');
+                            throw new \RuntimeException('Where不允许field和value同时为Array类型。');
                         }
                         $where = '';
                         $value = $this->addslashes($value);
@@ -542,7 +546,7 @@ abstract class DBase
      * @param $by
      * @return $this
      */
-    final public function orderBy($field, $by = false)
+    final public function orderBy($field, $by = false): static
     {
         $func_num = func_num_args();
         if ($func_num === 2) {
@@ -551,8 +555,9 @@ abstract class DBase
             $orderByStr = '';
             if (is_array($fields)) {
                 foreach ($fields as $item) {
-                    if ($orderByStr)
+                    if ($orderByStr) {
                         $orderByStr .= ',';
+                    }
                     $orderByStr .= $this->_Field($item) . ' ' . $order;
                 }
                 $this->section['orderBy'] = $orderByStr;

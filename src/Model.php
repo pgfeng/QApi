@@ -18,8 +18,8 @@ use QApi\Model\filesModel;
 
 /**
  * @method $this select(string|array $field = '')
- * @method bool|int max(string $field = '')
- * @method bool|int min(string $field = '')
+ * @method mixed max(string $field = '')
+ * @method mixed min(string $field = '')
  * @method $this between(string $field, array $Between)
  * @method $this notBetween(string $field, array $Between)
  * @method $this in(string $field, array $in)
