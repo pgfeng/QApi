@@ -39,7 +39,7 @@ class App
      */
     public static function getVersion(): string
     {
-        //        error_reporting(0);
+
         if (self::$getVersionFunction === null) {
             if (!isset($_GET['_ver'])) {
                 return Config::app()->getDefaultVersion();
