@@ -115,13 +115,13 @@ abstract class DBase
     /**
      * 获取最小值
      * @param $field
-     * @return int
+     * @return mixed
      */
-    final public function min($field): int
+    final public function min($field): mixed
     {
         $field = $this->_Field($field);
         $max = $this->getOne('min(' . $field . ')');
-        return $max ? $max['min(' . $field . ')'] : 0;
+        return $max ? $max['min(' . $field . ')'] : null;
     }
 
     /**
