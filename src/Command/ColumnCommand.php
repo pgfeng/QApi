@@ -22,10 +22,12 @@ class ColumnCommand extends CommandHandler
 
     /**
      * 判断表是否存在
+     * @param string $table
+     * @return bool
      */
-    private function tableExists($table)
+    private function tableExists(string $table): bool
     {
-        if (!DB::table('')->query('show tables like "' . $table . '"')) {
+        if (!DB::table('')->query('show tables like \'' . $table . '\'')) {
             $this->command->writeln("数据表{$table}不存在!");
             return false;
         }
@@ -44,6 +46,7 @@ class ColumnCommand extends CommandHandler
     /**
      * @param $argv
      * @return mixed
+     * @throws \ErrorException
      */
     public function handler($argv): mixed
     {
@@ -68,15 +71,17 @@ class ColumnCommand extends CommandHandler
                 $this->argv[1] = $this->choseTable($this->argv[0]);
             }
         }
-        return $this->buildColumn();
+        $this->buildColumn();
+        return null;
     }
 
     /**
      * 选择表
      * @param $config
      * @return string
+     * @throws \ErrorException
      */
-    public function choseTable($config)
+    public function choseTable($config): string
     {
         $table = $this->command->getStdin("请输入表名:")[0];
         if (!$table || !$this->tableExists(Config::database($config)->tablePrefix . $table)) {
@@ -107,6 +112,7 @@ class ColumnCommand extends CommandHandler
 
     /**
      * 生成字段
+     * @throws \ErrorException
      */
     private function buildColumn(): void
     {
@@ -152,7 +158,7 @@ class ColumnCommand extends CommandHandler
     private function buildTableColumn($table, $config, $nameSpace, $columnPath): void
     {
         $columns = DB::table('', $config)->query('desc ' . Config::database($config)->tablePrefix . $table);
-        $columns_comment = DB::table('', $config)->query('select column_name,column_comment from information_schema.columns where table_schema ="' . Config::database($config)->dbName . '"  and table_name = "' . Config::database($config)->tablePrefix . $table . '";');
+        $columns_comment = DB::table('', $config)->query('select column_name,column_comment from information_schema.columns where table_schema =\'' . Config::database($config)->dbName . '\'  and table_name = \'' . Config::database($config)->tablePrefix . $table . '\';');
         $columns_comment = $columns_comment->transPrimaryIndex('column_name');
         $const = '';
         foreach ($columns as $column) {
@@ -195,6 +201,7 @@ Column;
     /**
      * @param string $msg
      * @return string
+     * @throws \ErrorException
      */
     protected function choseConfig($msg = '请输入配置名称[默认default]:'): string
     {
