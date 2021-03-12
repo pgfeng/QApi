@@ -1163,7 +1163,7 @@ abstract class DBase
         }
         $data = $this->stripslashes($data);
         if ($data === NULL) {
-            return $data;
+            $data = [];
         }
         return new Data($data);
     }
