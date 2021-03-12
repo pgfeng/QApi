@@ -362,9 +362,7 @@ abstract class DBase
         if (count($Between) !== 2) {
             throw new SqlErrorException('Too few params to function notBetween($field, $Between), Must two params;');
         }
-        $pBetween = '\'';
-        $pBetween .= implode('\',\'', $Between);
-        $pBetween .= '\'';
+        $pBetween = '\'' . $Between[0] . '\' AND \'' . $Between[1] . '\'';
         return $this->where("{$field} NOT BETWEEN {$pBetween}");
     }
 
