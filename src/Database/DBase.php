@@ -1165,7 +1165,8 @@ abstract class DBase
         if ($data === NULL) {
             $data = [];
         }
-        return new Data($data);
+        $result = new Data($data);
+        return $result;
     }
 
     /**
