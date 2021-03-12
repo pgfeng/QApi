@@ -145,7 +145,7 @@ abstract class DBase
     {
         $field = $this->_Field($field);
         $sum = $this->getOne('SUM(' . $field . ')');
-        return $sum ? $sum['SUM(' . $field . ')'] : 0;
+        return $sum['SUM(' . $field . ')'] ?? 0;
     }
 
     /**
@@ -156,7 +156,7 @@ abstract class DBase
     {
         $field = $this->_Field($field);
         $sum = $this->getOne('AVG(' . $field . ')');
-        return $sum ? $sum['AVG(' . $field . ')'] : 0;
+        return $sum['AVG(' . $field . ')'] ?? 0;
     }
 
     /**
@@ -167,7 +167,7 @@ abstract class DBase
     {
         $field = $this->_Field($field);
         $sum = $this->getOne('LENGTH(' . $field . ')');
-        return $sum ? (int)$sum['LENGTH(' . $field . ')'] : 0;
+        return $sum['LENGTH(' . $field . ')'] ?? 0;
     }
 
     /**
