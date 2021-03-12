@@ -345,10 +345,8 @@ abstract class DBase
         if (count($Between) !== 2) {
             throw new SqlErrorException('Too few params to function Between($field, $Between), Must two params;');
         }
-        $pBetween = '\'';
-        $pBetween .= implode('\',\'', $Between);
-        $pBetween .= '\'';
-        return $this->where("{$field} BETWEEN {$Between}");
+        $pBetween = '\'' . $Between[0] . '\' AND \'' . $Between[1] . '\'';
+        return $this->where("{$field} BETWEEN {$pBetween}");
     }
 
     /**
