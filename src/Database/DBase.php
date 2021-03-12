@@ -11,6 +11,7 @@ use QApi\Config\Database\PdoMysqlDatabase;
 use QApi\Config\Database\PdoSqlServDatabase;
 use QApi\Data;
 use QApi\Database\DB;
+use QApi\Exception\SqlErrorException;
 use QApi\Logger;
 
 
@@ -85,7 +86,7 @@ abstract class DBase
      * @param $field
      * @return string|array
      */
-    final public function _Field(string|array $field): string|array
+    final public function _Field($field): string|array
     {
         if (is_string($field)) {
             if (str_contains($field, '.')) {
@@ -125,8 +126,6 @@ abstract class DBase
     }
 
     /**
-     * 有多少条数据
-     *
      * @param $field
      *
      * @return int    获取到的数量
@@ -139,17 +138,36 @@ abstract class DBase
     }
 
     /**
-     * 有多少条数据
-     *
      * @param $field
-     *
-     * @return int    获取到的数量
+     * @return int|float
      */
-    final public function sum($field): int
+    final public function sum($field): int|float
     {
         $field = $this->_Field($field);
         $sum = $this->getOne('SUM(' . $field . ')');
-        return $sum ? (int)$sum['SUM(' . $field . ')'] : 0;
+        return $sum ? $sum['SUM(' . $field . ')'] : 0;
+    }
+
+    /**
+     * @param $field
+     * @return int|float
+     */
+    final public function avg($field): int|float
+    {
+        $field = $this->_Field($field);
+        $sum = $this->getOne('AVG(' . $field . ')');
+        return $sum ? $sum['AVG(' . $field . ')'] : 0;
+    }
+
+    /**
+     * @param $field
+     * @return int
+     */
+    final public function length($field): int
+    {
+        $field = $this->_Field($field);
+        $sum = $this->getOne('LENGTH(' . $field . ')');
+        return $sum ? (int)$sum['LENGTH(' . $field . ')'] : 0;
     }
 
     /**
@@ -183,9 +201,9 @@ abstract class DBase
     /**
      * 写法兼容
      * @param bool $sql
-     * @return array
+     * @return array|Data
      */
-    public function findAll($sql = false): array
+    public function findAll($sql = false): array|Data
     {
         return $this->query($sql);
     }
@@ -318,13 +336,18 @@ abstract class DBase
     /**
      * @param $field
      * @param $Between
-     *
-     * @return Object
+     * @return self
+     * @throws Exception
      */
-    final public function between($field, $Between)
+    final public function between($field, array $Between): self
     {
-        $Between = implode(' AND ', $Between);
-
+        $field = $this->_Field($field);
+        if (count($Between) !== 2) {
+            throw new SqlErrorException('Too few params to function Between($field, $Between), Must two params;');
+        }
+        $pBetween = '\'';
+        $pBetween .= implode('\',\'', $Between);
+        $pBetween .= '\'';
         return $this->where("{$field} BETWEEN {$Between}");
     }
 
@@ -332,13 +355,19 @@ abstract class DBase
      * @param $field
      * @param $Between
      *
-     * @return Object
+     * @return DBase
+     * @throws SqlErrorException
      */
-    final public function notBetween($field, $Between)
+    final public function notBetween($field, $Between): self
     {
-        $Between = implode(' AND ', $Between);
-
-        return $this->where("{$field} NOT BETWEEN {$Between}");
+        $field = $this->_Field($field);
+        if (count($Between) !== 2) {
+            throw new SqlErrorException('Too few params to function notBetween($field, $Between), Must two params;');
+        }
+        $pBetween = '\'';
+        $pBetween .= implode('\',\'', $Between);
+        $pBetween .= '\'';
+        return $this->where("{$field} NOT BETWEEN {$pBetween}");
     }
 
     /**
@@ -705,11 +734,11 @@ abstract class DBase
 
 
     /**
-     * @param $column
-     * @param int $num
-     * @return mixed
+     * @param string $column
+     * @param int|float $num
+     * @return bool
      */
-    final public function setInc($column, $num = 1)
+    final public function setInc(string $column, int|float $num = 1): bool
     {
 
         $this->section['handle'] = 'update';
@@ -719,11 +748,11 @@ abstract class DBase
     }
 
     /**
-     * @param $column
-     * @param int $num
-     * @return mixed
+     * @param string $column
+     * @param int|float $num
+     * @return bool
      */
-    final public function setDnc($column, $num = 1)
+    final public function setDnc(string $column, int|float $num = 1): bool
     {
         $this->section['handle'] = 'update';
         $this->_set($column . '=' . $column . '-' . $num, 'update');
@@ -735,12 +764,10 @@ abstract class DBase
      * 一个参数是设置修改内容
      * 多个参考下面参数使用
      * UPDATE($table, $set, $where, $limit)
-     *
      * @param $update
-     *
      * @return bool
      */
-    final public function update($update)
+    final public function update($update): bool
     {
         $this->section['handle'] = 'update';
         $arg_num = func_num_args();
@@ -795,13 +822,10 @@ abstract class DBase
 
 
     /**
-     * 获取表名
-     *
-     * @param bool $table 如果存在将会加入表前缀返回
-     *
+     * @param bool $table
      * @return string
      */
-    final public function get_table($table = FALSE)
+    final public function get_table($table = FALSE): string
     {
         if (!$table) {
             return (isset($this->section['table']) && !empty($this->section['table'])) ? $this->section['table'] :
@@ -814,9 +838,9 @@ abstract class DBase
     /**
      * @param string|null $sql
      *
-     * @return mixed
+     * @return bool
      */
-    final public function exec($sql = null)
+    final public function exec($sql = null): bool
     {
         if (!$sql) {
             $this->compile();
@@ -1009,35 +1033,23 @@ abstract class DBase
     }
 
     /**
-     * 字段值不为NULL
-     *
      * @param $field
-     *
      * @return DBase
      */
     final public function notNull($field): DBase
     {
-        if (strpos($field, '.')) {
-            $field = $this->config->tablePrefix . $field;
-        }
-
-        return $this->where($field . ' not null');
+        $field = $this->_Field($field);
+        return $this->where($field . ' NOT NULL');
     }
 
     /**
-     * 字段值为NULL
-     *
      * @param $field
-     *
      * @return DBase
      */
     final public function isNull($field): DBase
     {
-        if (strpos($field, '.')) {
-            $field = $this->config->tablePrefix . $field;
-        }
-
-        return $this->where($field . ' is null');
+        $field = $this->_Field($field);
+        return $this->where($field . ' IS NULL');
     }
 
     /**
@@ -1150,13 +1162,11 @@ abstract class DBase
             new Exception($this->getError());
         }
         $data = $this->stripslashes($data);
-        if ($data === NULL)         //防止直接返回Null
-        {
+        if ($data === NULL) {
             return $data;
         }
-        $result = new Data($data);
-        return $result;
-    }            //链接数据库方法
+        return new Data($data);
+    }
 
     /**
      * 闭包执行事务，返回事务执行的状态
@@ -1167,9 +1177,11 @@ abstract class DBase
     {
         try {
             $this->beginTransaction();
-            $callback($this);
-            $this->commit();
-            return true;
+            if ($callback($this) !== false) {
+                return $this->commit();
+            }
+            $this->rollBack();
+            return false;
         } catch (\Exception $e) {
             $this->rollBack();
             return false;
@@ -1184,7 +1196,7 @@ abstract class DBase
      *
      * @return string | array
      */
-    public function addslashes($data): string|array
+    public function addslashes(array|string $data): string|array
     {
         if (is_array($data)) {
             foreach ($data as $k => &$v) {

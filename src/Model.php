@@ -28,9 +28,11 @@ use QApi\Model\filesModel;
  * @method $this limit(int $offset, int $size = '')
  * @method $this orWhere(string $field, string|array $comPar = '', string $val = '')
  * @method bool|int update(array|Data $update)
- * @method bool|int exec(string $sql = '')
- * @method bool|int count(string $field = '*')
- * @method bool|int sum(string $field)
+ * @method int|float exec(string $sql = '')
+ * @method int|float count(string $field = '*')
+ * @method int|float sum(string $field)
+ * @method int|float avg(string $field)
+ * @method int length(string $field)
  * @method bool|int insert(array|Data $insert)
  * @method $this leftJoin(string $table, string $on1, string $on2)
  * @method $this rightJoin(string $table, string $on1, string $on2)
@@ -62,8 +64,8 @@ use QApi\Model\filesModel;
  * @method $this leftLike(string|array $field, string $value) 搜索查询
  * @method $this rightLike(string|array $field, string $value) 搜索查询
  * @method $this bothLike(string|array $field, string $value) 搜索查询
- * @method $this notNull(string $column)
- * @method $this isNull(string $column)
+ * @method $this notNull(string $field)
+ * @method $this isNull(string $field)
  */
 class Model
 {
