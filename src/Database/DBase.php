@@ -345,7 +345,8 @@ abstract class DBase
         if (count($Between) !== 2) {
             throw new SqlErrorException('Too few params to function Between($field, $Between), Must two params;');
         }
-        $pBetween = '\'' . $Between[0] . '\' AND \'' . $Between[1] . '\'';
+        $Between = $this->addslashes($Between);
+        $pBetween = $Between[0] . ' AND ' . $Between[1];
         return $this->where("{$field} BETWEEN {$pBetween}");
     }
 
@@ -362,7 +363,8 @@ abstract class DBase
         if (count($Between) !== 2) {
             throw new SqlErrorException('Too few params to function notBetween($field, $Between), Must two params;');
         }
-        $pBetween = '\'' . $Between[0] . '\' AND \'' . $Between[1] . '\'';
+        $Between = $this->addslashes($Between);
+        $pBetween = $Between[0] . ' AND ' . $Between[1];
         return $this->where("{$field} NOT BETWEEN {$pBetween}");
     }
 
@@ -372,7 +374,7 @@ abstract class DBase
      *
      * @return Object
      */
-    final public function in($field, $in)
+    final public function in($field, array $in):self
     {
         $field = $this->_Field($field);
         if (is_array($in)) {
@@ -1193,7 +1195,7 @@ abstract class DBase
      *
      * @return string | array
      */
-    public function addslashes(array|string $data): string|array
+    public function addslashes(array|string|null $data): string|array|null
     {
         if (is_array($data)) {
             foreach ($data as $k => &$v) {
