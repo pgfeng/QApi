@@ -96,37 +96,37 @@ class Data extends ArrayObject implements JsonSerializableAlias
     }
 
     /**
-     * @param mixed $offset
+     * @param $key
      *
      * @return bool
      */
-    public function offsetExists($offset): bool
+    public function offsetExists($key): bool
     {
-        return isset($this->data[$offset]);
+        return isset($this->data[$key]);
     }
 
     /**
-     * @param int $offset
+     * @param $key
      *
-     * @return mixed|null
+     * @return mixed
      */
-    public function offsetGet($offset): mixed
+    public function offsetGet($key): mixed
     {
-        return $this->data[$offset] ?? NULL;
+        return $this->data[$key] ?? NULL;
     }
 
-    public function offsetSet($offset, $value): mixed
+    public function offsetSet($key, $value): mixed
     {
-        return $this->data[$offset] = $value;
+        return $this->data[$key] = $value;
     }
 
     /**
-     * @param mixed $offset
+     * @param mixed $key
      * @return void
      */
-    public function offsetUnset(mixed $offset): void
+    public function offsetUnset(mixed $key): void
     {
-        unset($this->data[$offset]);
+        unset($this->data[$key]);
     }
 
     /**
