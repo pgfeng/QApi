@@ -2,6 +2,7 @@
 
 namespace QApi\Database;
 
+use ArrayAccess;
 use Closure;
 use Exception;
 use QApi\Config;
@@ -11,6 +12,7 @@ use QApi\Config\Database\PdoMysqlDatabase;
 use QApi\Config\Database\PdoSqlServDatabase;
 use QApi\Data;
 use QApi\Database\DB;
+use QApi\Enumeration\CliColor;
 use QApi\Exception\SqlErrorException;
 use QApi\Logger;
 
@@ -233,14 +235,26 @@ abstract class DBase
      */
     final public function getField($field_name): mixed
     {
+        $field_name = $this->_Field($field_name);
         $this->select($field_name);
         $this->limit(0, 1);
         $fetch = $this->query();
         if (count($fetch) === 0) {
-            return FALSE;
+            return null;
         }
 
         return $fetch[0][$field_name];
+    }
+
+
+    /**
+     * @param string $field_name
+     * @return self
+     */
+    final public function distinct(string $field_name): self
+    {
+        $this->select('DISTINCT' . $this->_Field($field_name));
+        return $this;
     }
 
     /**
@@ -251,9 +265,9 @@ abstract class DBase
      *
      * @param array|string $select
      *
-     * @return DBase|array|Data
+     * @return DBase|Data
      */
-    final public function select($select = '*'): DBase
+    final public function select(array|string $select = '*'): self|Data
     {
         $this->section['handle'] = 'select';
         $arg_num = func_num_args();
@@ -374,7 +388,7 @@ abstract class DBase
      *
      * @return Object
      */
-    final public function in($field, array $in):self
+    final public function in($field, array $in): self
     {
         $field = $this->_Field($field);
         if (is_array($in)) {
@@ -492,7 +506,7 @@ abstract class DBase
                         }
                         $where = '';
                         $value = $this->addslashes($value);
-                        foreach ($field as &$f) {
+                        foreach ($field as $f) {
                             $where_str = $f . ' = ' . $value;
                             if ($where === '') {
                                 $where = $where_str;
@@ -535,7 +549,7 @@ abstract class DBase
                         }
                         $where = '';
                         $value = $this->addslashes($value);
-                        foreach ($field as &$f) {
+                        foreach ($field as $f) {
                             $where_str = $f . ' ' . func_get_arg(1) . ' ' . $value;
                             if ($where === '') {
                                 $where = $where_str;
@@ -567,13 +581,11 @@ abstract class DBase
     }
 
     /**
-     * 设置排序方式
-     *
-     * @param $field
-     * @param $by
+     * @param string|array $field
+     * @param string|null $by
      * @return $this
      */
-    final public function orderBy($field, $by = false): static
+    final public function orderBy(string|array $field, string|null $by = null): static
     {
         $func_num = func_num_args();
         if ($func_num === 2) {
@@ -589,7 +601,7 @@ abstract class DBase
                 }
                 $this->section['orderBy'] = $orderByStr;
             } else {
-                $this->section['orderBy'] = $this->_Field(func_get_arg(0)) . ' ' . func_get_arg(1);
+                $this->section['orderBy'] = $this->_Field($fields) . ' ' . $order;
             }
         } else if (is_array($field)) {
             $order = '';
@@ -844,7 +856,6 @@ abstract class DBase
             $this->compile();
             $sql = $this->sql;
         }
-        //--转表前缀
         $this->parseTablePre($sql);
         $this->lastSql = $sql;
         $this->_reset();
@@ -882,9 +893,9 @@ abstract class DBase
                 return $this->sql .= $sql;
             }
 
-            return FALSE;
+            return false;
         }
-        return FALSE;
+        return false;
     }
 
     /**
@@ -926,20 +937,19 @@ abstract class DBase
             $this->setTable($arg_list[0])->insert($arg_list[1]);
 
             return $this->exec();
-        } else {
-            //--强制开发者使用默认值,添加不可以设置空值,杜绝因为运营人员表单没输入而没有使用数据库默认值
-            foreach ($insert as $key => $value) {
-                if ($value === '') {
-                    unset($insert[$key]);
-                }
-            }
-            foreach ($insert as $key => $value) {
-                $insert[$key] = is_array($value) ? $this->addslashes(json_encode($value, JSON_UNESCAPED_UNICODE)) : (is_object($value) ? $this->addslashes(serialize($value)) : $this->addslashes($value));
-            }
-            $this->section['insert'] = is_array($insert) ? '(' . implode(',', array_keys($insert)) . ') VALUES (' . implode(',', array_values($insert)) . ')' : "VALUES('{$insert}')";
-
-            return $this->exec();
         }
+        //--强制开发者使用默认值,添加不可以设置空值,杜绝因为运营人员表单没输入而没有使用数据库默认值
+        foreach ($insert as $key => $value) {
+            if ($value === '') {
+                unset($insert[$key]);
+            }
+        }
+        foreach ($insert as $key => $value) {
+            $insert[$key] = is_array($value) ? $this->addslashes(json_encode($value, JSON_UNESCAPED_UNICODE)) : (is_object($value) ? $this->addslashes(serialize($value)) : $this->addslashes($value));
+        }
+        $this->section['insert'] = is_array($insert) ? '(' . implode(',', array_keys($insert)) . ') VALUES (' . implode(',', array_values($insert)) . ')' : "VALUES('{$insert}')";
+
+        return $this->exec();
     }
 
     /**
@@ -1121,12 +1131,13 @@ abstract class DBase
      * 保存数据或者更新数据
      * 如果设置主键字段 $primary_key 将会判断此字段是否存在，如果存在则会为更新数据
      *
-     * @param \ArrayAccess|array $data
+     * @param ArrayAccess|array $data
      * @param String $primary_key
      *
      * @return  Bool|int
+     * @throws Exception
      */
-    final public function save(\ArrayAccess|array $data, $primary_key = ''): bool|int
+    final public function save(ArrayAccess|array $data, $primary_key = ''): bool|int
     {
         if (($primary_key !== '') && isset($data[$primary_key]) && $data[$primary_key]) {
             $primary_value = $data[$primary_key];
@@ -1182,6 +1193,12 @@ abstract class DBase
             $this->rollBack();
             return false;
         } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            $file = $e->getFile();
+            $line = $e->getLine();
+            $errorType = get_class($e);
+            Logger::error("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
+                $line);
             $this->rollBack();
             return false;
         }
@@ -1191,9 +1208,9 @@ abstract class DBase
      * 转义函数
      * 参数可以为多参数或数组，返回数组
      *
-     * @param string|array $data
+     * @param array|string|null $data
      *
-     * @return string | array
+     * @return string|array|null
      */
     public function addslashes(array|string|null $data): string|array|null
     {

@@ -10,7 +10,9 @@ namespace QApi\Model;
 
 
 
+use Exception;
 use QApi\Data;
+use QApi\Exception\SqlErrorException;
 
 /**
  * 分表模型 自动分表处理
@@ -47,10 +49,10 @@ abstract class Partition extends \QApi\Model
     {
         if (func_get_arg(0) === $this->partition_field) {
             if (func_num_args() !== 2) {
-                throw new Exception('效验分表字段，where必须传入两个参数！');
+                throw new SqlErrorException('效验分表字段，where必须传入两个参数！');
             }
             if (func_num_args() === 3) {
-                throw new Exception('效验分表字段，where只能传入两个参数！');
+                throw new SqlErrorException('效验分表字段，where只能传入两个参数！');
             }
 
             $this->set_table(func_get_arg(1));
@@ -63,11 +65,12 @@ abstract class Partition extends \QApi\Model
      * 添加数据
      * @param array|Data $insert
      * @return bool|int
+     * @throws SqlErrorException
      */
     public function insert(array|Data $insert): bool|int
     {
         if (!isset($insert[$this->partition_field])) {
-            throw new Exception('必须传入 [ ' . $this->partition_field . ' ] 字段！', 0);
+            throw new SqlErrorException('必须传入 [ ' . $this->partition_field . ' ] 字段！', 0);
         }
 
         $this->set_table($insert[$this->partition_field]);
