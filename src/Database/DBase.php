@@ -253,7 +253,7 @@ abstract class DBase
      */
     final public function distinct(string $field_name): self
     {
-        $this->select('DISTINCT' . $this->_Field($field_name));
+        $this->select('DISTINCT ' . $this->_Field($field_name));
         return $this;
     }
 
