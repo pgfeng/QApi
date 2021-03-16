@@ -36,6 +36,16 @@ class Data extends ArrayObject implements JsonSerializableAlias
     }
 
     /**
+     * @param string $column_key
+     * @param string|null $index_key
+     * @return array
+     */
+    #[Pure] public function column(string $column_key, string|null $index_key = null): array
+    {
+        return array_column($this->data, $column_key, $index_key);
+    }
+
+    /**
      * 获取数据
      * @param $key
      * @param null $default_value
@@ -219,6 +229,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
 
     /**
      * @return string
+     * @throws \JsonException
      */
     public function toJson(): string
     {
