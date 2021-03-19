@@ -249,11 +249,15 @@ class Request
     {
         $scheme = $this->getScheme();
         $port = $this->getPort();
+        $host = $this->getHost();
 
         if (('http' === $scheme && 80 === $port) || ('https' === $scheme && 443 === $port)) {
-            return $this->getHost();
+            return $host;
         }
 
+        if (str_contains($host, ':')) {
+            return $host;
+        }
         return $this->getHost() . ':' . $port;
     }
 

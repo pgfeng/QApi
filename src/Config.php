@@ -4,6 +4,7 @@
 namespace QApi;
 
 use QApi\Config\Application;
+use QApi\Config\Cache\FileSystem;
 use QApi\Config\Database\MysqliDatabase;
 use QApi\Config\Database\PdoMysqlDatabase;
 use QApi\Config\Database\PdoSqliteDatabase;
@@ -17,6 +18,7 @@ class Config
     public static ?Version $version = null;
     public static ?array $versions = [];
     public static ?array $databases = [];
+    public static ?array $cache = [];
     public static ?array $other = [];
 
     /**
@@ -45,6 +47,37 @@ class Config
         }
         throw new \ErrorException('host ' . $_SERVER['HTTP_HOST'] . ' not bind app!', 0, 1,
             $configPath);
+    }
+
+    /**
+     * @param string|null $configName
+     * @return FileSystem|null
+     */
+    public static function cache(string $configName = null): FileSystem|null
+    {
+        if (!is_cli()) {
+            $runMode = Config::app()->getRunMode();
+        } else if (defined('DEV_MODE') && DEV_MODE === true) {
+            $runMode = RunMode::DEVELOPMENT;
+        } else {
+            $runMode = RunMode::PRODUCTION;
+        }
+        if (!self::$cache) {
+            $versionConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
+                . DIRECTORY_SEPARATOR . 'cache.php';
+            if (!self::$cache && !file_exists($versionConfigPath)) {
+                mkPathDir($versionConfigPath);
+                file_put_contents($versionConfigPath, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Config'
+                    . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'cache.php'), LOCK_EX);
+            }
+            self::$cache = include PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
+                . DIRECTORY_SEPARATOR . 'cache.php';
+        }
+        if (!$configName) {
+            return self::$cache;
+        }
+        return self::$cache[$configName] ?? null;
+
     }
 
     /**
@@ -89,11 +122,10 @@ class Config
 
     /**
      * @param string|null $configName
-     * @param string|null $runMode
      * @return MysqliDatabase|PdoMysqlDatabase|PdoSqliteDatabase|PdoSqlServDatabase|array|null
      * @throws \ErrorException
      */
-    public static function database(string $configName = null, ?string $runMode = null):
+    public static function database(string $configName = null):
     MysqliDatabase|PdoMysqlDatabase|PdoSqliteDatabase|PdoSqlServDatabase|null|array
     {
         if (!is_cli()) {

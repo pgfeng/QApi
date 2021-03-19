@@ -4,7 +4,7 @@
 namespace QApi\Config\Abstracts;
 
 
-abstract class Database
+abstract class Cache
 {
     /**
      * @var string
