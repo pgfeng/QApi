@@ -121,6 +121,11 @@ class FileSystemCache implements CacheInterface
         return !(!is_dir($path) && @mkdir($path, 0777 & (~$this->umask), true) === false && !is_dir($path));
     }
 
+    /**
+     * @param string $filename
+     * @param string $content
+     * @return bool
+     */
     protected function writeFile(string $filename, string $content): bool
     {
         $filepath = pathinfo($filename, PATHINFO_DIRNAME);

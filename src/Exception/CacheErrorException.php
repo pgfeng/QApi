@@ -4,7 +4,7 @@
 namespace QApi\Exception;
 
 
-class CacheErrorException extends \Exception
+class CacheErrorException extends \ErrorException
 {
 
 }
