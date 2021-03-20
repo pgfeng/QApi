@@ -20,14 +20,17 @@ class FileSystemCache implements CacheInterface
      * @var string
      */
     public string $directory;
+
     /**
      * @var string
      */
     public string $extension;
+
     /**
      * @var int
      */
     public int $umask;
+
 
     /** @var int */
     private int $directoryStringLength;
