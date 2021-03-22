@@ -4,13 +4,9 @@
 namespace QApi\Command;
 
 
+use ErrorException;
 use QApi\Config;
-use QApi\Config\Database\MysqliDatabase;
-use QApi\Config\Database\PdoMysqlDatabase;
-use QApi\Config\Database\PdoSqliteDatabase;
-use QApi\Config\Database\PdoSqlServDatabase;
 use QApi\Database\DB;
-use QApi\Enumeration\RunMode;
 
 class ColumnCommand extends CommandHandler
 {
@@ -46,7 +42,7 @@ class ColumnCommand extends CommandHandler
     /**
      * @param $argv
      * @return mixed
-     * @throws \ErrorException
+     * @throws ErrorException
      */
     public function handler($argv): mixed
     {
@@ -61,7 +57,7 @@ class ColumnCommand extends CommandHandler
                 }
             } else if (!Config::database($argv[0])) {
                 $this->argv[0] = $config = $this->choseConfig();
-            }else if ((!isset($argv[1]) || (int)$argv[1] === 1) && (isset($this->argv[0]) && (string)$this->argv[0] !== '')) {
+            } else if ((!isset($argv[1]) || (int)$argv[1] === 1) && (isset($this->argv[0]) && (string)$this->argv[0] !== '')) {
                 $res = $this->command->getStdin("未输入表名,是否{$this->argv[0]}全部数据表[yes or no]:[默认yes]")[0];
                 if (false !== stripos($res, "no")) {
                     $this->argv[1] = $this->choseTable($this->argv[0]);
@@ -79,7 +75,7 @@ class ColumnCommand extends CommandHandler
      * 选择表
      * @param $config
      * @return string
-     * @throws \ErrorException
+     * @throws ErrorException
      */
     public function choseTable($config): string
     {
@@ -112,12 +108,12 @@ class ColumnCommand extends CommandHandler
 
     /**
      * 生成字段
-     * @throws \ErrorException
+     * @throws ErrorException
      */
     private function buildColumn(): void
     {
         if (!$this->argv) {
-            $database_configs = array_keys(Config::database(runMode: RunMode::DEVELOPMENT));
+            $database_configs = array_keys(Config::database());
             foreach ($database_configs as $config) {
                 $this->buildDatabaseColumn($config, $this->getNameSpace($config));
             }
@@ -132,7 +128,7 @@ class ColumnCommand extends CommandHandler
     /**
      * @param $config
      * @param $nameSpace
-     * @throws \ErrorException
+     * @throws ErrorException
      */
     private function buildDatabaseColumn($config, $nameSpace): void
     {
@@ -153,7 +149,7 @@ class ColumnCommand extends CommandHandler
      * @param $nameSpace
      * @param $columnPath
      * @return void
-     * @throws \ErrorException
+     * @throws ErrorException
      */
     private function buildTableColumn($table, $config, $nameSpace, $columnPath): void
     {
@@ -201,7 +197,7 @@ Column;
     /**
      * @param string $msg
      * @return string
-     * @throws \ErrorException
+     * @throws ErrorException
      */
     protected function choseConfig($msg = '请输入配置名称[默认default]:'): string
     {
