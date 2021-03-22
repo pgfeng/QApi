@@ -36,6 +36,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
     }
 
     /**
+     * 返回某列
      * @param string $column_key
      * @param string|null $index_key
      * @return array
@@ -43,6 +44,54 @@ class Data extends ArrayObject implements JsonSerializableAlias
     #[Pure] public function column(string $column_key, string|null $index_key = null): array
     {
         return array_column($this->data, $column_key, $index_key);
+    }
+
+    /**
+     * 合并
+     * @param array $data
+     * @return array
+     */
+    #[Pure] public function merge(array $data): array
+    {
+        return array_merge($this->data, $data);
+    }
+
+    /**
+     * 在结尾插入元素
+     * @param mixed $data
+     * @return void
+     */
+    public function push(mixed $data): void
+    {
+        $this->data[] = $data;
+    }
+
+    /**
+     * 在开头插入元素
+     * @param mixed $data
+     * @return void
+     */
+    public function unshift(mixed $data): void
+    {
+        array_unshift($this->data, $data);
+    }
+
+    /**
+     * 弹出第一个元素
+     * @return mixed
+     */
+    public function shift(): mixed
+    {
+        return array_shift($this->data);
+    }
+
+    /**
+     * 弹出最后一个元素
+     * @return mixed
+     */
+    public function pop(): mixed
+    {
+        return array_pop($this->data);
     }
 
     /**
@@ -58,6 +107,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
         }
         return $this->data[$key] ?? $default_value;
     }
+
 
     /**
      * @param $key

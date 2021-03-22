@@ -22,6 +22,11 @@ class Request
     public Data $header;
 
     /**
+     * 用户信息
+     */
+    public Data|null $auth = null;
+
+    /**
      * Server信息
      * @var Data
      */
@@ -143,6 +148,8 @@ class Request
     {
         return $this->method;
     }
+
+
 
     /**
      * @return string

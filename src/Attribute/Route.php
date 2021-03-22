@@ -6,6 +6,11 @@ namespace QApi\Attribute;
 
 use Attribute;
 use QApi\App;
+use QApi\Attribute\Parameter\GetParam;
+use QApi\Attribute\Parameter\HeaderParam;
+use QApi\Attribute\Parameter\PathParam;
+use QApi\Attribute\Parameter\PostParam;
+use QApi\Http\MiddlewareInterface;
 
 #[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)] class Route
 {
@@ -31,8 +36,8 @@ use QApi\App;
     public function builder(\ReflectionClass $class, string $controllerName, string $methodName, bool $attr = true):
     mixed
     {
-        $tmpControllerName = trim(str_replace(App::$app->getNameSpace(),'',$controllerName),'\\');
-        $versionDir = substr($tmpControllerName,0,stripos($tmpControllerName,'\\'));
+        $tmpControllerName = trim(str_replace(App::$app->getNameSpace(), '', $controllerName), '\\');
+        $versionDir = substr($tmpControllerName, 0, stripos($tmpControllerName, '\\'));
         $save_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
             . $versionDir . DIRECTORY_SEPARATOR . 'builder.php';
         if (!file_exists($save_path)) {
@@ -227,8 +232,19 @@ use QApi\App;
      * @param string|array $methods
      * @param array $paramPattern
      * @param array|string|null $middleware
+     * @param string|null $summary
+     * @param string|null $description
+     * @param array $params
      */
-    public function __construct(private string $path = '', private string|array $methods = 'ALL', private array $paramPattern = [], private array|string|null $middleware = null)
+    public function __construct(
+        private string $path = '',
+        private string|array $methods = 'ALL',
+        private array $paramPattern = [],
+        private array|string|null $middleware = null,
+        private string|null $summary = null,
+        private string|null $description = null,
+        private bool $checkParams = false,
+    )
     {
     }
 }
