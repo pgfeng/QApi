@@ -55,7 +55,6 @@ class FileSystemCache implements CacheInterface
                 $directory
             ));
         }
-
         if (!is_writable($directory)) {
             throw new CacheErrorException(sprintf(
                 'The directory "%s" is not writable.',
