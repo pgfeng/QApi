@@ -46,6 +46,9 @@ class FileSystemCache implements CacheInterface
     public function __construct(FileSystem $config)
     {
         $directory = $config->directory;
+        $this->directory = $directory;
+        $this->extension = $config->extension;
+        $this->umask = $config->umask;
         if (!$this->createPathIfNeeded($directory)) {
             throw new CacheErrorException(sprintf(
                 'The directory "%s" does not exist and could not be created.',
@@ -59,9 +62,6 @@ class FileSystemCache implements CacheInterface
                 $directory
             ));
         }
-        $this->directory = $directory;
-        $this->extension = $config->extension;
-        $this->umask = $config->umask;
         $this->directoryStringLength = strlen($this->directory);
         $this->extensionStringLength = strlen($this->extension);
     }
