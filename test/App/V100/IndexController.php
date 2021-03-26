@@ -3,14 +3,14 @@
 
 namespace Test\App\V100;
 
-use QApi\Attribute\Middleware;
+use QApi\Attribute\Parameter\PathParam;
 use QApi\Attribute\Route;
+use QApi\Exception\CacheErrorException;
 use QApi\Request;
 use QApi\Response;
 use Test\App\Middleware\TestMiddleware;
-use Test\Model\usersModel;
 
-#[Route('/user',middleware: TestMiddleware::class)]
+#[Route('/user', middleware: TestMiddleware::class, summary: '用户', description: '用户操作')]
 class IndexController
 {
     /**
@@ -18,10 +18,12 @@ class IndexController
      * @param Response $response
      * @return Response
      */
-    #[Route(path: '/{id}', methods: ['ALL'], paramPattern: ['id' => '\d+'],middleware: TestMiddleware::class)]
+    #[Route(path: '/{id}', methods: ['ALL'], paramPattern: ['id' => '.+'], middleware: TestMiddleware::class)]
+    #[PathParam(name:'id',summary:'用户ID')]
     public function indexAction(Request $request, Response $response): Response
     {
-        $response->setData(usersModel::model()->findByPk($request->arguments['id']));
-        return $response;
+        return $response->setMsg('Hello World！')->setData([
+
+        ]);
     }
 }
