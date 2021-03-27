@@ -4,8 +4,15 @@
 namespace QApi;
 
 
+use Closure;
+use ErrorException;
 use JetBrains\PhpStorm\NoReturn;
+use JsonException;
 use QApi;
+use QApi\Exception\CompileErrorException;
+use ReflectionClass;
+use ReflectionException;
+use RuntimeException;
 
 /**
  * Class Router
@@ -86,7 +93,7 @@ class Router
         $nameSpace .= '\\' . $version_path;
         try {
             self::build(scandir($base_path), $base_path, $nameSpace, $base_path);
-        } catch (\ReflectionException $e) {
+        } catch (ReflectionException $e) {
             $message = $e->getMessage();
             $file = $e->getFile();
             $line = $e->getLine();
@@ -102,7 +109,7 @@ class Router
      * @param string $parent_path
      * @param string $nameSpace
      * @param string $base_path
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public static function build($san_files, string $parent_path, string $nameSpace, string $base_path): void
     {
@@ -114,7 +121,7 @@ class Router
                 } else if (preg_match('#(.+)Controller.php#', $path, $match)) {
                     $path_class = $nameSpace . '\\' . str_replace('/', '\\', str_replace($base_path, '',
                             $parent_path)) . $match[1] . 'Controller';
-                    $refClass = new \ReflectionClass(new $path_class);
+                    $refClass = new ReflectionClass(new $path_class);
                     $methods = $refClass->getMethods();
                     foreach ($methods as $method) {
                         if (substr($method->getName(), -6) === 'Action') {
@@ -200,6 +207,8 @@ class Router
 
     /**
      * 执行
+     * @throws ErrorException
+     * @throws JsonException
      */
     public
     static function run()
@@ -296,7 +305,7 @@ class Router
      * @param array $params
      * @param array $middleware
      * @return mixed
-     * @throws \ErrorException
+     * @throws ErrorException|JsonException
      */
     public
     static function runCallBack(string|callable|array $callback, array $params, array $middleware = []): mixed
@@ -318,10 +327,10 @@ class Router
                 $response = new Response();
                 Logger::info('Router -> ' . 'Callable()');
                 Logger::info('RouterOriginal -> ' . json_encode(self::$router, JSON_THROW_ON_ERROR));
-
+                $result = null;
                 if ($middleware) {
                     /**
-                     * @var QApi\Http\MiddlewareHandler $middlewareObject
+                     * @var QApi\Http\MiddlewareInterface $middlewareObject
                      */
                     $middlewareObject = null;
                     foreach ($middleware as $item) {
@@ -338,10 +347,10 @@ class Router
                 } else {
                     $result = $callback($request, $response);
                 }
-                if ($result instanceof \QApi\Response) {
+                if ($result instanceof Response) {
                     return $result;
                 }
-                if ($result instanceof \Closure) {
+                if ($result instanceof Closure) {
                     return $result($request, $response);
                 }
 
@@ -350,7 +359,7 @@ class Router
             $callback = str_replace('/', '\\', $callback);
             $segments = explode('@', $callback);
             if (count($segments) !== 2) {
-                throw new \ErrorException('routing syntax error，' . $callback . 'unable to resolve!');
+                throw new CompileErrorException('routing syntax error，' . $callback . 'unable to resolve!');
             }
             $controllerName = $segments[0];
             $controller = new $controllerName();
@@ -366,7 +375,7 @@ class Router
             $result = '';
             if ($middleware) {
                 /**
-                 * @var QApi\Http\MiddlewareHandler $middlewareObject
+                 * @var QApi\Http\MiddlewareInterface $middlewareObject
                  */
                 $middlewareObject = null;
                 foreach ($middleware as $item) {
@@ -381,10 +390,10 @@ class Router
             } else {
                 $result = $controller->$method(new Request($arguments), $response);
             }
-            if ($result instanceof \QApi\Response) {
+            if ($result instanceof Response) {
                 return $result;
             }
-            if ($result instanceof \Closure) {
+            if ($result instanceof Closure) {
                 return $result($request, $response);
             }
 
@@ -414,7 +423,7 @@ class Router
                     $response = new Response($version->versionName);
                     if (self::$router['middleware']) {
                         /**
-                         * @var QApi\Http\MiddlewareHandler $middlewareObject
+                         * @var QApi\Http\MiddlewareInterface $middlewareObject
                          */
                         $middlewareObject = null;
                         foreach (self::$router['middleware'] as $item) {
@@ -430,10 +439,10 @@ class Router
                     } else {
                         $result = $controller->{$callback['method']}($request, $response);
                     }
-                    if ($result instanceof \QApi\Response) {
+                    if ($result instanceof Response) {
                         return $result;
                     }
-                    if ($result instanceof \Closure) {
+                    if ($result instanceof Closure) {
                         return $result($request, $response);
                     }
 
@@ -441,7 +450,7 @@ class Router
                 }
             }
         }
-        throw new \RuntimeException($callback['nameSpace'] . '\\' . $nowVersion->versionDir . '\\' . $callback['controller']
+        throw new RuntimeException($callback['nameSpace'] . '\\' . $nowVersion->versionDir . '\\' . $callback['controller']
             . 'Controller@'
             . $callback['method']
             . ' Not Found.');
