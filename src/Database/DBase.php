@@ -1047,7 +1047,7 @@ abstract class DBase
     final public function notNull($field): DBase
     {
         $field = $this->_Field($field);
-        return $this->where($field . ' NOT NULL');
+        return $this->where($field . ' IS NOT NULL');
     }
 
     /**

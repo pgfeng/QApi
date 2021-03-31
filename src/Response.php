@@ -130,7 +130,7 @@ class Response
         Logger::success($sendData);
         Logger::success("↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑  Response Data ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ");
 
-        return json_encode(array_merge($sendData, $this->extra), JSON_THROW_ON_ERROR);
+        return json_encode(array_merge($sendData, $this->extra), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
     }
 
     /**

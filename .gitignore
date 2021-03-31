@@ -8,7 +8,7 @@
 
 # Visual Studio Code related
 .vscode/
-
+test/
 
 # MAC OS
 .DS_Store
