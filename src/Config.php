@@ -5,6 +5,7 @@ namespace QApi;
 
 use QApi\Config\Application;
 use QApi\Config\Cache\FileSystem;
+use QApi\Config\Cache\SQLite;
 use QApi\Config\Database\MysqliDatabase;
 use QApi\Config\Database\PdoMysqlDatabase;
 use QApi\Config\Database\PdoSqliteDatabase;
@@ -51,12 +52,13 @@ class Config
 
     /**
      * @param string|null $configName
-     * @return FileSystem|null
+     * @return FileSystem|SQLite|null
+     * @throws \ErrorException
      */
-    public static function cache(string $configName = null): FileSystem|null
+    public static function cache(string $configName = null): FileSystem|SQLite|null
     {
         if (!is_cli()) {
-            $runMode = Config::app()->getRunMode();
+            $runMode = self::app()->getRunMode();
         } else if (defined('DEV_MODE') && DEV_MODE === true) {
             $runMode = RunMode::DEVELOPMENT;
         } else {
@@ -206,7 +208,7 @@ class Config
     }
 
     /**
-     * 清空
+     * clear config
      */
     public static function flush(): void
     {

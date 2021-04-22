@@ -11,6 +11,7 @@ class Response
     private mixed $data = [];
     private string $msg = 'Ok';
     private array $extra = [];
+    // TODO
     private array $headers = [];
 
     /**
@@ -21,9 +22,6 @@ class Response
     {
     }
 
-    /**
-     *
-     */
     /**
      * @param string $msg
      * @return Response
@@ -64,12 +62,18 @@ class Response
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function ok(): Response
     {
         $this->status = true;
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function fail(): Response
     {
         $this->status = false;

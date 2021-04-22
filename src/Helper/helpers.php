@@ -46,7 +46,7 @@ function parseDir(): string
  *
  * @return string
  */
-#[Pure] function str_cut($string, $length, $dot = '...'): string
+function str_cut($string, $length, $dot = '...'): string
 {
     $length = (int)$length;
     //--将html标签剔除
@@ -308,11 +308,12 @@ function redirect($url, $time = 0)
  *
  * @param $data
  * @return false|string
+ * @throws JsonException
  */
 function response_json($data): bool|string
 {
     header("Content-Type:application/Json; charset=UTF-8");
-    return json_encode($data, JSON_UNESCAPED_UNICODE);
+    return json_encode($data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
 }
 
 
@@ -361,13 +362,13 @@ function random($length, $chars = '0123456789'): string
  * @param mixed $data 数据
  * @param string $root 根节点名
  * @param string $item 数字索引的子节点名
- * @param string|array $attr 根节点属性
+ * @param string $attr 根节点属性
  * @param string $id 数字索引子节点key转换的属性名
  * @param string $encoding 数据编码
  *
  * @return string
  */
-function xml_encode($data, $root = 'root', $item = 'item', $attr = '', $id = 'id', $encoding = 'utf-8'): string
+function xml_encode(mixed $data, $root = 'root', $item = 'item', $attr = '', $id = 'id', $encoding = 'utf-8'): string
 {
     if (is_array($attr)) {
         $_attr = [];
@@ -389,13 +390,13 @@ function xml_encode($data, $root = 'root', $item = 'item', $attr = '', $id = 'id
 /**
  * 数据XML编码
  *
- * @param mixed $data 数据
+ * @param array $data 数据
  * @param string $item 数字索引时的节点名称
  * @param string $id 数字索引key转换为的属性名
  *
  * @return string
  */
-function data_to_xml($data, $item = 'item', $id = 'id'): string
+function data_to_xml(array $data, $item = 'item', $id = 'id'): string
 {
     $xml = $attr = '';
     foreach ($data as $key => $val) {

@@ -4,6 +4,7 @@
 namespace QApi\Cache;
 
 
+use ErrorException;
 use QApi\App;
 use QApi\Config;
 use QApi\Enumeration\RunMode;
@@ -15,6 +16,7 @@ class Cache
     /**
      * @param string $configName
      * @return CacheInterface
+     * @throws CacheErrorException|ErrorException
      */
     public static function initialization(string $configName = 'default'): CacheInterface
     {

@@ -337,9 +337,9 @@ class filesModel extends Model
      * 用MD5值获取文件
      * @param $md5
      * @param bool $all
-     * @return array|bool
+     * @return Data|null
      */
-    public function getFileByMd5($md5, $all = FALSE): Data|bool|null
+    public function getFileByMd5($md5, bool $all = FALSE): Data|null
     {
         $this->Where('file_md5', $md5);
         if ($all) {
@@ -352,9 +352,9 @@ class filesModel extends Model
     /**
      * @param $file_id
      * @param bool $all
-     * @return array|bool
+     * @return Data|null
      */
-    public function getFileById($file_id, $all = FALSE): bool|array|null
+    public function getFileById($file_id, bool $all = FALSE): Data|null
     {
         $this->Where('file_id', $file_id);
         if ($all) {

@@ -9,17 +9,17 @@
 namespace QApi\Model;
 
 
-
 use Exception;
 use QApi\Data;
 use QApi\Exception\SqlErrorException;
+use QApi\Model;
 
 /**
  * 分表模型 自动分表处理
  * Class Model
  * @package Model
  */
-abstract class Partition extends \QApi\Model
+abstract class Partition extends Model
 {
     /**
      * @var string 分表字段
@@ -43,7 +43,7 @@ abstract class Partition extends \QApi\Model
 
     /**
      * @return self
-     * @throws Exception
+     * @throws SqlErrorException
      */
     public function where(): self
     {
@@ -85,8 +85,10 @@ abstract class Partition extends \QApi\Model
      * @param String $primary_key
      *
      * @return  Bool|int
+     * @throws SqlErrorException
+     * @throws Exception
      */
-    final public function save(array|Data $data, $primary_key = ''):bool|int
+    final public function save(array|Data $data, $primary_key = ''): bool|int
     {
         if (!is_array($data)) {
             return FALSE;
