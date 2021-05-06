@@ -24,6 +24,7 @@ use QApi\Model\filesModel;
  * @method $this between(string $field, array $Between)
  * @method $this notBetween(string $field, array $Between)
  * @method $this in(string $field, array $in)
+ * @method $this notIn(string $field, array $in)
  * @method $this where(string|array $field, string|array $comPar = '', string $val = '')
  * @method $this orderBy(string|array $field = '', string $by = '')
  * @method $this limit(int $offset, int $size = '')

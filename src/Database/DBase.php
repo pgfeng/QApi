@@ -11,7 +11,6 @@ use QApi\Config\Database\MysqliDatabase;
 use QApi\Config\Database\PdoMysqlDatabase;
 use QApi\Config\Database\PdoSqlServDatabase;
 use QApi\Data;
-use QApi\Database\DB;
 use QApi\Enumeration\CliColor;
 use QApi\Exception\SqlErrorException;
 use QApi\Logger;
@@ -321,7 +320,7 @@ abstract class DBase
      *
      * @return $this
      */
-    final public function setTable($table, $forget = 1)
+    final public function setTable($table, $forget = 1): self
     {
         if ($forget === 0) {
             $this->table = $this->config->tablePrefix . $table;
@@ -384,9 +383,10 @@ abstract class DBase
 
     /**
      * @param $field
-     * @param $in
+     * @param array $in
      *
-     * @return Object
+     * @return DBase
+     * @throws Exception
      */
     final public function in($field, array $in): self
     {
@@ -400,6 +400,27 @@ abstract class DBase
         }
 
         return $this->where("{$field} IN ({$pin})");
+    }
+
+    /**
+     * @param $field
+     * @param array $in
+     *
+     * @return DBase
+     * @throws Exception
+     */
+    final public function notIn($field, array $in): self
+    {
+        $field = $this->_Field($field);
+        if (is_array($in)) {
+            $pin = '\'';
+            $pin .= implode('\',\'', $in);
+            $pin .= '\'';
+        } else {
+            $pin = $in;
+        }
+
+        return $this->where("{$field} NOT IN ({$pin})");
     }
 
     /**
