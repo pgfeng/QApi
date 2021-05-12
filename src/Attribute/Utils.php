@@ -116,9 +116,9 @@ class Utils
                 if (is_dir($parent_path . $path)) {
                     self::buildVersionDoc(scandir($parent_path . $path . DIRECTORY_SEPARATOR), $parent_path . $path .
                         DIRECTORY_SEPARATOR,
-                        $nameSpace . '\\' . $path, $versionDir, $data,$base_path);
+                        $nameSpace . '\\' . $path, $versionDir, $data, $base_path);
                 } else if (preg_match('#(.+)Controller.php#', $path, $match)) {
-                    $data[str_replace($base_path,'',$parent_path.$match[1])] = self::getDocAttribute($nameSpace . '\\' . $match[1] . 'Controller');
+                    $data[str_replace($base_path, '', $parent_path . $match[1])] = self::getDocAttribute($nameSpace . '\\' . $match[1] . 'Controller');
                 }
             }
         }
@@ -206,7 +206,7 @@ class Utils
             }
         } else {
             foreach ($middle as $m) {
-                $middleware_data = self::getAttribute($m, $attributeFilter);
+                $middleware_data = self::getAttribute($m, 'handle', $attributeFilter);
                 foreach ($middleware_data as $key => $lists) {
                     foreach ($lists as $v) {
                         $data[$key][] = $v;
