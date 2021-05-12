@@ -9,6 +9,8 @@ use ErrorException;
 use JetBrains\PhpStorm\NoReturn;
 use JsonException;
 use QApi;
+use QApi\Attribute\Utils;
+use QApi\Cache\Cache;
 use QApi\Exception\CompileErrorException;
 use ReflectionClass;
 use ReflectionException;
@@ -52,6 +54,38 @@ class Router
      */
     public static function init(): void
     {
+        self::get(path: '/__status.json', callback: function (Request $request, Response $response) {
+            if (!App::$apiPassword) {
+                return $response->setMsg('状态正常')->ok();
+            }
+            $password = md5(trim($request->get->get('password')));
+            if ($password === md5(md5(App::$apiPassword))) {
+                return $response->setMsg('状态正常！');
+            }
+            return $response->setMsg('状态异常！')->fail();
+        });
+        self::get(path: '/__apis.json', callback: function (Request $request, Response $response) {
+            $cache = Cache::initialization('__document');
+            return $response->setData($cache->get('__apiDocument'))->setMsg('获取接口文档成功！');
+        });
+        self::get(path: '/__apiResponse.json', callback: function (Request $request, Response $response) {
+            $cache = Cache::initialization('__document');
+            return $response->setData($cache->get($request->get->get('type') . '/' . $request->get->get('path')))
+                ->setMsg('获取接口返回示例成功！');
+        });
+        self::post(path: '/__apiResponse.json', callback: function (Request $request, Response $response) {
+            $cache = Cache::initialization('__document');
+            return $response->setData($cache->set($request->get->get('type') . '/' . $request->get->get('path'),
+                $request->post->get('response')
+            ))
+                ->setMsg('保存接口文档示例成功！');
+        });
+        self::post(path: '/__apis.json', callback: function (Request $request, Response $response) {
+            Utils::rebuild();
+            $cache = Cache::initialization('__document');
+            return $response->setData($cache->get('__apiDocument'))->setMsg('获取接口文档成功！');
+        });
+
         if (Config::app()->getRunMode() !== QApi\Enumeration\RunMode::PRODUCTION) {
             self::BuildRoute(Config::$app->getNameSpace());
         }

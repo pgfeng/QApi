@@ -27,12 +27,15 @@ class Application
      * @param Handler[]|null $logHandler
      * @param string|bool $nameSpace
      * @param string|array $allowOrigin
+     * @param string $applicationName
+     * @param string $scheme
      */
-    public function __construct(private string $appDir,
-                                private string $runMode,
-                                private string $defaultVersionName,
+    public function __construct(public string $appDir,
+                                public string $runMode,
+                                public string $defaultVersionName,
                                 public ?array $logHandler = null,
-                                private string|bool $nameSpace = false, private string|array $allowOrigin = '*')
+                                public string|bool $nameSpace = false, public string|array $allowOrigin = '*',
+                                public string $applicationName = '', public string $scheme = 'http')
     {
         $this->appDir = trim($this->appDir, '/');
         if ($this->nameSpace === false) {

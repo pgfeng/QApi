@@ -237,14 +237,32 @@ use QApi\Http\MiddlewareInterface;
      * @param array $params
      */
     public function __construct(
-        private string $path = '',
-        private string|array $methods = 'ALL',
-        private array $paramPattern = [],
-        private array|string|null $middleware = null,
-        private string|null $summary = null,
-        private string|null $description = null,
-        private bool $checkParams = false,
+        public string $path = '',
+        public string|array $methods = 'ALL',
+        public array $paramPattern = [],
+        public array|string|null $middleware = null,
+        public string|null $summary = null,
+        public string|null $description = null,
+        public string|null $tag = '',
+        public bool $checkParams = false,
     )
     {
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray(): array
+    {
+        return [
+            'path' => $this->path,
+            'methods' => $this->methods,
+            'paramPattern' => $this->paramPattern,
+            'middleware' => $this->middleware,
+            'summary' => $this->summary,
+            'description' => $this->description,
+            'tag' => $this->tag,
+            'checkParams' => $this->checkParams
+        ];
     }
 }

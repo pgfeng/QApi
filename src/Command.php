@@ -12,6 +12,7 @@ namespace QApi;
 use League\CLImate\CLImate;
 use QApi\Command\ColumnCommand;
 use QApi\Command\CommandHandler;
+use QApi\Command\DocBuildCommand;
 
 /**
  * Class Console
@@ -57,6 +58,7 @@ class Command
         array_shift($_SERVER['argv']);
         $this->argv = $_SERVER['argv'];
         $this->addHandler(new ColumnCommand($this));
+        $this->addHandler(new DocBuildCommand($this));
         $Handlers = Config::command('CommandHandlers');
 
         /**

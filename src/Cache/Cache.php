@@ -7,6 +7,7 @@ namespace QApi\Cache;
 use ErrorException;
 use QApi\App;
 use QApi\Config;
+use QApi\Config\Cache\FileSystem;
 use QApi\Enumeration\RunMode;
 use QApi\Exception\CacheErrorException;
 
@@ -20,7 +21,9 @@ class Cache
      */
     public static function initialization(string $configName = 'default'): CacheInterface
     {
-
+        if ($configName === '__document') {
+            return new FileSystemCache(new FileSystem(PROJECT_PATH . '.document'));
+        }
         if (!is_cli()) {
             $runMode = Config::app()->getRunMode();
         } else if (defined('DEV_MODE') && DEV_MODE === true) {

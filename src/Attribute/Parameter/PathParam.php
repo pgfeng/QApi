@@ -6,12 +6,7 @@ namespace QApi\Attribute\Parameter;
 use Attribute;
 
 
-#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)] class PathParam extends
-    ParamAbstract implements ParamInterface
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)] class PathParam extends ParamAbstract
 {
 
-    public function run(): void
-    {
-        // TODO: Implement run() method.
-    }
 }

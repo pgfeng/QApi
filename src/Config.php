@@ -3,6 +3,7 @@
 
 namespace QApi;
 
+use ErrorException;
 use QApi\Config\Application;
 use QApi\Config\Cache\FileSystem;
 use QApi\Config\Cache\SQLite;
@@ -23,7 +24,17 @@ class Config
     public static ?array $other = [];
 
     /**
+     * @return array
+     */
+    public static function apps(): array
+    {
+        $configPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'app.php';
+        return include $configPath;
+    }
+
+    /**
      * @return Application
+     * @throws ErrorException
      */
     public static function &app(): Application
     {
@@ -41,19 +52,19 @@ class Config
         $appHosts = array_keys($appConfig);
         $appHostPattern = str_replace('*', '(.+)', $appHosts);
         foreach ($appHosts as $key => $host) {
-            if (preg_match('/' . $appHostPattern[$key] . '/i', $_SERVER['HTTP_HOST'])) {
+            if (preg_match('/^' . $appHostPattern[$key] . '$/i', $_SERVER['HTTP_HOST'])) {
                 $var = self::$app = &$appConfig[$host];
                 return $var;
             }
         }
-        throw new \ErrorException('host ' . $_SERVER['HTTP_HOST'] . ' not bind app!', 0, 1,
+        throw new ErrorException('host ' . $_SERVER['HTTP_HOST'] . ' not bind app!', 0, 1,
             $configPath);
     }
 
     /**
      * @param string|null $configName
      * @return FileSystem|SQLite|null
-     * @throws \ErrorException
+     * @throws ErrorException
      */
     public static function cache(string $configName = null): FileSystem|SQLite|null
     {
@@ -103,17 +114,24 @@ class Config
         return $commandConfig;
     }
 
-    public static function versions()
+    /**
+     * @param string|null $runMode
+     * @return mixed
+     * @throws ErrorException
+     */
+    public static function versions(string $runMode = null): mixed
     {
         if (!self::$versions) {
-            $versionConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . Config::app()->getRunMode()
+            $versionConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR .
+                ($runMode ?: Config::app()->getRunMode())
+
                 . DIRECTORY_SEPARATOR . 'version.php';
             if (!self::$version && !file_exists($versionConfigPath)) {
                 mkPathDir($versionConfigPath);
                 file_put_contents($versionConfigPath, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Config'
                     . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'version.php'), LOCK_EX);
             }
-            self::$versions = include PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . Config::app()->getRunMode()
+            self::$versions = include PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . ($runMode ?: Config::app()->getRunMode())
                 . DIRECTORY_SEPARATOR . 'version.php';
         }
         usort(self::$versions, static function ($a, $b) {
@@ -125,7 +143,7 @@ class Config
     /**
      * @param string|null $configName
      * @return MysqliDatabase|PdoMysqlDatabase|PdoSqliteDatabase|PdoSqlServDatabase|array|null
-     * @throws \ErrorException
+     * @throws ErrorException
      */
     public static function database(string $configName = null):
     MysqliDatabase|PdoMysqlDatabase|PdoSqliteDatabase|PdoSqlServDatabase|null|array

@@ -3,6 +3,8 @@
 
 namespace QApi\Attribute\Parameter;
 
+use JetBrains\PhpStorm\ArrayShape;
+
 abstract class ParamAbstract
 {
     /**
@@ -25,4 +27,19 @@ abstract class ParamAbstract
     {
     }
 
+    /**
+     * @return array
+     */
+    #[ArrayShape(['name' => "string", 'summary' => "string", 'description' => "string", 'type' => "string",
+'required' => "bool", 'default' => "mixed"])] public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'summary' => $this->summary,
+            'description' => $this->description,
+            'type' => $this->type,
+            'required' => $this->required,
+            'default' => $this->default,
+        ];
+    }
 }

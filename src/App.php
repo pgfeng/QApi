@@ -33,6 +33,7 @@ class App
     public static ?\DateTimeZone $timezone = null;
     public static ?string $uploadDir = null;
     public static ?\Closure $getVersionFunction = null;
+    public static ?string $apiPassword = null;
 
     /**
      * 获取当前版本
@@ -59,13 +60,27 @@ class App
      * @param \Closure|null $getVersionFunction
      * @param array $allowMethods
      * @param array $allowHeaders
+     * @param string $apiPassword
      * @return Response|string
+     * @throws CompileErrorException
+     * @throws CoreErrorException
+     * @throws CoreWarningException
+     * @throws DeprecatedException
      * @throws ErrorException
+     * @throws NoticeException
+     * @throws ParseException
+     * @throws RecoverableErrorException
+     * @throws StrictException
+     * @throws UserDeprecatedException
+     * @throws UserErrorException
+     * @throws UserNoticeException
+     * @throws UserWarningException
+     * @throws WarningException
      */
     public static function run(?string $timezone = 'Asia/Shanghai', $routeDir = 'routes', $configDir = 'config', $runtimeDir =
     'runtime', $uploadDir = 'Upload', ?\Closure $getVersionFunction = null, array $allowMethods = [
         Methods::GET, Methods::POST, Methods::DELETE, Methods::HEAD, Methods::PUT
-    ], array $allowHeaders = ['*']): Response|string
+    ], array $allowHeaders = ['*'], $apiPassword = null): Response|string
     {
         set_error_handler(callback: static function ($err_severity, $err_msg, $err_file, $err_line) {
             if (0 === error_reporting()) {
@@ -94,6 +109,7 @@ class App
             }
             self::$timezone = new \DateTimeZone($timezone);
             date_default_timezone_set($timezone);
+            self::$apiPassword = trim($apiPassword);
             self::$routeDir = trim($routeDir, '/');
             self::$runtimeDir = trim($runtimeDir, '/');
             self::$uploadDir = trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
