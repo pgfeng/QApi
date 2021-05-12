@@ -15,7 +15,8 @@ $defaultHandle = new StreamHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . App::$ru
 $formatter = new LineFormatter("%datetime% %channel%.%level_name% > %message%\n", '[Y-m-d H:i:s]');
 $defaultHandle->setFormatter($formatter);
 return [
-    '*' => new Application(appDir: 'App', runMode: RunMode::DEVELOPMENT, defaultVersionName: 'V1.0.0', logHandler: [
+    '127.0.0.1:8889' => new Application(appDir: 'App', runMode: RunMode::DEVELOPMENT, defaultVersionName: 'V1.0.0',
+        logHandler: [
         $defaultHandle,
         //        new \Monolog\Handler\NullHandler(),
     ], allowOrigin: $allowOrigin = ['*']),
