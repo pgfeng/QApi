@@ -42,6 +42,9 @@ class Utils
                 $data = [];
                 self::buildVersionDoc(scandir($path), $path, $app->nameSpace . '\\' . $version->versionDir,
                     $version->versionDir, $data, $path);
+                if (!isset($apis[$version->versionDir])){
+                    $apis[$version->versionDir] = [];
+                }
                 foreach ($data as $controller => $methods) {
                     foreach ($methods as $mname => $attr) {
                         $path = '';
@@ -74,15 +77,17 @@ class Utils
                         if (!isset($apis[$version->versionDir][$tag])) {
                             $apis[$version->versionDir][$tag] = [];
                         }
-                        $apis[$version->versionDir][$tag][] = [
-                            'summary' => $summary,
-                            'type' => $type,
-                            'description' => $description,
-                            'path' => $path ?: ('/' . $controller . '/' . $mname),
-                            'SystemPath' => '/' . $controller . '/' . $mname,
-                            'params' => $attr,
-                            'response' => null,
-                        ];
+                        if ($summary){
+                            $apis[$version->versionDir][$tag][] = [
+                                'summary' => $summary,
+                                'type' => $type,
+                                'description' => $description,
+                                'path' => $path ?: ('/' . $controller . '/' . $mname),
+                                'SystemPath' => '/' . $controller . '/' . $mname,
+                                'params' => $attr,
+                                'response' => null,
+                            ];
+                        }
                     }
                 }
             }
