@@ -25,4 +25,6 @@ class ParamsType
 
     public const EMAIL = 'email';
 
+    public const mobile = 'mobile';
+
 }
