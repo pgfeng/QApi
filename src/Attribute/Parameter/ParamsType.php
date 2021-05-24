@@ -12,4 +12,8 @@ class ParamsType
     public const INT = 'int';
     public const STRING = 'string';
     public const FILE = 'file';
+    public const DATETIME = 'dateTime';
+    public const DATE = 'date';
+    public const EMAIL = 'email';
+
 }
