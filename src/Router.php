@@ -56,7 +56,6 @@ class Router
     {
         self::get(path: '/__status.json', callback: function (Request $request, Response $response) {
             if (!App::$apiPassword) {
-                dump(App::$apiPassword);
                 return $response->setMsg('状态正常')->ok();
             }
             $password = md5(trim($request->get->get('password')));
