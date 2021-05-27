@@ -74,6 +74,9 @@ class Utils
                                 $item[$key] = $v->toArray();
                             }
                         }
+                        if (!$tag){
+                            $tag = 'Default';
+                        }
                         if (!isset($apis[$version->versionDir][$tag])) {
                             $apis[$version->versionDir][$tag] = [];
                         }

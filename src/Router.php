@@ -56,6 +56,7 @@ class Router
     {
         self::get(path: '/__status.json', callback: function (Request $request, Response $response) {
             if (!App::$apiPassword) {
+                dump(App::$apiPassword);
                 return $response->setMsg('状态正常')->ok();
             }
             $password = md5(trim($request->get->get('password')));
@@ -65,15 +66,33 @@ class Router
             return $response->setMsg('状态异常！')->fail();
         });
         self::get(path: '/__apis.json', callback: function (Request $request, Response $response) {
+            if (App::$apiPassword) {
+                $password = md5(trim($request->get->get('token')));
+                if ($password !== md5(md5(App::$apiPassword))) {
+                    return $response->setMsg('需要登录！')->setCode(403)->fail();
+                }
+            }
             $cache = Cache::initialization('__document');
             return $response->setData($cache->get('__apiDocument'))->setMsg('获取接口文档成功！');
         });
         self::get(path: '/__apiResponse.json', callback: function (Request $request, Response $response) {
+            if (App::$apiPassword) {
+                $password = md5(trim($request->get->get('token')));
+                if ($password !== md5(md5(App::$apiPassword))) {
+                    return $response->setMsg('需要登录！')->setCode(403)->fail();
+                }
+            }
             $cache = Cache::initialization('__document');
             return $response->setData($cache->get($request->get->get('type') . '/' . $request->get->get('path')))
                 ->setMsg('获取接口返回示例成功！');
         });
         self::post(path: '/__apiResponse.json', callback: function (Request $request, Response $response) {
+            if (App::$apiPassword) {
+                $password = md5(trim($request->get->get('token')));
+                if ($password !== md5(md5(App::$apiPassword))) {
+                    return $response->setMsg('需要登录！')->setCode(403)->fail();
+                }
+            }
             $cache = Cache::initialization('__document');
             return $response->setData($cache->set($request->get->get('type') . '/' . $request->get->get('path'),
                 $request->post->get('response')
@@ -81,6 +100,12 @@ class Router
                 ->setMsg('保存接口文档示例成功！');
         });
         self::post(path: '/__apis.json', callback: function (Request $request, Response $response) {
+            if (App::$apiPassword) {
+                $password = md5(trim($request->get->get('token')));
+                if ($password !== md5(md5(App::$apiPassword))) {
+                    return $response->setMsg('需要登录！')->setCode(403)->fail();
+                }
+            }
             Utils::rebuild();
             $cache = Cache::initialization('__document');
             return $response->setData($cache->get('__apiDocument'))->setMsg('获取接口文档成功！');
