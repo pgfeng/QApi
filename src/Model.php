@@ -46,7 +46,7 @@ use QApi\Model\filesModel;
  * @method $this group(string $group = '')
  * @method Data|bool|array query(string $sql = '')
  * @method Data|null getOne(string $field = '*')
- * @method Data|null find(string $field = '*')
+ * @method Data|null find(string|array $field = '*')
  * @method Data|null|array findAll(string $field = '*')
  * @method string getField(string $column)
  * @method string setField(string $column, string $value)
