@@ -38,7 +38,7 @@ abstract class Partition extends Model
     {
         $num = ((int)$partition_value % $this->partition_num) + 1;
         $table = $this->db->table . '_' . $num;
-        $this->db->_set($this->db->config ['table_pre'] . $table, 'table');
+        $this->db->_set($this->db->config->tablePrefix . $table, 'table');
     }
 
     /**
