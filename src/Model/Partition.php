@@ -15,7 +15,7 @@ use QApi\Exception\SqlErrorException;
 use QApi\Model;
 
 /**
- * 分表模型 自动分表处理
+ * 分表模型 自动分表处理 水平分表解决方案
  * Class Model
  * @package Model
  */
@@ -39,6 +39,17 @@ abstract class Partition extends Model
         $num = ((int)$partition_value % $this->partition_num) + 1;
         $table = $this->db->table . '_' . $num;
         $this->db->_set($this->db->config->tablePrefix . $table, 'table');
+    }
+
+    /**
+     * 根据分区字段表值获取所在表
+     * @param $partition_value
+     * @return string
+     */
+    final public function getTable($partition_value): string
+    {
+        $num = ((int)$partition_value % $this->partition_num) + 1;
+        return $this->db->table . '_' . $num;
     }
 
     /**
