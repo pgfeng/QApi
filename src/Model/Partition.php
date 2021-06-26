@@ -58,7 +58,8 @@ abstract class Partition extends Model
      */
     public function where(): self
     {
-        if (func_get_arg(0) === $this->partition_field) {
+        if (func_get_arg(0) === $this->partition_field || func_get_arg(0) === $this->getTable
+            (func_get_arg(1)) . '.' . $this->partition_field) {
             if (func_num_args() !== 2) {
                 throw new SqlErrorException('效验分表字段，where必须传入两个参数！');
             }
