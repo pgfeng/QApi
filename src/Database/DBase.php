@@ -915,13 +915,6 @@ abstract class DBase
         } else {
             if ($this->section['handle'] === 'select') {
                 $sql = "{$this->section['handle']} {$this->section['select']} from {$this->section['table']}";
-                if ($this->section['lock'] !== null) {
-                    if ($this->section['lock'] === true) {
-                        $sql .= ' LOCK IN SHARE MODE';
-                    } else {
-                        $sql .= ' FOR UPDATE';
-                    }
-                }
             } elseif ($this->section['handle'] === 'update') {
                 $sql = "{$this->section['handle']} {$this->section['table']} set {$this->section['update']}";
             } elseif ($this->section['handle'] === 'delete') {
@@ -929,6 +922,13 @@ abstract class DBase
             }
             if (!empty($sql)) {
                 $sql .= ($this->section['join'] ? " " . $this->section['join'] : '') . ($this->section['where'] ? " where {$this->section['where']}" : '') . ($this->section['group'] ? " group by {$this->section['group']}" : '') . ($this->section['orderBy'] ? " order by {$this->section['orderBy']}" : '') . ($this->section['limit'] ? " limit  {$this->section['limit']}" : '');
+                if (($this->section['handle'] === 'select') && $this->section['lock'] !== null) {
+                    if ($this->section['lock'] === true) {
+                        $sql .= ' LOCK IN SHARE MODE';
+                    } else {
+                        $sql .= ' FOR UPDATE';
+                    }
+                }
                 return $this->sql .= $sql;
             }
 
