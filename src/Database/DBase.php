@@ -44,6 +44,7 @@ abstract class DBase
         'group' => '',
         'orderBy' => '',
         'limit' => '',
+        'lock' => null,
     ];
     /**
      * @var string $sql
@@ -80,6 +81,20 @@ abstract class DBase
         $min = ((int)$page - 1) * $number;
 
         return $this->limit($min, (int)$number)->query();
+    }
+
+    /**
+     * @param bool $share_mode
+     * @return $this
+     */
+    final public function lock(bool $share_mode): self
+    {
+        if ($share_mode) {
+            $this->section['lock'] = true;
+        } else {
+            $this->section['lock'] = false;
+        }
+        return $this;
     }
 
     /**
@@ -904,6 +919,13 @@ abstract class DBase
         } else {
             if ($this->section['handle'] === 'select') {
                 $sql = "{$this->section['handle']} {$this->section['select']} from {$this->section['table']}";
+                if ($this->section['lock'] !== null) {
+                    if ($this->section['lock'] === true) {
+                        $sql .= ' LOCK IN SHARE MODE';
+                    } else {
+                        $sql .= ' FOR UPDATE';
+                    }
+                }
             } elseif ($this->section['handle'] === 'update') {
                 $sql = "{$this->section['handle']} {$this->section['table']} set {$this->section['update']}";
             } elseif ($this->section['handle'] === 'delete') {
@@ -935,7 +957,9 @@ abstract class DBase
             'group' => '',
             'orderBy' => '',
             'limit' => '',
+            'lock' => null,
         ];
+
         $this->sql = '';
     }
 

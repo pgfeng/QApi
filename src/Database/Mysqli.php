@@ -120,7 +120,7 @@ class Mysqli extends DBase
      */
     public function beginTransaction(): bool
     {
-        return $this->mysqli->autocommit(FALSE);
+        return $this->mysqli->begin_transaction();
     }
 
     /**
