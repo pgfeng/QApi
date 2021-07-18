@@ -87,13 +87,9 @@ abstract class DBase
      * @param bool $share_mode
      * @return $this
      */
-    final public function lock(bool $share_mode): self
+    final public function lock(bool $share_mode = false): self
     {
-        if ($share_mode) {
-            $this->section['lock'] = true;
-        } else {
-            $this->section['lock'] = false;
-        }
+        $this->section['lock'] = $share_mode;
         return $this;
     }
 

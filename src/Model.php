@@ -68,7 +68,7 @@ use QApi\Model\filesModel;
  * @method $this bothLike(string|array $field, string $value) 搜索查询
  * @method $this notNull(string $field)
  * @method $this isNull(string $field)
- * @method $this lock(bool $share_mode)
+ * @method $this lock(bool $share_mode = false)
  */
 class Model
 {
