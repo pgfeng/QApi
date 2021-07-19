@@ -146,7 +146,7 @@ abstract class DBase
     {
         $field = $this->_Field($field);
         $count = $this->getOne('count(' . $field . ')');
-        return $count ? $count['count(' . $field . ')'] : 0;
+        return (int)($count ? $count['count(' . $field . ')'] : 0);
     }
 
     /**
@@ -179,7 +179,9 @@ abstract class DBase
     {
         $field = $this->_Field($field);
         $sum = $this->getOne('LENGTH(' . $field . ')');
-        return $sum['LENGTH(' . $field . ')'] ?? 0;
+        if ($sum !== null) {
+            return (int)($sum['LENGTH(' . $field . ')'] ?? 0);
+        }
     }
 
     /**

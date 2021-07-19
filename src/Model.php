@@ -31,7 +31,7 @@ use QApi\Model\filesModel;
  * @method $this orWhere(string $field, string|array $comPar = '', string $val = '')
  * @method bool|int update(array|Data $update)
  * @method int|float exec(string $sql = '')
- * @method int|float count(string $field = '*')
+ * @method int count(string $field = '*')
  * @method int|float sum(string $field)
  * @method int|float avg(string $field)
  * @method int length(string $field)
