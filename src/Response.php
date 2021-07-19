@@ -54,11 +54,16 @@ class Response
 
     /**
      * @param array $extra
+     * @param bool $merge
      * @return Response
      */
-    public function setExtra(array $extra): Response
+    public function setExtra(array $extra, $merge = true): Response
     {
-        $this->extra = $extra;
+        if ($merge) {
+            $this->extra = array_merge($this->extra, $extra);
+        } else {
+            $this->extra = $extra;
+        }
         return $this;
     }
 
