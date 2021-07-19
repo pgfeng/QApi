@@ -182,6 +182,8 @@ abstract class DBase
         if ($sum !== null) {
             return (int)($sum['LENGTH(' . $field . ')'] ?? 0);
         }
+
+        return 0;
     }
 
     /**
