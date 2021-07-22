@@ -155,7 +155,7 @@ abstract class DBase
         if (!$fetch) {
             return 0;
         }
-        return $fetch['COUNT(' . $field . ')'];
+        return (int)$fetch['COUNT(' . $field . ')'];
     }
 
     /**
@@ -169,7 +169,7 @@ abstract class DBase
         if (!$fetch) {
             return 0;
         }
-        return $fetch['SUM(' . $field . ')'];
+        return (float)$fetch['SUM(' . $field . ')'];
     }
 
     /**
@@ -183,7 +183,7 @@ abstract class DBase
         if (!$fetch) {
             return 0;
         }
-        return $fetch['AVG(' . $field . ')'];
+        return (float)$fetch['AVG(' . $field . ')'];
     }
 
     /**
@@ -197,7 +197,7 @@ abstract class DBase
         if (!$fetch) {
             return 0;
         }
-        return $fetch['LENGTH(' . $field . ')'];
+        return (float)$fetch['LENGTH(' . $field . ')'];
     }
 
     /**
