@@ -125,8 +125,7 @@ abstract class DBase
         if (!$fetch) {
             return 0;
         }
-        $array = explode('.', $field);
-        return $fetch[end($array)];
+        return $fetch['MAX(' . $field . ')'];
     }
 
     /**
@@ -141,8 +140,7 @@ abstract class DBase
         if (!$fetch) {
             return 0;
         }
-        $array = explode('.', $field);
-        return $fetch[end($array)];
+        return $fetch['MIN(' . $field . ')'];
     }
 
     /**
@@ -158,7 +156,7 @@ abstract class DBase
             return 0;
         }
         $array = explode('.', $field);
-        return $fetch[end($array)];
+        return $fetch['COUNT(' . $field . ')'];
     }
 
     /**
@@ -172,8 +170,7 @@ abstract class DBase
         if (!$fetch) {
             return 0;
         }
-        $array = explode('.', $field);
-        return $fetch[end($array)];
+        return $fetch['SUM(' . $field . ')'];
     }
 
     /**
