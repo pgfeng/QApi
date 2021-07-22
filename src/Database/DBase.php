@@ -120,9 +120,7 @@ abstract class DBase
      */
     final public function max($field): mixed
     {
-        $field = $this->_Field($field);
-        $max = $this->getOne('max(' . $field . ')');
-        return $max ? $max['max(' . $field . ')'] : null;
+        return $this->getField('MAX(' . $field . ')');
     }
 
     /**
@@ -132,9 +130,7 @@ abstract class DBase
      */
     final public function min($field): mixed
     {
-        $field = $this->_Field($field);
-        $max = $this->getOne('min(' . $field . ')');
-        return $max ? $max['min(' . $field . ')'] : null;
+        return $this->getField('MIN(' . $field . ')');
     }
 
     /**
@@ -144,9 +140,7 @@ abstract class DBase
      */
     public function Count($field = '*'): int
     {
-        $field = $this->_Field($field);
-        $count = $this->getOne('count(' . $field . ')');
-        return (int)($count ? $count['count(' . $field . ')'] : 0);
+        return (int)$this->getField('COUNT(' . $field . ')');
     }
 
     /**
@@ -155,9 +149,7 @@ abstract class DBase
      */
     final public function sum($field): int|float
     {
-        $field = $this->_Field($field);
-        $sum = $this->getOne('SUM(' . $field . ')');
-        return $sum['SUM(' . $field . ')'] ?? 0;
+        return (float)$this->getField('SUM(' . $field . ')');
     }
 
     /**
@@ -166,9 +158,7 @@ abstract class DBase
      */
     final public function avg($field): int|float
     {
-        $field = $this->_Field($field);
-        $sum = $this->getOne('AVG(' . $field . ')');
-        return $sum['AVG(' . $field . ')'] ?? 0;
+        return (float)$this->getField('AVG(' . $field . ')');
     }
 
     /**
@@ -177,13 +167,7 @@ abstract class DBase
      */
     final public function length($field): int
     {
-        $field = $this->_Field($field);
-        $sum = $this->getOne('LENGTH(' . $field . ')');
-        if ($sum !== null) {
-            return (int)($sum['LENGTH(' . $field . ')'] ?? 0);
-        }
-
-        return 0;
+        return (int)$this->getField('LENGTH(' . $field . ')');
     }
 
     /**
@@ -252,12 +236,12 @@ abstract class DBase
         $field_name = $this->_Field($field_name);
         $this->select($field_name);
         $this->limit(0, 1);
-        $fetch = $this->query();
-        if (count($fetch) === 0) {
+        $fetch = $this->getOne();
+        if (!$fetch) {
             return null;
         }
-
-        return $fetch[0][$field_name];
+        $array = explode('.', $field_name);
+        return $fetch[end($array)];
     }
 
 
@@ -918,14 +902,14 @@ abstract class DBase
             $this->sql .= 'INSERT' . ' INTO ' . $this->section['table'] . ' ' . $this->section['insert'];
         } else {
             if ($this->section['handle'] === 'select') {
-                $sql = "{$this->section['handle']} {$this->section['select']} from {$this->section['table']}";
+                $sql = "SELECT {$this->section['select']} from {$this->section['table']}";
             } elseif ($this->section['handle'] === 'update') {
-                $sql = "{$this->section['handle']} {$this->section['table']} set {$this->section['update']}";
+                $sql = "UPDATE {$this->section['table']} set {$this->section['update']}";
             } elseif ($this->section['handle'] === 'delete') {
-                $sql = "{$this->section['handle']} from {$this->section['table']}";
+                $sql = "DELETE FROM {$this->section['table']}";
             }
             if (!empty($sql)) {
-                $sql .= ($this->section['join'] ? " " . $this->section['join'] : '') . ($this->section['where'] ? " where {$this->section['where']}" : '') . ($this->section['group'] ? " group by {$this->section['group']}" : '') . ($this->section['orderBy'] ? " order by {$this->section['orderBy']}" : '') . ($this->section['limit'] ? " limit  {$this->section['limit']}" : '');
+                $sql .= ($this->section['join'] ? " " . $this->section['join'] : '') . ($this->section['where'] ? " WHERE {$this->section['where']}" : '') . ($this->section['group'] ? " GROUP BY {$this->section['group']}" : '') . ($this->section['orderBy'] ? " ORDER BY {$this->section['orderBy']}" : '') . ($this->section['limit'] ? " LIMIT  {$this->section['limit']}" : '');
                 if (($this->section['handle'] === 'select') && $this->section['lock'] !== null) {
                     if ($this->section['lock'] === true) {
                         $sql .= ' LOCK IN SHARE MODE';
@@ -1006,7 +990,7 @@ abstract class DBase
      */
     final public function leftJoin($table, $on1, $on2): DBase
     {
-        return $this->join($table, $on1, $on2, 'left');
+        return $this->join($table, $on1, $on2, 'LEFT');
     }
 
     /**
@@ -1020,9 +1004,11 @@ abstract class DBase
     final public function join($table, $on1, $on2, $ori): DBase
     {
         if ($this->section['join'] === '') {
-            $this->section['join'] = $ori . ' join ' . $this->config->tablePrefix . $table . " on " . $this->config->tablePrefix . $on1 . '=' . $this->config->tablePrefix . $on2;
+            $this->section['join'] = $ori . ' JOIN ' . $this->config->tablePrefix . $table . " ON " .
+                $this->config->tablePrefix . $on1 . '=' . $this->config->tablePrefix . $on2;
         } else {
-            $this->section['join'] .= ' ' . $ori . ' join ' . $this->config->tablePrefix . $table . " on " . $this->config->tablePrefix . $on1 . '=' . $this->config->tablePrefix . $on2;
+            $this->section['join'] .= ' ' . $ori . ' JOIN ' . $this->config->tablePrefix . $table . " ON " .
+                $this->config->tablePrefix . $on1 . '=' . $this->config->tablePrefix . $on2;
         }
 
         return $this;
@@ -1037,7 +1023,7 @@ abstract class DBase
      */
     final public function rightJoin($table, $on1, $on2): DBase
     {
-        return $this->join($table, $on1, $on2, 'right');
+        return $this->join($table, $on1, $on2, 'RIGHT');
     }
 
     /**
@@ -1049,7 +1035,7 @@ abstract class DBase
      */
     final public function fullJoin($table, $on1, $on2): DBase
     {
-        return $this->join($table, $on1, $on2, 'full');
+        return $this->join($table, $on1, $on2, 'FULL');
     }
 
     /**
@@ -1061,7 +1047,7 @@ abstract class DBase
      */
     final public function innerJoin($table, $on1, $on2): DBase
     {
-        return $this->join($table, $on1, $on2, 'inner');
+        return $this->join($table, $on1, $on2, 'INNER');
     }
 
     /**
@@ -1077,9 +1063,9 @@ abstract class DBase
         $this->sql = $sql;
         $this->section['handle'] = $handle;
         if ($all) {
-            $this->sql .= ' union all ';
+            $this->sql .= ' UNION ALL ';
         } else {
-            $this->sql .= ' union ';
+            $this->sql .= ' UNION ';
         }
 
         return $this;
