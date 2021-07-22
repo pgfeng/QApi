@@ -121,8 +121,11 @@ abstract class DBase
     final public function max($field): mixed
     {
         $field = $this->_Field($field);
-        $max = $this->getOne('max(' . $field . ')');
-        return $max ? $max['max(' . $field . ')'] : null;
+        $fetch = $this->getOne('max(' . $field . ')');
+        if (!$fetch) {
+            return 0;
+        }
+        return $fetch[array_key_first($fetch->toArray())];
     }
 
     /**
@@ -133,8 +136,11 @@ abstract class DBase
     final public function min($field): mixed
     {
         $field = $this->_Field($field);
-        $max = $this->getOne('min(' . $field . ')');
-        return $max ? $max['min(' . $field . ')'] : null;
+        $fetch = $this->getOne('min(' . $field . ')');
+        if (!$fetch) {
+            return 0;
+        }
+        return $fetch[array_key_first($fetch->toArray())];
     }
 
     /**
@@ -145,8 +151,11 @@ abstract class DBase
     public function Count($field = '*'): int
     {
         $field = $this->_Field($field);
-        $count = $this->getOne('count(' . $field . ')');
-        return (int)($count ? $count['count(' . $field . ')'] : 0);
+        $fetch = $this->getOne('count(' . $field . ')');
+        if (!$fetch) {
+            return 0;
+        }
+        return (int)$fetch[array_key_first($fetch->toArray())];
     }
 
     /**
@@ -156,8 +165,11 @@ abstract class DBase
     final public function sum($field): int|float
     {
         $field = $this->_Field($field);
-        $sum = $this->getOne('SUM(' . $field . ')');
-        return $sum['SUM(' . $field . ')'] ?? 0;
+        $fetch = $this->getOne('SUM(' . $field . ')');
+        if (!$fetch) {
+            return 0;
+        }
+        return (float)$fetch[array_key_first($fetch->toArray())];
     }
 
     /**
@@ -167,8 +179,11 @@ abstract class DBase
     final public function avg($field): int|float
     {
         $field = $this->_Field($field);
-        $sum = $this->getOne('AVG(' . $field . ')');
-        return $sum['AVG(' . $field . ')'] ?? 0;
+        $fetch = $this->getOne('AVG(' . $field . ')');
+        if (!$fetch) {
+            return 0.00;
+        }
+        return (float)$fetch[array_key_first($fetch->toArray())];
     }
 
     /**
@@ -178,12 +193,11 @@ abstract class DBase
     final public function length($field): int
     {
         $field = $this->_Field($field);
-        $sum = $this->getOne('LENGTH(' . $field . ')');
-        if ($sum !== null) {
-            return (int)($sum['LENGTH(' . $field . ')'] ?? 0);
+        $fetch = $this->getOne('LENGTH(' . $field . ')');
+        if (!$fetch) {
+            return 0;
         }
-
-        return 0;
+        return (float)$fetch[array_key_first($fetch->toArray())];
     }
 
     /**
@@ -252,12 +266,12 @@ abstract class DBase
         $field_name = $this->_Field($field_name);
         $this->select($field_name);
         $this->limit(0, 1);
-        $fetch = $this->query();
-        if (count($fetch) === 0) {
+        $fetch = $this->getOne();
+        if (!$fetch) {
             return null;
         }
 
-        return $fetch[0][$field_name];
+        return $fetch[array_key_first($fetch->toArray())];
     }
 
 
