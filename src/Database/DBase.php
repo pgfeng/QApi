@@ -120,7 +120,13 @@ abstract class DBase
      */
     final public function max($field): mixed
     {
-        return $this->getField('MAX(' . $field . ')');
+        $field = $this->_Field($field);
+        $fetch = $this->getOne('MAX(' . $field . ')');
+        if (!$fetch) {
+            return 0;
+        }
+        $array = explode('.', $field);
+        return $fetch[end($array)];
     }
 
     /**
@@ -130,7 +136,13 @@ abstract class DBase
      */
     final public function min($field): mixed
     {
-        return $this->getField('MIN(' . $field . ')');
+        $field = $this->_Field($field);
+        $fetch = $this->getOne('MIN(' . $field . ')');
+        if (!$fetch) {
+            return 0;
+        }
+        $array = explode('.', $field);
+        return $fetch[end($array)];
     }
 
     /**
@@ -140,7 +152,13 @@ abstract class DBase
      */
     public function Count($field = '*'): int
     {
-        return (int)$this->getField('COUNT(' . $field . ')');
+        $field = $this->_Field($field);
+        $fetch = $this->getOne('COUNT(' . $field . ')');
+        if (!$fetch) {
+            return 0;
+        }
+        $array = explode('.', $field);
+        return $fetch[end($array)];
     }
 
     /**
@@ -149,7 +167,13 @@ abstract class DBase
      */
     final public function sum($field): int|float
     {
-        return (float)$this->getField('SUM(' . $field . ')');
+        $field = $this->_Field($field);
+        $fetch = $this->getOne('SUM(' . $field . ')');
+        if (!$fetch) {
+            return 0;
+        }
+        $array = explode('.', $field);
+        return $fetch[end($array)];
     }
 
     /**
@@ -158,7 +182,13 @@ abstract class DBase
      */
     final public function avg($field): int|float
     {
-        return (float)$this->getField('AVG(' . $field . ')');
+        $field = $this->_Field($field);
+        $fetch = $this->getOne('AVG(' . $field . ')');
+        if (!$fetch) {
+            return 0;
+        }
+        $array = explode('.', $field);
+        return $fetch[end($array)];
     }
 
     /**
@@ -167,7 +197,13 @@ abstract class DBase
      */
     final public function length($field): int
     {
-        return (int)$this->getField('LENGTH(' . $field . ')');
+        $field = $this->_Field($field);
+        $fetch = $this->getOne('LENGTH(' . $field . ')');
+        if (!$fetch) {
+            return 0;
+        }
+        $array = explode('.', $field);
+        return $fetch[end($array)];
     }
 
     /**
