@@ -10,6 +10,7 @@ namespace QApi;
 
 
 use League\CLImate\CLImate;
+use QApi\Command\ClearCacheCommand;
 use QApi\Command\ColumnCommand;
 use QApi\Command\CommandHandler;
 use QApi\Command\DocBuildCommand;
@@ -59,6 +60,7 @@ class Command
         $this->argv = $_SERVER['argv'];
         $this->addHandler(new ColumnCommand($this));
         $this->addHandler(new DocBuildCommand($this));
+        $this->addHandler(new ClearCacheCommand($this));
         $Handlers = Config::command('CommandHandlers');
 
         /**

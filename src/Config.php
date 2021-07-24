@@ -63,10 +63,10 @@ class Config
 
     /**
      * @param string|null $configName
-     * @return FileSystem|SQLite|null
+     * @return FileSystem|SQLite|array|null
      * @throws ErrorException
      */
-    public static function cache(string $configName = null): FileSystem|SQLite|null
+    public static function cache(string $configName = null): FileSystem|SQLite|null|array
     {
         if (!is_cli()) {
             $runMode = self::app()->getRunMode();

@@ -39,7 +39,7 @@ abstract class CommandHandler
      * @param $argv
      * @return mixed
      */
-    abstract public function handler($argv): mixed;
+    abstract public function handler(array $argv): mixed;
 
     /**
      * @return mixed
