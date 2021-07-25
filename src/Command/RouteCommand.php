@@ -81,7 +81,7 @@ class RouteCommand extends CommandHandler
                 $middleware = implode(',', $route['middleware']);
                 if (!$searchRoute) {
                     $table[] = [
-                        'App' => $this->app->getNameSpace(),
+//                        'App' => $this->app->getNameSpace(),
                         'Method' => $method,
                         'Rule' => $rule,
                         'Middleware' => $middleware ? '<' . $middleware . '>' : 'Null',
@@ -90,7 +90,7 @@ class RouteCommand extends CommandHandler
                     ];
                 } else if (preg_match('/' . str_replace('/', '\/', $route['preg_pattern']) . '/', $searchRoute)) {
                     $table[] = [
-                        'App' => $this->app->getNameSpace(),
+//                        'App' => $this->app->getNameSpace(),
                         'Method' => $method,
                         'Rule' => $rule,
                         'Middleware' => $middleware ? '<' . $middleware . '>' : 'Null',
