@@ -84,7 +84,7 @@ class RouteCommand extends CommandHandler
 //                        'App' => $this->app->getNameSpace(),
                         'Method' => $method,
                         'Rule' => $rule,
-                        'Middleware' => $middleware ? '<' . $middleware . '>' : 'Null',
+//                        'Middleware' => $middleware ? '<' . $middleware . '>' : 'Null',
                         'Route' => is_callable($route['callback']) ? '<Closure>' : $route['callback'],
                         'CodePath' => is_callable($route['callback']) ? '<Closure>' : $this->getCodePathLine($route['callback']),
                     ];
@@ -93,7 +93,7 @@ class RouteCommand extends CommandHandler
 //                        'App' => $this->app->getNameSpace(),
                         'Method' => $method,
                         'Rule' => $rule,
-                        'Middleware' => $middleware ? '<' . $middleware . '>' : 'Null',
+//                        'Middleware' => $middleware ? '<' . $middleware . '>' : 'Null',
                         'Route' => is_callable($route['callback']) ? '<Closure>' : $route['callback'],
                         'CodePath' => is_callable($route['callback']) ? '<Closure>' : $this->getCodePathLine($route['callback']),
                     ];
