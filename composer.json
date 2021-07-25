@@ -17,7 +17,7 @@
     "ext-mbstring": "*",
     "monolog/monolog": "^2.2.0",
     "symfony/mime": "^5.2",
-    "league/climate": "^3.2"
+    "league/climate": "^3.7.0"
   },
   "require-dev": {
   },
@@ -26,7 +26,8 @@
       "src/Helper/helpers.php"
     ],
     "psr-4": {
-      "QApi\\": "src/"
+      "QApi\\": "src/",
+      "Test\\": "test/"
     }
   }
 }
