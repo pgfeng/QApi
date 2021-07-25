@@ -227,6 +227,10 @@ class Router
     public
     static function __callStatic(string $method, array $params = []): static
     {
+        if ((!isset($params['path']) || !$params['path']) && is_string($params['callback'])) {
+            $params['path'] = str_replace('\\', '/', str_replace(Config::$app->getNameSpace() . '\\' . Config::version()->versionDir, '', $params['callback']));
+            $params['path'] = substr(str_replace('Controller@', '/', $params['path']), 0, -6);
+        }
         return new static(strtoupper($method), $params['path'] ?? null, $params['callback']);
     }
 
