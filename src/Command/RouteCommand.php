@@ -68,11 +68,11 @@ class RouteCommand extends CommandHandler
                     foreach ($match[1] as $k => $p) {
                         if (isset($route['pattern'][$p])) {
                             $path = str_replace($match[0][$k], '(' . $route['pattern'][$p] . ')', $rule);
-                        }else{
+                        } else {
 
                             $path = preg_replace('/\{(\w+)\}/', '(\w+)', $rule);
                         }
-//                        $params[$k + 1] = $p;
+                        //                        $params[$k + 1] = $p;
                     }
                     $route['preg_pattern'] = $path;
                 } else {
@@ -86,25 +86,23 @@ class RouteCommand extends CommandHandler
                         'Rule' => $rule,
                         'Middleware' => $middleware ? '<' . $middleware . '>' : 'Null',
                         'Route' => is_callable($route['callback']) ? '<Closure>' : $route['callback'],
-                        'preg_pattern' => $route['preg_pattern'],
                         'CodePath' => is_callable($route['callback']) ? '<Closure>' : $this->getCodePathLine($route['callback']),
                     ];
-                } else if (preg_match('/' . str_replace('/','\/',$route['preg_pattern']) . '/', $searchRoute)) {
+                } else if (preg_match('/' . str_replace('/', '\/', $route['preg_pattern']) . '/', $searchRoute)) {
                     $table[] = [
                         'App' => $this->app->getNameSpace(),
                         'Method' => $method,
                         'Rule' => $rule,
                         'Middleware' => $middleware ? '<' . $middleware . '>' : 'Null',
                         'Route' => is_callable($route['callback']) ? '<Closure>' : $route['callback'],
-                        'preg_pattern' => $route['preg_pattern'],
                         'CodePath' => is_callable($route['callback']) ? '<Closure>' : $this->getCodePathLine($route['callback']),
                     ];
                 }
             }
         }
-        if (empty($table)){
+        if (empty($table)) {
             $this->command->cli->error('No matching routing rules were found!');
-        }else{
+        } else {
             $this->command->cli->info()->table($table);
         }
     }
