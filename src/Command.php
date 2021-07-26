@@ -18,7 +18,7 @@ use QApi\Command\RouteCommand;
 
 /**
  * Class Console
- * @package GFPHP
+ * @package QApi
  */
 class Command
 {
@@ -89,14 +89,14 @@ class Command
         if (!$this->argv) {
             $this->help();
         } else if ($this->argv[0] === '') {
-            $this->argv[0] = $this->getStdin("请输入正确的Handler名称: [" . implode(',', array_keys($this->Handler)) . ']')[0];
+            $this->argv[0] = $this->cli->radio('Please select a command：', array_keys($this->Handler))->prompt();
             $this->execute();
         } else if (isset($this->Handler[$this->argv[0]])) {
             $argv = $this->argv;
             $handle_name = array_shift($argv);
             $this->Handler[$handle_name]->handler($argv);
         } else {
-            $this->argv[0] = $this->getStdin("请输入正确的Handler名称: [" . implode(',', array_keys($this->Handler)) . ']')[0];
+            $this->argv[0] = $this->cli->radio('Please select a command：', array_keys($this->Handler))->prompt();
             $this->execute();
         }
     }
@@ -108,7 +108,7 @@ class Command
     public function help()
     {
         $this->success($this->name);
-        $this->argv = $this->getStdin("请输入正确的Handler名称: [" . implode(',', array_keys($this->Handler)) . ']');
+        $this->argv[0] = $this->cli->radio('Please select a command：', array_keys($this->Handler))->prompt();
         $this->execute();
     }
 
