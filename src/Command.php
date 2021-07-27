@@ -89,14 +89,14 @@ class Command
         if (!$this->argv) {
             $this->help();
         } else if ($this->argv[0] === '') {
-            $this->argv[0] = $this->cli->radio('Please select a command：', array_keys($this->Handler))->prompt();
+            $this->argv[0] = $this->cli->cyan()->radio('Please select a command：', array_keys($this->Handler))->prompt();
             $this->execute();
         } else if (isset($this->Handler[$this->argv[0]])) {
             $argv = $this->argv;
             $handle_name = array_shift($argv);
             $this->Handler[$handle_name]->handler($argv);
         } else {
-            $this->argv[0] = $this->cli->radio('Please select a command：', array_keys($this->Handler))->prompt();
+            $this->argv[0] = $this->cli->cyan()->radio('Please select a command：', array_keys($this->Handler))->prompt();
             $this->execute();
         }
     }
@@ -108,7 +108,7 @@ class Command
     public function help()
     {
         $this->success($this->name);
-        $this->argv[0] = $this->cli->radio('Please select a command：', array_keys($this->Handler))->prompt();
+        $this->argv[0] = $this->cli->cyan()->radio('Please select a command：', array_keys($this->Handler))->prompt();
         $this->execute();
     }
 
