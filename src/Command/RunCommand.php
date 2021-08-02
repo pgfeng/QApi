@@ -34,7 +34,7 @@ class RunCommand extends CommandHandler
             'php -S %s:%d -t %s %s -i',
             '0.0.0.0',
             $appDomain['port'],
-            escapeshellarg('./'),
+            escapeshellarg(Config::command('ServerRunDir')),
             escapeshellarg(__DIR__ . DIRECTORY_SEPARATOR . '../Route/router.php'),
         );
         $this->command->cli->blue(sprintf('QApi Server Startup On <http://%s:%s/>', $appDomain['host'],
