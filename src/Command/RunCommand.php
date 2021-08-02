@@ -43,6 +43,9 @@ class RunCommand extends CommandHandler
         return null;
     }
 
+    /**
+     * @return array
+     */
     public function choseApp(): array
     {
         $apps = [];
