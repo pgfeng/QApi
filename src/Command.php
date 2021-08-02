@@ -15,6 +15,7 @@ use QApi\Command\ColumnCommand;
 use QApi\Command\CommandHandler;
 use QApi\Command\DocBuildCommand;
 use QApi\Command\RouteCommand;
+use QApi\Command\RunCommand;
 
 /**
  * Class Console
@@ -48,6 +49,7 @@ class Command
 
     /**
      * Command constructor.
+     * @throws \ErrorException
      */
     public function __construct()
     {
@@ -59,6 +61,7 @@ class Command
         $this->cli = new CLImate();
         array_shift($_SERVER['argv']);
         $this->argv = $_SERVER['argv'];
+        $this->addHandler(new RunCommand($this));
         $this->addHandler(new ColumnCommand($this));
         $this->addHandler(new DocBuildCommand($this));
         $this->addHandler(new ClearCacheCommand($this));
