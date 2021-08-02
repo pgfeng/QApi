@@ -56,6 +56,7 @@ class RunCommand extends CommandHandler
         $input = $this->command->cli->cyan()->radio('Please select an app:', $apps);
         $choseAppKey = $input->prompt();
         $data = parse_url($choseAppKey);
+        $data['host'] = (string)($data['host'] ?? '0.0.0.0');
         $data['port'] = (int)($data['port'] ?? 80);
         return $data;
     }
