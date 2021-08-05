@@ -9,6 +9,7 @@
 namespace QApi\Command;
 
 
+use JetBrains\PhpStorm\Pure;
 use QApi\Command;
 
 /**
@@ -27,6 +28,18 @@ abstract class CommandHandler
     public function __construct(Command $command, $argv = [])
     {
         $this->command = $command;
+    }
+
+    /**
+     * @return bool
+     */
+    #[Pure] public function isWin(): bool
+    {
+        $index = stripos(PHP_OS, 'WIN');
+        if ($index === false) {
+            return false;
+        }
+        return $index === 0;
     }
 
     /**

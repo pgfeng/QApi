@@ -4,6 +4,7 @@
 namespace QApi;
 
 use ErrorException;
+use QApi\Config\Abstracts\Cache;
 use QApi\Config\Application;
 use QApi\Config\Cache\FileSystem;
 use QApi\Config\Cache\SQLite;
@@ -71,7 +72,7 @@ class Config
      * @return FileSystem|SQLite|array|null
      * @throws ErrorException
      */
-    public static function cache(string $configName = null): FileSystem|SQLite|null|array
+    public static function cache(string $configName = null): Cache|null|array
     {
         if (!is_cli()) {
             $runMode = self::app()->getRunMode();

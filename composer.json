@@ -17,9 +17,12 @@
     "ext-mbstring": "*",
     "monolog/monolog": "^2.2.0",
     "symfony/mime": "^5.2",
-    "league/climate": "^3.7.0"
+    "league/climate": "^3.7.0",
+    "predis/predis": "^1.1",
+    "ext-sqlite3": "*"
   },
   "require-dev": {
+    "roave/security-advisories": "dev-latest"
   },
   "autoload": {
     "files": [

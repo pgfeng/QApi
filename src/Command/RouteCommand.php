@@ -81,19 +81,19 @@ class RouteCommand extends CommandHandler
                 $middleware = implode(',', $route['middleware']);
                 if (!$searchRoute) {
                     $table[] = [
-//                        'App' => $this->app->getNameSpace(),
+                        //                        'App' => $this->app->getNameSpace(),
                         'Method' => $method,
                         'Rule' => $rule,
-//                        'Middleware' => $middleware ? '<' . $middleware . '>' : 'Null',
+                        //                        'Middleware' => $middleware ? '<' . $middleware . '>' : 'Null',
                         'Route' => is_callable($route['callback']) ? '<Closure>' : $route['callback'],
                         'CodePath' => is_callable($route['callback']) ? '<Closure>' : $this->getCodePathLine($route['callback']),
                     ];
                 } else if (preg_match('/' . str_replace('/', '\/', $route['preg_pattern']) . '/', $searchRoute)) {
                     $table[] = [
-//                        'App' => $this->app->getNameSpace(),
+                        //                        'App' => $this->app->getNameSpace(),
                         'Method' => $method,
                         'Rule' => $rule,
-//                        'Middleware' => $middleware ? '<' . $middleware . '>' : 'Null',
+                        //                        'Middleware' => $middleware ? '<' . $middleware . '>' : 'Null',
                         'Route' => is_callable($route['callback']) ? '<Closure>' : $route['callback'],
                         'CodePath' => is_callable($route['callback']) ? '<Closure>' : $this->getCodePathLine($route['callback']),
                     ];
