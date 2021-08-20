@@ -37,7 +37,7 @@ class Logger
         if (is_array($message)) {
             $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
-        if (Config::$app->getRunMode() !== RunMode::PRODUCTION) {
+        if (Config::$app->getRunMode() === RunMode::DEVELOPMENT) {
             error_log(self::getData($message, CliColor::INFO));
         }
         self::$logger->info(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
@@ -51,7 +51,7 @@ class Logger
         if (is_array($message)) {
             $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
-        if (Config::$app && Config::$app->getRunMode() !== RunMode::PRODUCTION) {
+        if (Config::$app && Config::$app->getRunMode() === RunMode::DEVELOPMENT) {
             error_log(self::getData(' SQL => ' . $message, CliColor::WARNING));
         }
         if (!is_cli()){
@@ -69,7 +69,7 @@ class Logger
         if (is_array($message)) {
             $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
-        if (Config::$app->getRunMode() !== RunMode::PRODUCTION) {
+        if (Config::$app->getRunMode() === RunMode::DEVELOPMENT) {
 
             error_log(self::getData($message, CliColor::WARNING));
         }
@@ -84,7 +84,7 @@ class Logger
         if (is_array($message)) {
             $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
-        if (Config::$app->getRunMode() !== RunMode::PRODUCTION) {
+        if (Config::$app->getRunMode() === RunMode::DEVELOPMENT) {
             error_log(self::getData($message, CliColor::SUCCESS));
         }
 
@@ -102,7 +102,7 @@ class Logger
             $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
 
-        if (Config::$app?->getRunMode() !== RunMode::PRODUCTION) {
+        if (Config::$app?->getRunMode() === RunMode::DEVELOPMENT) {
             error_log(self::getData($message, CliColor::ERROR));
         }
         self::$logger?->error(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
@@ -119,7 +119,7 @@ class Logger
             $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
 
-        if (Config::$app->getRunMode() !== RunMode::PRODUCTION) {
+        if (Config::$app->getRunMode() === RunMode::DEVELOPMENT) {
 
             error_log(self::getData($message, CliColor::ERROR));
         }
