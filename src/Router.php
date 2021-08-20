@@ -110,7 +110,7 @@ class Router
             return $response->setData($cache->get('__apiDocument'))->setMsg('获取接口文档成功！');
         });
 
-        if (Config::app()->getRunMode() !== QApi\Enumeration\RunMode::PRODUCTION) {
+        if (Config::app()->getRunMode() === QApi\Enumeration\RunMode::DEVELOPMENT) {
             self::BuildRoute(Config::$app->getNameSpace());
         }
         if (empty(self::$router)) {
