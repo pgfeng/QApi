@@ -68,19 +68,27 @@ class Response
     }
 
     /**
+     * @param string|null $msg
      * @return $this
      */
-    public function ok(): Response
+    public function ok(?string $msg): Response
     {
+        if ($msg) {
+            $this->setMsg($msg);
+        }
         $this->status = true;
         return $this;
     }
 
     /**
+     * @param string|null $msg
      * @return $this
      */
-    public function fail(): Response
+    public function fail(?string $msg): Response
     {
+        if ($msg) {
+            $this->setMsg($msg);
+        }
         $this->status = false;
         return $this;
     }
