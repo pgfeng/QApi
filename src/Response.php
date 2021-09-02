@@ -71,7 +71,7 @@ class Response
      * @param string|null $msg
      * @return $this
      */
-    public function ok(?string $msg): Response
+    public function ok(?string $msg = null): Response
     {
         if ($msg) {
             $this->setMsg($msg);
@@ -84,7 +84,7 @@ class Response
      * @param string|null $msg
      * @return $this
      */
-    public function fail(?string $msg): Response
+    public function fail(?string $msg = null): Response
     {
         if ($msg) {
             $this->setMsg($msg);
