@@ -5,8 +5,10 @@ namespace QApi\Command;
 
 
 use ErrorException;
+use QApi\Attribute\Column\Table;
 use QApi\Config;
 use QApi\Database\DB;
+use QApi\Logger;
 
 class ColumnCommand extends CommandHandler
 {
@@ -158,16 +160,26 @@ class ColumnCommand extends CommandHandler
         $columns_comment = $columns_comment->transPrimaryIndex('column_name');
         $const = '';
         foreach ($columns as $column) {
+//            print_r($column['Type']);
             $const .= '
+            
     /**
-    * @var string ' . $columns_comment[$column['Field']]['column_comment'] . '
-    * ';
+     * @var string ' . $columns_comment[$column['Field']]['column_comment'] . '
+     * ';
             $const .= $column;
             $const .= '
-    */
+     */
+    #[Field(name: \''.$column['Field'].'\', comment: \''.$columns_comment[$column['Field']]['column_comment'].'\', type: \''.$column['Type'].'\')]
     public const ' . strtoupper($column['Field']) . ' = \'' . $column['Field'] . '\';' . "\r\n";
         }
         $date = date('Y-m-d H:i:s');
+        $tableComment = DB::table('', $config)->query("SELECT TABLE_COMMENT FROM INFORMATION_SCHEMA.TABLES  WHERE TABLE_NAME = '" . Config::database($config)->tablePrefix . $table . "' AND TABLE_SCHEMA = '" . Config::database($config)->dbName . "'");
+        if ($tableComment) {
+            $tableComment = $tableComment[0]['TABLE_COMMENT'];
+        } else {
+            $tableComment = '';
+        }
+        //        exit;
         $ColumnContent = <<<Column
 <?php
 /**
@@ -177,14 +189,17 @@ class ColumnCommand extends CommandHandler
  
 namespace $nameSpace;
 
-/**
- * Class {$table}
- * @package Model
- */
-class $table{
+use QApi\Attribute\Column\Table;
+use QApi\Attribute\Column\Field;
+
+#[
+    Table(name: '{$table}', comment: '{$tableComment}'),
+]
+class $table
+{
 
     /* table name */
-    public const table_name='$table';
+    public const table_name = '$table';
 $const
 }
 Column;

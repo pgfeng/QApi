@@ -10,6 +10,7 @@ use QApi\Attribute\Parameter\PathParam;
 use QApi\Attribute\Parameter\PostParam;
 use QApi\Cache\Cache;
 use QApi\Config;
+use QApi\Logger;
 use ReflectionClass;
 use ReflectionException;
 
@@ -42,7 +43,7 @@ class Utils
                 $data = [];
                 self::buildVersionDoc(scandir($path), $path, $app->nameSpace . '\\' . $version->versionDir,
                     $version->versionDir, $data, $path);
-                if (!isset($apis[$version->versionDir])){
+                if (!isset($apis[$version->versionDir])) {
                     $apis[$version->versionDir] = [];
                 }
                 foreach ($data as $controller => $methods) {
@@ -52,35 +53,56 @@ class Utils
                         $tag = '';
                         $summary = '';
                         $description = '';
+                        $resultDictionary = [];
                         foreach ($attr as $item) {
                             foreach ($item as $key => $v) {
-                                if ($v instanceof Route) {
-                                    if ($v->path) {
-                                        $path = $v->path;
+                                if ($v instanceof Route || $v instanceof GetParam || $v instanceof PostParam || $v
+                                    instanceof HeaderParam || $v instanceof PathParam) {
+                                    if ($v instanceof Route) {
+                                        if ($v->path) {
+                                            $path = $v->path;
+                                        }
+                                        if (!$tag && $v->tag) {
+                                            $tag = $v->tag;
+                                        }
+                                        if ($v->summary) {
+                                            $summary = $v->summary;
+                                        }
+                                        if ($v->description) {
+                                            $description = $v->description;
+                                        }
+                                        if ($v->methods) {
+                                            $type = $v->methods;
+                                        }
                                     }
-                                    if (!$tag && $v->tag) {
-                                        $tag = $v->tag;
-                                    }
-                                    if ($v->summary) {
-                                        $summary = $v->summary;
-                                    }
-                                    if ($v->description) {
-                                        $description = $v->description;
-                                    }
-                                    if ($v->methods) {
-                                        $type = $v->methods;
+                                    $item[$key] = $v->toArray();
+                                } else if ($v instanceof ResultDictionary || $v instanceof ResultDictionarys || $v
+                                    instanceof ResultDictionaryFromTable) {
+                                    $data = $v->toArray();
+                                    Logger::error($data);
+                                    foreach ($data as $resultField) {
+                                        Logger::error($resultField);
+                                        if (!empty($resultField['comment'])){
+                                            if (!isset($resultDictionary[$resultField['tag']])){
+                                                $resultDictionary[$resultField['tag']] = [];
+                                            }
+                                            $resultDictionary[$resultField['tag']][] = [
+                                                'name' => $resultField['name'],
+                                                'comment' => $resultField['comment']??'',
+                                                'type' => $resultField['type'],
+                                            ];
+                                        }
                                     }
                                 }
-                                $item[$key] = $v->toArray();
                             }
                         }
-                        if (!$tag){
+                        if (!$tag) {
                             $tag = 'Default';
                         }
                         if (!isset($apis[$version->versionDir][$tag])) {
                             $apis[$version->versionDir][$tag] = [];
                         }
-                        if ($summary){
+                        if ($summary) {
                             $apis[$version->versionDir][$tag][] = [
                                 'summary' => $summary,
                                 'type' => $type,
@@ -88,6 +110,7 @@ class Utils
                                 'path' => $path ?: ('/' . $controller . '/' . $mname),
                                 'SystemPath' => '/' . $controller . '/' . $mname,
                                 'params' => $attr,
+                                'resultDictionary' => $resultDictionary,
                                 'response' => null,
                             ];
                         }
