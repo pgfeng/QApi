@@ -10,7 +10,6 @@ use QApi\Attribute\Parameter\PathParam;
 use QApi\Attribute\Parameter\PostParam;
 use QApi\Cache\Cache;
 use QApi\Config;
-use QApi\Logger;
 use ReflectionClass;
 use ReflectionException;
 
@@ -79,9 +78,7 @@ class Utils
                                 } else if ($v instanceof ResultDictionary || $v instanceof ResultDictionarys || $v
                                     instanceof ResultDictionaryFromTable) {
                                     $data = $v->toArray();
-                                    Logger::error($data);
                                     foreach ($data as $resultField) {
-                                        Logger::error($resultField);
                                         if (!empty($resultField['comment'])){
                                             if (!isset($resultDictionary[$resultField['tag']])){
                                                 $resultDictionary[$resultField['tag']] = [];
