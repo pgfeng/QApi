@@ -92,6 +92,9 @@ class Router
                     return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
             }
+            if (Config::app()->getRunMode() !== QApi\Enumeration\RunMode::DEVELOPMENT) {
+                return $response->setMsg('Please save the instance in the development environment!')->fail();
+            }
             $cache = Cache::initialization('__document');
             return $response->setData($cache->set($request->get->get('type') . '/' . $request->get->get('path'),
                 $request->post->get('response')
