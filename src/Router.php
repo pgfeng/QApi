@@ -56,60 +56,62 @@ class Router
     {
         self::get(path: '/__status.json', callback: function (Request $request, Response $response) {
             if (!App::$apiPassword) {
-                return $response->setMsg('状态正常')->ok();
+                return $response->setMsg('Status success！')->ok();
             }
             $password = md5(trim($request->get->get('password')));
             if ($password === md5(md5(App::$apiPassword))) {
-                return $response->setMsg('状态正常！');
+                return $response->setMsg('Status success！');
             }
-            return $response->setMsg('状态异常！')->fail();
+            return $response->setMsg('Abnormal state!')->fail();
         });
         self::get(path: '/__apis.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
                 $password = md5(trim($request->get->get('token')));
                 if ($password !== md5(md5(App::$apiPassword))) {
-                    return $response->setMsg('需要登录！')->setCode(403)->fail();
+                    return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
             }
             $cache = Cache::initialization('__document');
-            return $response->setData($cache->get('__apiDocument'))->setMsg('获取接口文档成功！');
+            return $response->setData($cache->get('__apiDocument'))->setMsg('Successfully obtained interface document!');
         });
         self::get(path: '/__apiResponse.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
                 $password = md5(trim($request->get->get('token')));
                 if ($password !== md5(md5(App::$apiPassword))) {
-                    return $response->setMsg('需要登录！')->setCode(403)->fail();
+                    return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
             }
             $cache = Cache::initialization('__document');
             return $response->setData($cache->get($request->get->get('type') . '/' . $request->get->get('path')))
-                ->setMsg('获取接口返回示例成功！');
+                ->setMsg('Get interface return example succeeded!');
         });
         self::post(path: '/__apiResponse.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
                 $password = md5(trim($request->get->get('token')));
                 if ($password !== md5(md5(App::$apiPassword))) {
-                    return $response->setMsg('需要登录！')->setCode(403)->fail();
+                    return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
             }
             $cache = Cache::initialization('__document');
             return $response->setData($cache->set($request->get->get('type') . '/' . $request->get->get('path'),
                 $request->post->get('response')
             ))
-                ->setMsg('保存接口文档示例成功！');
+                ->setMsg('Saving interface document example succeeded!');
         });
         self::post(path: '/__apis.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
                 $password = md5(trim($request->get->get('token')));
                 if ($password !== md5(md5(App::$apiPassword))) {
-                    return $response->setMsg('需要登录！')->setCode(403)->fail();
+                    return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
+            }
+            if (Config::app()->getRunMode() !== QApi\Enumeration\RunMode::DEVELOPMENT) {
+                return $response->setMsg('Please refresh the API document in the development environment!')->fail();
             }
             Utils::rebuild();
             $cache = Cache::initialization('__document');
-            return $response->setData($cache->get('__apiDocument'))->setMsg('获取接口文档成功！');
+            return $response->setData($cache->get('__apiDocument'))->setMsg('Successfully obtained interface document!');
         });
-
         if (Config::app()->getRunMode() === QApi\Enumeration\RunMode::DEVELOPMENT) {
             self::BuildRoute(Config::$app->getNameSpace());
         }
