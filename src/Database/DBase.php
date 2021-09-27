@@ -888,7 +888,7 @@ abstract class DBase
     final public function get_table($table = FALSE): string
     {
         if (!$table) {
-            return (isset($this->section['table']) && !empty($this->section['table'])) ? $this->section['table'] :
+            return (isset($this->section['table']) && !empty($this->section['table'])) ? strtolower(preg_replace('/(?<=[a-z])([A-Z])/', '_$1', $this->section['table'])) :
                 $this->config->tablePrefix . $this->table;
         }
 
