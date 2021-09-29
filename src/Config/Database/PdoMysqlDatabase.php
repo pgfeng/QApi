@@ -6,11 +6,13 @@ namespace QApi\Config\Database;
 
 use QApi\Config\Abstracts\Database;
 use QApi\Enumeration\DatabaseDriver;
+use QApi\ORM\Connector\PdoMysqlConnector;
 
 class PdoMysqlDatabase extends Database
 {
     public string $name = 'pdo_mysql';
     public string $driver = DatabaseDriver::PDO_MYSQL;
+    public string $connectorClass = PdoMysqlConnector::class;
 
     /**
      * PdoMysqlDatabase constructor.

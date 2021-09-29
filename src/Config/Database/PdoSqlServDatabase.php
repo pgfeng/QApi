@@ -6,11 +6,13 @@ namespace QApi\Config\Database;
 
 use QApi\Config\Abstracts\Database;
 use QApi\Enumeration\DatabaseDriver;
+use QApi\ORM\Connector\PdoSqlSrvConnector;
 
 class PdoSqlServDatabase extends Database
 {
     public string $name = 'sqlsrv';
     public string $driver = DatabaseDriver::PDO_SQLSERV;
+    public string $connectorClass = PdoSqlSrvConnector::class;
 
     /**
      * PdoSqlServDatabase constructor.

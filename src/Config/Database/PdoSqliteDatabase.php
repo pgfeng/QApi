@@ -6,11 +6,12 @@ namespace QApi\Config\Database;
 
 use QApi\Config\Abstracts\Database;
 use QApi\Enumeration\DatabaseDriver;
+use QApi\ORM\Connector\PdoSqliteConnector;
 
 class PdoSqliteDatabase extends Database
 {
     public string $name = 'sqlite';
-    public string $driver = DatabaseDriver::PDO_SQLITE;
+    public string $driver = PdoSqliteConnector::class;
 
     /**
      * PdoSqliteDatabase constructor.

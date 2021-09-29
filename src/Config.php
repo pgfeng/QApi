@@ -12,6 +12,8 @@ use QApi\Config\Database\MysqliDatabase;
 use QApi\Config\Database\PdoMysqlDatabase;
 use QApi\Config\Database\PdoSqliteDatabase;
 use QApi\Config\Database\PdoSqlServDatabase;
+use QApi\Config\Database\PdoSqlServDBLIBDatabase;
+use QApi\Config\Database\SqlServDatabase;
 use QApi\Config\Version;
 use QApi\Enumeration\RunMode;
 
@@ -148,11 +150,11 @@ class Config
 
     /**
      * @param string|null $configName
-     * @return MysqliDatabase|PdoMysqlDatabase|PdoSqliteDatabase|PdoSqlServDatabase|array|null
+     * @return MysqliDatabase|PdoMysqlDatabase|PdoSqliteDatabase|PdoSqlServDatabase|SqlServDatabase|array|null
      * @throws ErrorException
      */
     public static function database(string $configName = null):
-    MysqliDatabase|PdoMysqlDatabase|PdoSqliteDatabase|PdoSqlServDatabase|null|array
+    MysqliDatabase|PdoMysqlDatabase|PdoSqliteDatabase|PdoSqlServDatabase|SqlServDatabase|null|array
     {
         if (!is_cli()) {
             $runMode = Config::app()->getRunMode();

@@ -6,15 +6,16 @@ namespace QApi\Config\Database;
 
 use QApi\Config\Abstracts\Database;
 use QApi\Enumeration\DatabaseDriver;
-use QApi\ORM\Connector\MysqliConnector;
+use QApi\ORM\Connector\SqlSrvConnector;
 
-class MysqliDatabase extends Database
+class SqlServDatabase extends Database
 {
-    public string $name = 'mysqli';
-    public string $driver = DatabaseDriver::MYSQLI;
-    public string $connectorClass = MysqliConnector::class;
+    public string $name = 'sqlsrv';
+    public string $driver = DatabaseDriver::PDO_SQLSERV;
+    public string $connectorClass = SqlSrvConnector::class;
+
     /**
-     * PdoMysqlDatabase constructor.
+     * PdoSqlServDatabase constructor.
      * @param string $host
      * @param int $port
      * @param string $dbName
@@ -24,10 +25,7 @@ class MysqliDatabase extends Database
      * @param string $charset
      */
     public function __construct(public string $host, public int $port, public string $dbName, public string $user,
-                                public string $password,public string $tablePrefix = 'p_',public string $charset='utf8mb4')
+                                public string $password, public string $tablePrefix = 'p_', public string $charset = 'utf8mb4')
     {
     }
-
-
-
 }
