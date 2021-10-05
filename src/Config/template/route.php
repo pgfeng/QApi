@@ -20,6 +20,7 @@ return [
 
     /**
      * 缓存时间
+     * @var DateInterval|int|null
      */
     'cacheTTL' => null,
 
