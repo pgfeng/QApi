@@ -175,6 +175,7 @@ class DB
         return $this;
     }
 
+
     /**
      * @param ExpressionBuilder|string|array $predicates
      * @param mixed|null $op
@@ -250,7 +251,14 @@ class DB
      */
     public function quote($value, $type = ParameterType::STRING)
     {
-        return $this->getConnection()->quote($value, $type);
+        if (is_array($value)) {
+            foreach ($value as &$v) {
+                $v = $this->quote($v, $type);
+            }
+            return $value;
+        } else {
+            return $this->getConnection()->quote($value, $type);
+        }
     }
 
     /**
@@ -306,7 +314,8 @@ class DB
      * @return Data
      * @throws Exception
      */
-    public function query(string $sql = null, array $params = [], array $types = [], QueryCacheProfile|array $qcp = []): Data
+    public function query(string $sql = null, array $params = [], array $types = [], ?QueryCacheProfile $qcp =
+    null): Data
     {
         if ($sql) {
             $data = $this->queryBuilder->getConnection()->executeQuery($sql, $params, $types, $qcp)

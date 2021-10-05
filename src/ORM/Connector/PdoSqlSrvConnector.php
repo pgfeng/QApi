@@ -33,8 +33,6 @@ class PdoSqlSrvConnector extends \QApi\ORM\Connector\Connection implements Conne
             'host' => $config->host,
             'port' => $config->port,
             'driverClass' => Driver::class,
-            'platform' => SQLServer2012Platform::class,
-            'charset' => $config->charset,
         ], $this->getConfiguration(), $this->getEventManager());
     }
 }

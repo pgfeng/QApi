@@ -203,6 +203,36 @@ class Config
     }
 
     /**
+     * 获取路由配置
+     * @param string|null $config_key
+     * @return mixed
+     */
+    public static function route(string $config_key = null): mixed
+    {
+        if (!is_cli()) {
+            $runMode = self::app()->getRunMode();
+        } else if (defined('DEV_MODE') && DEV_MODE === true) {
+            $runMode = RunMode::DEVELOPMENT;
+        } else {
+            $runMode = RunMode::PRODUCTION;
+        }
+        if (!isset(self::$other['route'])) {
+            $otherConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
+                . DIRECTORY_SEPARATOR . 'route.php';
+            if (!file_exists($otherConfigPath)) {
+                mkPathDir($otherConfigPath);
+                file_put_contents($otherConfigPath, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Config'
+                    . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'route.php'), LOCK_EX);
+            }
+            self::$other['route'] = include $otherConfigPath;
+        }
+        if ($config_key) {
+            return self::$other['route'][$config_key] ?? null;
+        }
+        return self::$other['route'];
+    }
+
+    /**
      * 获取其他配置
      * @param $config_name
      * @param $config_key

@@ -8,6 +8,7 @@ use Closure;
 use ErrorException;
 use JetBrains\PhpStorm\NoReturn;
 use JsonException;
+use Opis\Closure\SerializableClosure;
 use QApi;
 use QApi\Attribute\Utils;
 use QApi\Cache\Cache;
@@ -32,8 +33,18 @@ class Router
     public static array $router = [];
 
     public static array $middlewareList = [];
+
     public static array $classMiddlewareList = [];
 
+    public static ?QApi\Cache\CacheInterface $cache = null;
+
+    public static array $config = [];
+
+    public static string $URI = '';
+
+    public static string $METHOD = '';
+
+    private static bool|array|null $hitCache = null;
     /**
      * 存储路由
      * 如果当前请求类型不存在会自动向ALL中查找
@@ -54,6 +65,10 @@ class Router
      */
     public static function init(): void
     {
+        self::$config = Config::route();
+        if (self::$config['cache']) {
+            self::$cache = new (self::$config['cacheDriver']->driver)(self::$config['cacheDriver']);
+        }
         self::get(path: '/__status.json', callback: function (Request $request, Response $response) {
             if (!App::$apiPassword) {
                 return $response->setMsg('Status success！')->ok();
@@ -118,7 +133,17 @@ class Router
         if (Config::app()->getRunMode() === QApi\Enumeration\RunMode::DEVELOPMENT) {
             self::BuildRoute(Config::$app->getNameSpace());
         }
-        if (empty(self::$router)) {
+
+        $uri = preg_replace('#(/+)#', '/', '/' . $_SERVER["REQUEST_URI"]);
+        $uri = parse_url($uri, PHP_URL_PATH);
+        self::$URI = $uri;
+        self::$METHOD = $_SERVER['REQUEST_METHOD'];
+        if (self::$cache !== null) {
+            self::$hitCache = self::$cache->get(':' . Config::app()->getNameSpace() . ':' . Config::app()
+                    ->getDefaultVersion() . ':' .
+                self::$METHOD . ':' . self::$URI);
+        }
+        if (!self::$hitCache && empty(self::$router)) {
             $versions = Config::versions();
             foreach ($versions as $version) {
                 $base_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
@@ -272,8 +297,8 @@ class Router
         return $this;
     }
 
+
     /**
-     * 执行
      * @throws ErrorException
      * @throws JsonException
      */
@@ -282,86 +307,98 @@ class Router
     {
         $routeList = self::$routeLists;
         $compileList = [];
-
-        foreach ($routeList as $key => $routeMethodData) {
-            $routeMethodData = array_reverse($routeMethodData);
-            $methodData = [];
-            foreach ($routeMethodData as $path => $route) {
-                $params = [];
-                if (preg_match_all('/\{(\w+)\}/', $path, $match)) {
-                    foreach ($match[1] as $k => $p) {
-                        if (isset($route['pattern'][$p])) {
-                            $path = str_replace($match[0][$k], '(' . $route['pattern'][$p] . ')', $path);
+        $uri = self::$URI;
+        $method = self::$METHOD;
+        if (!self::$hitCache) {
+            foreach ($routeList as $key => $routeMethodData) {
+                $routeMethodData = array_reverse($routeMethodData);
+                $methodData = [];
+                foreach ($routeMethodData as $path => $route) {
+                    $params = [];
+                    if (preg_match_all('/\{(\w+)\}/', $path, $match)) {
+                        foreach ($match[1] as $k => $p) {
+                            if (isset($route['pattern'][$p])) {
+                                $path = str_replace($match[0][$k], '(' . $route['pattern'][$p] . ')', $path);
+                            }
+                            $params[$k + 1] = $p;
                         }
-                        $params[$k + 1] = $p;
+                        $path = preg_replace('/\{(\w+)\}/', '(\w+)', $path);
                     }
-                    $path = preg_replace('/\{(\w+)\}/', '(\w+)', $path);
+                    $methodData[$path] = [
+                        'callback' => $route['callback'],
+                        'middleware' => $route['middleware'],
+                        'params' => $params,
+                        'pattern' => $path,
+                    ];
                 }
-                $methodData[$path] = [
-                    'callback' => $route['callback'],
-                    'middleware' => $route['middleware'],
-                    'params' => $params,
-                    'pattern' => $path,
-                ];
+                $compileList[strtoupper($key)] = $methodData;
             }
-            $compileList[strtoupper($key)] = $methodData;
-        }
-        $uri = preg_replace('#(/+)#', '/', '/' . $_SERVER["REQUEST_URI"]);
-        $uri = parse_url($uri, PHP_URL_PATH);
-        $method = $_SERVER['REQUEST_METHOD'];
-        $callback = false;
-        $params = [];
-        if (array_key_exists($uri, $compileList[$method])) {
-            $callback = $compileList[$method][$uri];
-        } elseif (array_key_exists($uri, $compileList['ALL'])) {
-            $callback = $compileList['ALL'][$uri];
-        } else {
-            $routers = array_keys($compileList[$method]);
-            foreach ($routers as $routerKey => $router) {
-                if (preg_match('#^' . $router . '$#', $uri, $params)) {
-                    $callback = $compileList[$method][$router];
-                    array_shift($params);
-                    break;
-                }
-            }
-            if (!$callback) {
-                $routers = array_keys($compileList['ALL']);
+            $callback = false;
+            $params = [];
+            if (array_key_exists($uri, $compileList[$method])) {
+                $callback = $compileList[$method][$uri];
+            } elseif (array_key_exists($uri, $compileList['ALL'])) {
+                $callback = $compileList['ALL'][$uri];
+            } else {
+                $routers = array_keys($compileList[$method]);
                 foreach ($routers as $routerKey => $router) {
                     if (preg_match('#^' . $router . '$#', $uri, $params)) {
-                        $callback = $compileList['ALL'][$router];
+                        $callback = $compileList[$method][$router];
                         array_shift($params);
                         break;
                     }
                 }
-            }
-        }
-        if (!$callback) {
-            $uri = trim($uri, '/');
-            $data = explode('/', $uri);
-            $runData = [];
-            $runData['nameSpace'] = App::$app->getNameSpace();
-            if (count($data) === 1) {
-                if ($data[0] === '') {
-                    $data[0] = 'Index';
+                if (!$callback) {
+                    $routers = array_keys($compileList['ALL']);
+                    foreach ($routers as $routerKey => $router) {
+                        if (preg_match('#^' . $router . '$#', $uri, $params)) {
+                            $callback = $compileList['ALL'][$router];
+                            array_shift($params);
+                            break;
+                        }
+                    }
                 }
-                $runData['controller'] = $data[0];
-                $runData['method'] = 'indexAction';
-            } else if (count($data) === 2) {
-                $runData['controller'] = $data[0];
-                $runData['method'] = $data[1] . 'Action';
-            } else {
-                $method = array_pop($data);
-                $runData['controller'] = implode('\\', $data);
-                $runData['method'] = $method . 'Action';
             }
-            $callback = [
-                'params' => [],
-                'callback' => $runData,
-                'middleware' => [],
-            ];
-        }
-        if ($callback['params']) {
-            $params = array_combine($callback['params'], $params);
+            if (!$callback) {
+                $uri = trim($uri, '/');
+                $data = explode('/', $uri);
+                $runData = [];
+                $runData['nameSpace'] = App::$app->getNameSpace();
+                if (count($data) === 1) {
+                    if ($data[0] === '') {
+                        $data[0] = 'Index';
+                    }
+                    $runData['controller'] = $data[0];
+                    $runData['method'] = 'indexAction';
+                } else if (count($data) === 2) {
+                    $runData['controller'] = $data[0];
+                    $runData['method'] = $data[1] . 'Action';
+                } else {
+                    $method = array_pop($data);
+                    $runData['controller'] = implode('\\', $data);
+                    $runData['method'] = $method . 'Action';
+                }
+                $callback = [
+                    'params' => [],
+                    'callback' => $runData,
+                    'middleware' => [],
+                ];
+            }
+            if ($callback['params']) {
+                $params = array_combine($callback['params'], $params);
+            }
+            if (!is_callable($callback['callback'])) {
+                self::$cache?->set(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . ':' . self::$METHOD . ':' . self::$URI,
+                    $callback,
+                    self::$config['cacheTTL']);
+            } else if (self::$config['cacheClosure']) {
+                $callbackClone = $callback;
+                $callbackClone['callback'] = new SerializableClosure($callbackClone['callback']);
+                self::$cache?->set(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . ':' . self::$METHOD . ':' . self::$URI, $callbackClone, self::$config['cacheTTL']);
+            }
+        } else {
+            $callback = self::$hitCache;
+            $params = $callback['params'] ?? [];
         }
         return self::runCallBack($callback['callback'], $params, $callback['middleware']);
     }

@@ -29,8 +29,7 @@ class SqlSrvConnector extends \QApi\ORM\Connector\Connection implements Connecto
             'dbname' => $config->dbName,
             'host' => $config->host,
             'port' => $config->port,
-            'driverClass' => Driver::class,
-                        'charset' => $config->charset,
+            'driverClass' => Driver::class
         ], $this->getConfiguration(), $this->getEventManager());
     }
 }

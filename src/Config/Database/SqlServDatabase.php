@@ -22,10 +22,9 @@ class SqlServDatabase extends Database
      * @param string $user
      * @param string $password
      * @param string $tablePrefix
-     * @param string $charset
      */
     public function __construct(public string $host, public int $port, public string $dbName, public string $user,
-                                public string $password, public string $tablePrefix = 'p_', public string $charset = 'utf8mb4')
+                                public string $password, public string $tablePrefix = 'p_')
     {
     }
 }
