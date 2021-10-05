@@ -3,45 +3,28 @@
 
 namespace QApi\Command;
 
-
-use QApi\App;
-use QApi\Cache\Cache;
-use QApi\Cache\CacheInterface;
-use QApi\Command;
 use QApi\Config;
-use QApi\Config\Application;
-use QApi\Config\Version;
-use QApi\Router;
 
+/**
+ * Class RouteCacheClearCommand
+ * @package QApi\Command
+ */
 class RouteCacheClearCommand extends CommandHandler
 {
 
-
+    /**
+     * @var string
+     */
     public string $name = 'route:clearCache';
-    private string $baseDir;
-    /**
-     * @var Application[]
-     */
-    private array $apps;
-    private Application $app;
-    /**
-     * @var Version[]
-     */
-    private array $versions;
-    private CacheInterface $cache;
-    private Version $version;
 
-    public function __construct(Command $command, $argv = [])
-    {
-        parent::__construct($command, $argv);
-        $this->baseDir = PROJECT_PATH . App::$routeDir;
-        $this->apps = Config::apps();
-    }
-
+    /**
+     * @param array $argv
+     * @return mixed
+     */
     public function handler(array $argv): mixed
     {
         $route = Config::route();
-        if (!$route['cache']){
+        if (!$route['cache']) {
             $this->command->error('Route Cache is not opened!');
             return null;
         }
@@ -69,7 +52,9 @@ class RouteCacheClearCommand extends CommandHandler
         return null;
     }
 
-
+    /**
+     * @return mixed
+     */
     public function help(): mixed
     {
         return null;
