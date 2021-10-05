@@ -42,15 +42,16 @@ class RouteCacheClearCommand extends CommandHandler
     {
         $route = Config::route();
         if (!$route['cache']){
-            return $this->command->error('Route Cache is not opened!');
+            $this->command->error('Route Cache is not opened!');
+            return null;
         }
         $languages = [
             'Initialize cache......',
             'Ready to clean......',
             'Clean cache......',
-            'Clean up completed!',
+            'Route cache cleanup completed!',
         ];
-        $this->command->info('Start cleaning route cache!');
+        $this->command->info('Start cleaning up routing cache!');
         usleep(80000);
         $progress = $this->command->cli->blue()->progress()->total(count($languages));
         usleep(80000);
