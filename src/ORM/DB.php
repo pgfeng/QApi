@@ -351,9 +351,14 @@ class DB
         return null;
     }
 
-    public function findByKey()
+    /**
+     * @param mixed $val
+     * @param string $field
+     * @return Data|null
+     */
+    public function findByKey(mixed $val, string $field): ?Data
     {
-
+        return $this->where($field, $val)->find();
     }
 
     /**
