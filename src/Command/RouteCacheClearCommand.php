@@ -46,10 +46,10 @@ class RouteCacheClearCommand extends CommandHandler
             return null;
         }
         $languages = [
-            'Initialize cache......',
+            'Initialize route cache......',
             'Ready to clean......',
-            'Clean cache......',
-            'Route cache cleanup completed!',
+            'Clean routing cache......',
+            'Routing cache cleanup completed!',
         ];
         $this->command->info('Start cleaning up routing cache!');
         usleep(80000);
