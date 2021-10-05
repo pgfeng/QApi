@@ -10,13 +10,13 @@ use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Types\Type;
+use ErrorException;
 use QApi\Config;
 use QApi\Config\Database\MysqliDatabase;
 use QApi\Config\Database\PdoMysqlDatabase;
 use QApi\Config\Database\PdoSqliteDatabase;
 use QApi\Config\Database\SqlServDatabase;
 use QApi\Data;
-use QApi\Database\DBase;
 
 /**
  * Class DB
@@ -60,6 +60,12 @@ class DB
         $config;
     private bool $hasWhere = false;
 
+    /**
+     * DB constructor.
+     * @param string $table
+     * @param string $configName
+     * @throws ErrorException
+     */
     public function __construct(string $table, string $configName)
     {
         $this->config = Config::database($configName);
@@ -75,7 +81,7 @@ class DB
     /**
      * @param string $table
      * @param string|null $alias
-     * @return DBase
+     * @return DB
      */
     public function from(string $table, string $alias = null): self
     {
@@ -249,16 +255,16 @@ class DB
      * @param int $type
      * @return mixed
      */
-    public function quote($value, $type = ParameterType::STRING)
+    public function quote($value, $type = ParameterType::STRING): mixed
     {
         if (is_array($value)) {
             foreach ($value as &$v) {
                 $v = $this->quote($v, $type);
             }
             return $value;
-        } else {
-            return $this->getConnection()->quote($value, $type);
         }
+
+        return $this->getConnection()->quote($value, $type);
     }
 
     /**
@@ -310,7 +316,7 @@ class DB
      * @param string|null $sql
      * @param array $params
      * @param array $types
-     * @param QueryCacheProfile|array $qcp
+     * @param QueryCacheProfile|null $qcp
      * @return Data
      * @throws Exception
      */
