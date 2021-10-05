@@ -19,7 +19,7 @@ use QApi\Data;
 use QApi\Database\DBase;
 
 /**
- * Class DBase
+ * Class DB
  * @package QApi\ORM
  * @method self setFirstResult(int $offset),
  * @method self setMaxResults(int $maxNumber),
