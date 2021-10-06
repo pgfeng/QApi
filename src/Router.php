@@ -384,21 +384,25 @@ class Router
                     'middleware' => [],
                 ];
             }
+
             if ($callback['params']) {
                 $params = array_combine($callback['params'], $params);
             }
+            $data = [
+                'callback' => $callback,
+                'params' => $params,
+            ];
             if (!is_callable($callback['callback'])) {
                 self::$cache?->set(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . ':' . self::$METHOD . ':' . self::$URI,
-                    $callback,
+                    $data,
                     self::$config['cacheTTL']);
             } else if (self::$config['cacheClosure']) {
-                $callbackClone = $callback;
-                $callbackClone['callback'] = new SerializableClosure($callbackClone['callback']);
-                self::$cache?->set(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . ':' . self::$METHOD . ':' . self::$URI, $callbackClone, self::$config['cacheTTL']);
+                $data['callback'] = new SerializableClosure($data['callback']);
+                self::$cache?->set(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . ':' . self::$METHOD . ':' . self::$URI, $data, self::$config['cacheTTL']);
             }
         } else {
-            $callback = self::$hitCache;
-            $params = $callback['params'] ?? [];
+            $callback = self::$hitCache['callback'];
+            $params = self::$hitCache['params'];
         }
         return self::runCallBack($callback['callback'], $params, $callback['middleware']);
     }
