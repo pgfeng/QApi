@@ -98,7 +98,6 @@ function mkPathDir($path, $mode = 0777): bool
     $dir = dirname($path);
     if (!is_dir($dir)) {
         if (!file_exists($dir)) {
-            error_log($path);
             return mkdir($dir, $mode, TRUE);
         }
 
