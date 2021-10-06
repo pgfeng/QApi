@@ -44,6 +44,7 @@ class RouteBuildCommand extends CommandHandler
         usleep(80000);
         $this->command->cli->info()->border();
         $this->command->cli->info('All application routes have been generated!');
+        (new RouteCacheClearCommand($this->command,[]))->handler($argv);
         return null;
     }
 
