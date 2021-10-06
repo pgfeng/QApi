@@ -366,10 +366,10 @@ class Router
                 $runData['nameSpace'] = App::$app->getNameSpace();
                 if (count($data) === 1) {
                     if ($data[0] === '') {
-                        $data[0] = 'Index';
+                        $data[0] = Config::route('defaultController');
                     }
                     $runData['controller'] = $data[0];
-                    $runData['method'] = 'indexAction';
+                    $runData['method'] = Config::route('defaultAction') . 'Action';
                 } else if (count($data) === 2) {
                     $runData['controller'] = $data[0];
                     $runData['method'] = $data[1] . 'Action';
