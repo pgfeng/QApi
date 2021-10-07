@@ -392,7 +392,7 @@ class Router
                 'callback' => $callback,
                 'params' => $params,
             ];
-            if (!is_callable($callback['callback'])) {
+            if (!is_callable($data['callback']['callback'])) {
                 self::$cache?->set(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . ':' . self::$METHOD . ':' . self::$URI,
                     $data,
                     self::$config['cacheTTL']);
