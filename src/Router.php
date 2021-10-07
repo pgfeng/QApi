@@ -397,7 +397,7 @@ class Router
                     $data,
                     self::$config['cacheTTL']);
             } else if (self::$config['cacheClosure']) {
-                $data['callback'] = new SerializableClosure($data['callback']);
+                $data['callback']['callback'] = new SerializableClosure($data['callback']['callback']);
                 self::$cache?->set(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . ':' . self::$METHOD . ':' . self::$URI, $data, self::$config['cacheTTL']);
             }
         } else {
