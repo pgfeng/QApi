@@ -392,6 +392,12 @@ class Router
                 'callback' => $callback,
                 'params' => $params,
             ];
+            if (!self::$cache?->has(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . '&__middleware__&')) {
+                self::$cache?->set(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . '&__middleware__&', [
+                    'classMiddlewareList' => self::$classMiddlewareList,
+                    'middlewareList' => self::$middlewareList,
+                ]);
+            }
             if (!is_callable($data['callback']['callback'])) {
                 self::$cache?->set(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . ':' . self::$METHOD . ':' . self::$URI,
                     $data,
@@ -401,6 +407,10 @@ class Router
                 self::$cache?->set(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . ':' . self::$METHOD . ':' . self::$URI, $data, self::$config['cacheTTL']);
             }
         } else {
+            $middleware = self::$cache->get(':' . Config::app()->getNameSpace() . ':' . Config::app()
+                    ->getDefaultVersion() . '&__middleware__&');
+            self::$classMiddlewareList = $middleware['classMiddlewareList'];
+            self::$middlewareList = $middleware['middlewareList'];
             $callback = self::$hitCache['callback'];
             $params = self::$hitCache['params'];
         }
