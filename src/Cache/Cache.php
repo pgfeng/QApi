@@ -26,6 +26,8 @@ class Cache
         }
         if (!is_cli()) {
             $runMode = Config::app()->getRunMode();
+        } else if (defined('RUN_MODE')) {
+            $runMode = RUN_MODE;
         } else if (defined('DEV_MODE') && DEV_MODE === true) {
             $runMode = RunMode::DEVELOPMENT;
         } else {

@@ -27,6 +27,23 @@ class Config
     public static ?array $other = [];
 
     /**
+     * @return string
+     */
+    public static function getRunMode(): string
+    {
+        if (!is_cli()) {
+            $runMode = self::app()->getRunMode();
+        } else if (defined('RUN_MODE')) {
+            $runMode = RUN_MODE;
+        } else if (defined('DEV_MODE') && DEV_MODE === true) {
+            $runMode = RunMode::DEVELOPMENT;
+        } else {
+            $runMode = RunMode::PRODUCTION;
+        }
+        return $runMode;
+    }
+
+    /**
      * @return array
      */
     public static function apps(): array
@@ -76,13 +93,7 @@ class Config
      */
     public static function cache(string $configName = null): Cache|null|array
     {
-        if (!is_cli()) {
-            $runMode = self::app()->getRunMode();
-        } else if (defined('DEV_MODE') && DEV_MODE === true) {
-            $runMode = RunMode::DEVELOPMENT;
-        } else {
-            $runMode = RunMode::PRODUCTION;
-        }
+        $runMode = self::getRunMode();
         if (!self::$cache) {
             $versionConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
                 . DIRECTORY_SEPARATOR . 'cache.php';
@@ -132,7 +143,6 @@ class Config
         if (!self::$versions) {
             $versionConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR .
                 ($runMode ?: Config::app()->getRunMode())
-
                 . DIRECTORY_SEPARATOR . 'version.php';
             if (!self::$version && !file_exists($versionConfigPath)) {
                 mkPathDir($versionConfigPath);
@@ -156,13 +166,7 @@ class Config
     public static function database(string $configName = null):
     MysqliDatabase|PdoMysqlDatabase|PdoSqliteDatabase|PdoSqlServDatabase|SqlServDatabase|null|array
     {
-        if (!is_cli()) {
-            $runMode = Config::app()->getRunMode();
-        } else if (defined('DEV_MODE') && DEV_MODE === true) {
-            $runMode = RunMode::DEVELOPMENT;
-        } else {
-            $runMode = RunMode::PRODUCTION;
-        }
+        $runMode = self::getRunMode();
         if (!self::$databases) {
             $versionConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
                 . DIRECTORY_SEPARATOR . 'databases.php';
@@ -209,13 +213,7 @@ class Config
      */
     public static function route(string $config_key = null): mixed
     {
-        if (!is_cli()) {
-            $runMode = self::app()->getRunMode();
-        } else if (defined('DEV_MODE') && DEV_MODE === true) {
-            $runMode = RunMode::DEVELOPMENT;
-        } else {
-            $runMode = RunMode::PRODUCTION;
-        }
+        $runMode = self::getRunMode();
         if (!isset(self::$other['route'])) {
             $otherConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
                 . DIRECTORY_SEPARATOR . 'route.php';
@@ -232,6 +230,7 @@ class Config
         return self::$other['route'];
     }
 
+
     /**
      * 获取其他配置
      * @param $config_name
@@ -240,13 +239,7 @@ class Config
      */
     public static function other(string $config_name, string $config_key = null): mixed
     {
-        if (!is_cli()) {
-            $runMode = self::app()->getRunMode();
-        } else if (defined('DEV_MODE') && DEV_MODE === true) {
-            $runMode = RunMode::DEVELOPMENT;
-        } else {
-            $runMode = RunMode::PRODUCTION;
-        }
+        $runMode = self::getRunMode();
         if (!isset(self::$other[$config_name])) {
             $otherConfigPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
                 . DIRECTORY_SEPARATOR . $config_name . '.php';

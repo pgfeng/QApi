@@ -10,4 +10,5 @@ class RunMode
     public const DEVELOPMENT = 'development';
     public const PRODUCTION = 'production';
     public const DEBUG = 'debug';
+    public const TEST = 'test';
 }
