@@ -450,6 +450,17 @@ class DB
     }
 
     /**
+     * @param string|null $delete
+     * @param string|null $alias
+     * @return int
+     */
+    final public function delete(?string $delete = null, ?string $alias = null): int
+    {
+        return $this->queryBuilder->delete($delete, $alias)->where($this->getQueryPart('where'))
+            ->executeStatement();
+    }
+
+    /**
      * 不存在的方法将执行DB类中的方法
      *
      * @param $func
