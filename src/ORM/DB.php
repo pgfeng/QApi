@@ -275,6 +275,33 @@ class DB
         return $this;
     }
 
+
+    /**
+     * @param string $field
+     * @param mixed $change
+     * @return int
+     */
+    final public function setInc(string $field, mixed $change = 1):int
+    {
+        $field = $this->_Field($field);
+        return $this->update([
+            $field => $field . ' + ' . $change,
+        ], $this->queryBuilder->getQueryPart('where'));
+    }
+
+    /**
+     * @param string $field
+     * @param int|float $change
+     * @return bool
+     */
+    final public function setDnc(string $field, mixed $change = 1): bool
+    {
+        $field = $this->_Field($field);
+        return $this->update([
+            $field => $field . ' - ' . $change,
+        ], $this->queryBuilder->getQueryPart('where'));
+    }
+
     /**
      * @param string $field
      * @param $value
