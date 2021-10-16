@@ -64,7 +64,6 @@ class DB
      * DB constructor.
      * @param string $table
      * @param string $configName
-     * @throws ErrorException
      */
     public function __construct(string $table, string $configName)
     {
@@ -217,7 +216,6 @@ class DB
      * @param array $types
      * @param string|null $table
      * @return int
-     * @throws Exception
      */
     public function insert(array|Data $data, array $types = [], ?string $table = null): int
     {
@@ -236,7 +234,6 @@ class DB
      * @param array $types
      * @param string|null $table
      * @return int
-     * @throws Exception
      */
     public function update(array|Data $data, array $where, array $types = [], ?string $table = null): int
     {
@@ -318,7 +315,6 @@ class DB
      * @param array $types
      * @param QueryCacheProfile|null $qcp
      * @return Data
-     * @throws Exception
      */
     public function query(string $sql = null, array $params = [], array $types = [], ?QueryCacheProfile $qcp =
     null): Data
@@ -456,7 +452,6 @@ class DB
      * @param int $number
      * @param int $page
      * @return Data|array
-     * @throws Exception
      */
     final public function paginate($number = 10, $page = 1): Data|array
     {
