@@ -17,6 +17,8 @@ use QApi\Config\Database\PdoMysqlDatabase;
 use QApi\Config\Database\PdoSqliteDatabase;
 use QApi\Config\Database\SqlServDatabase;
 use QApi\Data;
+use QApi\Database\DBase;
+use QApi\Exception\SqlErrorException;
 use QApi\Logger;
 
 /**
@@ -248,6 +250,7 @@ class DB
         foreach ($data as $key => $value) {
             $update->set($key, $value);
         }
+        $this->hasWhere = false;
         return $update->executeStatement();
     }
 
@@ -304,6 +307,58 @@ class DB
         return $this->update([
             $field => $field . ' - ' . $change,
         ]);
+    }
+    /**
+     * @param $field
+     * @param $Between
+     * @return $this
+     */
+    final public function between($field, array $Between): self
+    {
+        $field = $this->_Field($field);
+        if (count($Between) !== 2) {
+            throw new SqlErrorException('Too few params to function Between($field, $Between), Must two params;');
+        }
+        $Between = $this->addslashes($Between);
+        $pBetween = $Between[0] . ' AND ' . $Between[1];
+        return $this->where("{$field} BETWEEN {$pBetween}");
+    }
+    /**
+     * @param $field
+     * @param $Between
+     * @return $this
+     */
+    final public function notBetween($field, array $Between): self
+    {
+        $field = $this->_Field($field);
+        if (count($Between) !== 2) {
+            throw new SqlErrorException('Too few params to function Between($field, $Between), Must two params;');
+        }
+        $Between = $this->addslashes($Between);
+        $pBetween = $Between[0] . ' AND ' . $Between[1];
+        return $this->where("{$field} NOT BETWEEN {$pBetween}");
+    }
+
+    /**
+     * @param string $field
+     * @param $value
+     * @return $this
+     */
+    public function leftLike(string $field, $value): self
+    {
+        $this->queryBuilder->where($this->expr()->like($field, '%' . $this->quote($value)));
+        return $this;
+    }
+
+    /**
+     * @param string $field
+     * @param $value
+     * @return $this
+     */
+    public function rightLike(string $field, $value): self
+    {
+        $this->queryBuilder->where($this->expr()->like($field, $this->quote($value) . '%'));
+        return $this;
     }
 
     /**
@@ -469,6 +524,7 @@ class DB
      */
     final public function getField($field_name): mixed
     {
+        $this->hasWhere = false;
         $field_name = $this->_Field($field_name);
         return $this->queryBuilder->select($field_name)->setMaxResults(1)->executeQuery()->fetchOne();
     }
