@@ -53,15 +53,13 @@ class Model extends DB
      * @param null $primary_key
      * @return int
      */
-    public function save($data, $primary_key = null):int
+    public function save($data, $primary_key = null): int
     {
         if (!$primary_key) {
             $primary_key = $this->primary_key;
         }
         if (isset($data[$primary_key])) {
-            return self::model()->update($data, [
-                $primary_key => $data[$primary_key],
-            ]);
+            return self::model()->where($primary_key, $data[$primary_key])->update($data);
         }
 
         return self::model()->insert($data);

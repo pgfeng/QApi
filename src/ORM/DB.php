@@ -17,6 +17,7 @@ use QApi\Config\Database\PdoMysqlDatabase;
 use QApi\Config\Database\PdoSqliteDatabase;
 use QApi\Config\Database\SqlServDatabase;
 use QApi\Data;
+use QApi\Logger;
 
 /**
  * Class DB
@@ -235,7 +236,7 @@ class DB
      * @param string|null $table
      * @return int
      */
-    public function update(array|Data $data, array $where, array $types = [], ?string $table = null): int
+    public function update(array|Data $data, array $types = [], ?string $table = null): int
     {
         if ($data instanceof Data) {
             $data = $data->toArray();
@@ -243,8 +244,11 @@ class DB
         if (!$table) {
             $table = $this->table;
         }
-        return $this->queryBuilder->getConnection()->update($this->config->tablePrefix . $table, $data, $where,
-            $types);
+        $update = $this->queryBuilder->update($this->config->tablePrefix . $table)->where($this->getQueryPart('where'));
+        foreach ($data as $key => $value) {
+            $update->set($key, $value);
+        }
+        return $update->executeStatement();
     }
 
     /**
@@ -281,12 +285,12 @@ class DB
      * @param mixed $change
      * @return int
      */
-    final public function setInc(string $field, array $where = [], mixed $change = 1): int
+    final public function setInc(string $field, mixed $change = 1): int
     {
         $field = $this->_Field($field);
         return $this->update([
             $field => $field . ' + ' . $change,
-        ], $where);
+        ]);
     }
 
     /**
@@ -294,12 +298,12 @@ class DB
      * @param int|float $change
      * @return bool
      */
-    final public function setDec(string $field, array $where = [], mixed $change = 1): bool
+    final public function setDec(string $field, mixed $change = 1): bool
     {
         $field = $this->_Field($field);
         return $this->update([
             $field => $field . ' - ' . $change,
-        ], $where);
+        ]);
     }
 
     /**
@@ -437,12 +441,12 @@ class DB
      *
      * @return int
      */
-    final public function setField($field_name, $field_value, array $where = []): int
+    final public function setField($field_name, $field_value): int
     {
         $field_name = $this->_Field($field_name);
         return $this->update([
             $field_name => $field_value,
-        ], $where);
+        ], $this->getQueryPart('where'));
     }
 
     /**
