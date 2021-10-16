@@ -19,6 +19,11 @@ use QApi\Logger;
 
 class Model extends DB
 {
+    /**
+     * 默认的主键名
+     * @var string
+     */
+    public string $primary_key = 'id';
 
     /**
      * Model constructor.
@@ -43,8 +48,26 @@ class Model extends DB
         }
     }
 
+    /**
+     * @param $data
+     * @param null $primary_key
+     * @return int
+     */
+    public function save($data, $primary_key = null):int
+    {
+        if (!$primary_key) {
+            $primary_key = $this->primary_key;
+        }
+        if (isset($data[$primary_key])) {
+            return self::model()->update($data, [
+                $primary_key => $data[$primary_key],
+            ]);
+        }
 
-    public static function model(): self
+        return self::model()->insert($data);
+    }
+
+    public static function model(): static
     {
         return new static();
     }
