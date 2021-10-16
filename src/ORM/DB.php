@@ -314,10 +314,10 @@ class DB
      * @param array $params
      * @param array $types
      * @param QueryCacheProfile|null $qcp
-     * @return Data
+     * @return array[]
      */
     public function query(string $sql = null, array $params = [], array $types = [], ?QueryCacheProfile $qcp =
-    null): Data
+    null): array
     {
         if ($sql) {
             $data = $this->queryBuilder->getConnection()->executeQuery($sql, $params, $types, $qcp)
@@ -326,7 +326,7 @@ class DB
             $data = $this->queryBuilder->executeQuery()->fetchAllAssociative();
         }
         $this->hasWhere = false;
-        return new Data($data);
+        return $data;
     }
 
     /**
