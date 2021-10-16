@@ -244,7 +244,7 @@ class DB
         if (!$table) {
             $table = $this->table;
         }
-        $update = $this->queryBuilder->update($this->config->tablePrefix . $table)->where($this->getQueryPart('where'));
+        $update = $this->queryBuilder->update($this->config->tablePrefix . $table);
         foreach ($data as $key => $value) {
             $update->set($key, $value);
         }
@@ -363,7 +363,6 @@ class DB
     /**
      * @param string $field
      * @return int
-     * @throws Exception
      */
     public function count(string $field = '*'): int
     {
@@ -372,12 +371,62 @@ class DB
     }
 
     /**
+     * @param string $field
+     * @return int
+     */
+    public function max(string $field): int
+    {
+        $this->hasWhere = false;
+        return (int)$this->queryBuilder->select('MAX(' . $field . ')')->executeQuery()->fetchOne();
+    }
+
+    /**
+     * @param string $field
+     * @return int
+     */
+    public function min(string $field): int
+    {
+        $this->hasWhere = false;
+        return (int)$this->queryBuilder->select('MIN(' . $field . ')')->executeQuery()->fetchOne();
+    }
+
+    /**
+     * @param string $field
+     * @return int
+     */
+    public function sum(string $field): int
+    {
+        $this->hasWhere = false;
+        return (int)$this->queryBuilder->select('SUM(' . $field . ')')->executeQuery()->fetchOne();
+    }
+
+    /**
+     * @param string $field
+     * @return int
+     */
+    public function avg(string $field): int
+    {
+        $this->hasWhere = false;
+        return (int)$this->queryBuilder->select('AVG(' . $field . ')')->executeQuery()->fetchOne();
+    }
+
+    /**
+     * @param string $field
+     * @return int
+     */
+    public function length(string $field): int
+    {
+        $this->hasWhere = false;
+        return (int)$this->queryBuilder->select('LENGTH(' . $field . ')')->executeQuery()->fetchOne();
+    }
+
+    /**
      * @return Data|null
      */
     public function find(): ?Data
     {
-        $data = $this->queryBuilder->setMaxResults(1)->executeQuery()->fetchAllAssociative();
         $this->hasWhere = false;
+        $data = $this->queryBuilder->setMaxResults(1)->executeQuery()->fetchAllAssociative();
         if (count($data)) {
             return new Data($data[0]);
         }
@@ -415,22 +464,13 @@ class DB
 
     /**
      * 获取一个字段值
-     *
      * @param $field_name
-     *
      * @return mixed
      */
     final public function getField($field_name): mixed
     {
         $field_name = $this->_Field($field_name);
-        $this->select($field_name);
-        $this->limit(0, 1);
-        $fetch = $this->find();
-        if (!$fetch) {
-            return null;
-        }
-        $array = explode('.', $field_name);
-        return $fetch[end($array)];
+        return $this->queryBuilder->select($field_name)->setMaxResults(1)->executeQuery()->fetchOne();
     }
 
     /**
@@ -446,7 +486,7 @@ class DB
         $field_name = $this->_Field($field_name);
         return $this->update([
             $field_name => $field_value,
-        ], $this->getQueryPart('where'));
+        ]);
     }
 
     /**
@@ -456,8 +496,7 @@ class DB
      */
     final public function delete(?string $delete = null, ?string $alias = null): int
     {
-        return $this->queryBuilder->delete($delete, $alias)->where($this->getQueryPart('where'))
-            ->executeStatement();
+        return $this->queryBuilder->delete($delete, $alias)->executeStatement();
     }
 
     /**
