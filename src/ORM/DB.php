@@ -281,12 +281,12 @@ class DB
      * @param mixed $change
      * @return int
      */
-    final public function setInc(string $field, mixed $change = 1):int
+    final public function setInc(string $field, array $where = [], mixed $change = 1): int
     {
         $field = $this->_Field($field);
         return $this->update([
             $field => $field . ' + ' . $change,
-        ], $this->queryBuilder->getQueryPart('where'));
+        ], $where);
     }
 
     /**
@@ -294,12 +294,12 @@ class DB
      * @param int|float $change
      * @return bool
      */
-    final public function setDnc(string $field, mixed $change = 1): bool
+    final public function setDec(string $field, array $where = [], mixed $change = 1): bool
     {
         $field = $this->_Field($field);
         return $this->update([
             $field => $field . ' - ' . $change,
-        ], $this->queryBuilder->getQueryPart('where'));
+        ], $where);
     }
 
     /**
@@ -437,12 +437,12 @@ class DB
      *
      * @return int
      */
-    final public function setField($field_name, $field_value): int
+    final public function setField($field_name, $field_value, array $where = []): int
     {
         $field_name = $this->_Field($field_name);
         return $this->update([
             $field_name => $field_value,
-        ], $this->queryBuilder->getQueryPart('where'));
+        ], $where);
     }
 
     /**
