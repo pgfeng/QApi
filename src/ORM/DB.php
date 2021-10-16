@@ -368,6 +368,61 @@ class DB
     }
 
     /**
+     * 获取完整字段
+     * @param $field
+     * @return string|array
+     */
+    final public function _Field($field): string|array
+    {
+        if (is_string($field)) {
+            if (str_contains($field, '.')) {
+                $field = $this->config->tablePrefix . $field;
+            }
+        } else if (is_array($field)) {
+            foreach ($field as &$item) {
+                $item = $this->_Field($item);
+            }
+        }
+        return $field;
+    }
+
+    /**
+     * 获取一个字段值
+     *
+     * @param $field_name
+     *
+     * @return mixed
+     */
+    final public function getField($field_name): mixed
+    {
+        $field_name = $this->_Field($field_name);
+        $this->select($field_name);
+        $this->limit(0, 1);
+        $fetch = $this->find();
+        if (!$fetch) {
+            return null;
+        }
+        $array = explode('.', $field_name);
+        return $fetch[end($array)];
+    }
+
+    /**
+     * 设置字段值
+     *
+     * @param $field_name
+     * @param $field_value
+     *
+     * @return int
+     */
+    final public function setField($field_name, $field_value): int
+    {
+        $field_name = $this->_Field($field_name);
+        return $this->update([
+            $field_name => $field_value,
+        ], $this->queryBuilder->getQueryPart('where'));
+    }
+
+    /**
      * 不存在的方法将执行DB类中的方法
      *
      * @param $func
