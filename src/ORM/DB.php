@@ -308,6 +308,7 @@ class DB
             $field => $field . ' - ' . $change,
         ]);
     }
+
     /**
      * @param $field
      * @param $Between
@@ -323,6 +324,7 @@ class DB
         $pBetween = $Between[0] . ' AND ' . $Between[1];
         return $this->where("{$field} BETWEEN {$pBetween}");
     }
+
     /**
      * @param $field
      * @param $Between
