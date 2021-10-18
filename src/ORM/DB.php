@@ -9,6 +9,7 @@ use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Types\Type;
 use ErrorException;
 use QApi\Config;
@@ -62,6 +63,7 @@ class DB
     public MysqliDatabase|PdoMysqlDatabase|PdoSqliteDatabase|Config\Database\PdoSqlServDatabase|SqlServDatabase
         $config;
     private bool $hasWhere = false;
+    protected Connection $connection;
 
     /**
      * DB constructor.
@@ -71,7 +73,8 @@ class DB
     public function __construct(string $table, string $configName)
     {
         $this->config = Config::database($configName);
-        $this->queryBuilder = DriverManager::connect($configName);
+        $this->connection = DriverManager::connect($configName);
+        $this->queryBuilder = $this->connection->createQueryBuilder();
         $this->select('*');
         if ($table) {
             $this->table = $table;
