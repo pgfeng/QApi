@@ -19,9 +19,7 @@ class SchemaManager
      */
     public static function create(string $configName = 'default'): AbstractSchemaManager
     {
-        $config = Config::database($configName);
-        return self::$schemaManager[$configName] ?? (self::$schemaManager[$configName] = (new
-            ($config->connectorClass)())?->getConnector
-            ($config)?->createSchemaManager());
+        return self::$schemaManager[$configName] ?? (self::$schemaManager[$configName] = DriverManager::connect($configName)
+                ?->createSchemaManager());
     }
 }
