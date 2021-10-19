@@ -8,6 +8,7 @@ use QApi\Attribute\Parameter\GetParam;
 use QApi\Attribute\Parameter\HeaderParam;
 use QApi\Attribute\Parameter\PathParam;
 use QApi\Attribute\Parameter\PostParam;
+use QApi\Attribute\Parameter\PostParamFromTable;
 use QApi\Cache\Cache;
 use QApi\Config;
 use ReflectionClass;
@@ -42,6 +43,7 @@ class Utils
                 $data = [];
                 self::buildVersionDoc(scandir($path), $path, $app->nameSpace . '\\' . $version->versionDir,
                     $version->versionDir, $data, $path);
+                error_log(json_encode($data));
                 if (!isset($apis[$version->versionDir])) {
                     $apis[$version->versionDir] = [];
                 }
@@ -79,13 +81,13 @@ class Utils
                                     instanceof ResultDictionaryFromTable) {
                                     $data = $v->toArray();
                                     foreach ($data as $resultField) {
-                                        if (!empty($resultField['comment'])){
-                                            if (!isset($resultDictionary[$resultField['tag']])){
+                                        if (!empty($resultField['comment'])) {
+                                            if (!isset($resultDictionary[$resultField['tag']])) {
                                                 $resultDictionary[$resultField['tag']] = [];
                                             }
                                             $resultDictionary[$resultField['tag']][] = [
                                                 'name' => $resultField['name'],
-                                                'comment' => $resultField['comment']??'',
+                                                'comment' => $resultField['comment'] ?? '',
                                                 'type' => $resultField['type'],
                                             ];
                                         }
@@ -166,6 +168,7 @@ class Utils
                         PathParam::class,
                         GetParam::class,
                         PostParam::class,
+                        PostParamFromTable::class
                     ]);
             }
         }
@@ -189,7 +192,11 @@ class Utils
             foreach ($classAttributes as $item) {
                 $newInstance = $item->newInstance();
                 if ($attributeFilter && in_array($item->getName(), $attributeFilter, true)) {
-                    $data[$item->getName()][] = $newInstance;
+                    if ($newInstance instanceof PostParamFromTable) {
+                        $data[PostParam::class] = array_merge($data[PostParam::class] ?? [], $newInstance->postParams);
+                    } else {
+                        $data[$item->getName()][] = $newInstance;
+                    }
                     if ($item->getName() === Route::class && $newInstance->middleware) {
                         self::margeMiddleware($newInstance->middleware, $data, $attributeFilter);
                     }
@@ -204,7 +211,11 @@ class Utils
             foreach ($methodsAttributes as $item) {
                 $newInstance = $item->newInstance();
                 if ($attributeFilter && in_array($item->getName(), $attributeFilter, true)) {
-                    $data[$item->getName()][] = $newInstance;
+                    if ($newInstance instanceof PostParamFromTable) {
+                        $data[PostParam::class] = array_merge($data[PostParam::class] ?? [], $newInstance->postParams);
+                    } else {
+                        $data[$item->getName()][] = $newInstance;
+                    }
                     if ($item->getName() === Route::class && $newInstance->middleware) {
                         self::margeMiddleware($newInstance->middleware, $data, $attributeFilter);
                     }
