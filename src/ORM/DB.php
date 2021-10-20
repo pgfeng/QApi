@@ -251,7 +251,11 @@ class DB
         }
         $update = $this->queryBuilder->update($this->config->tablePrefix . $table);
         foreach ($data as $key => $value) {
-            $update->set($key, $value);
+            if (!isset($types[$key])) {
+                $update->set($key, $value);
+            } else {
+                $update->set($key, $this->quote($value));
+            }
         }
         $this->hasWhere = false;
         return $update->executeStatement();
