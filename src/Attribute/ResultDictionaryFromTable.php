@@ -15,18 +15,37 @@ use QApi\Attribute\Column\Table;
 #[Attribute(Attribute::IS_REPEATABLE | Attribute::TARGET_METHOD | Attribute::TARGET_CLASS)] class
 ResultDictionaryFromTable
 {
+
     /**
-     * Result constructor.
-     * @param string[] $class
+     * ResultDictionaryFromTable constructor.
+     * @param string[]|string $tableColumnClass
+     *[
+     * 'field'=>
+     *      [
+     *      'name' => $this->replaceField[$argument['name']]['name'] ?? $argument['name'],
+     *      'comment' => $this->replaceField[$argument['name']]['comment'] ?? $argument['comment'],
+     *      'type' => $this->replaceField[$argument['name']]['type'] ?? $argument['type'],
+     *      'tag' => $this->replaceField[$argument['name']]['tag'] ?? $classAttribute->getArguments()['name'],
+     *     ]
+     * ]
+     * @param array $replaceField
+     * @param string[] $ignoreField
      */
-    public function __construct(public array $tableColumnClassArray)
+    public function __construct(
+        public array|string $tableColumnClass,
+        public array $replaceField = [],
+        public array $ignoreField = []
+    )
     {
+        if (is_string($this->tableColumnClass)) {
+            $this->tableColumnClass = [$this->tableColumnClass];
+        }
     }
 
     public function toArray(): array
     {
         $data = [];
-        foreach ($this->tableColumnClassArray as $item) {
+        foreach ($this->tableColumnClass as $item) {
             $ref = new \ReflectionClass($item);
             $classAttributes = $ref->getAttributes(Table::class);
             $constants = $ref->getReflectionConstants();
@@ -35,12 +54,14 @@ ResultDictionaryFromTable
                     $attributes = $constant->getAttributes(Field::class);
                     foreach ($attributes as $attribute) {
                         $argument = $attribute->getArguments();
-                        $data[] = [
-                                'name' => $argument['name'],
-                                'comment' => $argument['comment'],
-                                'type' => $argument['type'],
-                                'tag' => $classAttribute->getArguments()['name'],
-                        ];
+                        if (!in_array($argument['name'], $this->ignoreField)) {
+                            $data[] = [
+                                'name' => $this->replaceField[$argument['name']]['name'] ?? $argument['name'],
+                                'comment' => $this->replaceField[$argument['name']]['comment'] ?? $argument['comment'],
+                                'type' => $this->replaceField[$argument['name']]['type'] ?? $argument['type'],
+                                'tag' => $this->replaceField[$argument['name']]['tag'] ?? $classAttribute->getArguments()['name'],
+                            ];
+                        }
                     }
                 }
             }

@@ -19,6 +19,17 @@ use QApi\Attribute\Column\Table;
     /**
      * PostParamFromTable constructor.
      * @param string $tableColumnClass
+     * [
+     * 'field'=>
+     *      [
+     *      'name' => 'name',
+     *      'summary' => 'summary',
+     *      'description' => 'description',
+     *      'type' => 'int',
+     *      'required' => false,
+     *      'default' => '',
+     *     ]
+     * ]
      * @param array $replaceField
      * @param array<string> $ignoreField
      * @throws \ReflectionException
@@ -39,13 +50,13 @@ use QApi\Attribute\Column\Table;
                     $argument = $attribute->getArguments();
                     if (!in_array($argument['name'], $this->ignoreField)) {
                         $this->postParams[] = new PostParam(
-                            name: $this->replaceField['name'] ?? $argument['name'],
-                            summary: $this->replaceField['summary'] ?? $argument['comment'],
-                            description: $this->replaceField['description'] ?? $argument['comment'],
-                            type: $this->replaceField['type'] ?? (stripos('int', $argument['type']) ?
+                            name: $this->replaceField[$argument['name']]['name'] ?? $argument['name'],
+                            summary: $this->replaceField[$argument['name']]['summary'] ?? $argument['comment'],
+                            description: $this->replaceField[$argument['name']]['description'] ?? $argument['comment'],
+                            type: $this->replaceField[$argument['name']]['type'] ?? (stripos('int', $argument['type']) ?
                                 ParamsType::INT : ParamsType::STRING),
-                            required: $this->replaceField['required'] ?? false,
-                            default: $this->replaceField['default'] ?? '',
+                            required: $this->replaceField[$argument['name']]['required'] ?? false,
+                            default: $this->replaceField[$argument['name']]['default'] ?? '',
                         );
                     }
                 }
