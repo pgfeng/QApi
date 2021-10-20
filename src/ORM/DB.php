@@ -25,15 +25,15 @@ use QApi\Logger;
 /**
  * Class DB
  * @package QApi\ORM
- * @method self setFirstResult(int $offset),
- * @method self setMaxResults(int $maxNumber),
+ * @method $this setFirstResult(int $offset),
+ * @method $this setMaxResults(int $maxNumber),
  * @method ExpressionBuilder expr(),
  * @method int getType(),
  * @method Connection getConnection(),
  * @method int getState(),
- * @method self select($select = null)
- * @method self setParameter(int|string $key, mixed $value, int|string|Type|null $type = null)
- * @method self setParameters(array $params, array $type = [])
+ * @method $this select($select = null)
+ * @method $this setParameter(int|string $key, mixed $value, int|string|Type|null $type = null)
+ * @method $this setParameters(array $params, array $type = [])
  * @method array getParameters(array $params, array $type = [])
  * @method array set($key, $value)
  * @method mixed getParameter(int|string $key)
@@ -41,19 +41,19 @@ use QApi\Logger;
  * @method int|string|Type|null getParameterType(int|string $key)
  * @method int getFirstResult()
  * @method int getMaxResults()
- * @method self distinct()
- * @method self join(string $fromAlias, string $join, string $alias, string $condition = null)
- * @method self innerJoin(string $fromAlias, string $join, string $alias, string $condition = null)
- * @method self leftJoin(string $fromAlias, string $join, string $alias, string $condition = null)
- * @method self rightJoin(string $fromAlias, string $join, string $alias, string $condition = null)
- * @method self groupBy(string|array $groupBy)
- * @method self addGroupBy(string|array $groupBy)
- * @method self having($having)
- * @method self andHaving($having)
+ * @method $this distinct()
+ * @method $this join(string $fromAlias, string $join, string $alias, string $condition = null)
+ * @method $this innerJoin(string $fromAlias, string $join, string $alias, string $condition = null)
+ * @method $this leftJoin(string $fromAlias, string $join, string $alias, string $condition = null)
+ * @method $this rightJoin(string $fromAlias, string $join, string $alias, string $condition = null)
+ * @method $this groupBy(string|array $groupBy)
+ * @method $this addGroupBy(string|array $groupBy)
+ * @method $this having($having)
+ * @method $this andHaving($having)
  * @method mixed getQueryPart(string $queryPartName)
- * @method self orHaving($having)
- * @method self orderBy($sort, $order = null)
- * @method self addOrderBy($sort, $order = null)
+ * @method $this orHaving($having)
+ * @method $this orderBy($sort, $order = null)
+ * @method $this addOrderBy($sort, $order = null)
  * @method string getSQL()
  */
 class DB
