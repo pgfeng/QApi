@@ -251,7 +251,7 @@ class DB
         }
         $update = $this->queryBuilder->update($this->config->tablePrefix . $table);
         foreach ($data as $key => $value) {
-            if (!isset($types[$key])) {
+            if (isset($types[$key])) {
                 $update->set($key, $value);
             } else {
                 $update->set($key, $this->quote($value));
