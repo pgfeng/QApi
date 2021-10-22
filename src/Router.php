@@ -45,6 +45,7 @@ class Router
     public static string $METHOD = '';
 
     private static bool|array|null $hitCache = null;
+
     /**
      * 存储路由
      * 如果当前请求类型不存在会自动向ALL中查找
@@ -257,8 +258,15 @@ class Router
     public
     static function __callStatic(string $method, array $params = []): static
     {
-        if ((!isset($params['path']) || !$params['path']) && is_string($params['callback'])) {
-            $params['path'] = str_replace('\\', '/', str_replace(Config::$app->getNameSpace() . '\\' . Config::version()->versionDir, '', $params['callback']));
+
+        if (!isset($params['callback'])) {
+            $params = [
+                'path' => $params[0],
+                'callback' => $params[1],
+            ];
+        }
+        if ((!isset($params['path']) || !$params['path']) && isset($params['callback']) && !is_callable($params['callback'])) {
+            $params['path'] = str_replace(array(Config::$app->getNameSpace() . '\\' . Config::version()->versionDir, '\\'), array('', '/'), $params['callback']);
             $params['path'] = substr(str_replace('Controller@', '/', $params['path']), 0, -6);
         }
         return new static(strtoupper($method), $params['path'] ?? null, $params['callback']);
@@ -315,14 +323,14 @@ class Router
                 $methodData = [];
                 foreach ($routeMethodData as $path => $route) {
                     $params = [];
-                    if (preg_match_all('/\{(\w+)\}/', $path, $match)) {
+                    if (preg_match_all('/{(\w+)}/', $path, $match)) {
                         foreach ($match[1] as $k => $p) {
                             if (isset($route['pattern'][$p])) {
                                 $path = str_replace($match[0][$k], '(' . $route['pattern'][$p] . ')', $path);
                             }
                             $params[$k + 1] = $p;
                         }
-                        $path = preg_replace('/\{(\w+)\}/', '(\w+)', $path);
+                        $path = preg_replace('/{(\w+)}/', '(\w+)', $path);
                     }
                     $methodData[$path] = [
                         'callback' => $route['callback'],
@@ -489,7 +497,7 @@ class Router
             $request = new Request($arguments);
             $response = new Response();
             Logger::info('Router -> ' . $controllerName . '@' . $method);
-            Logger::info('RouterOriginal -> ' . json_encode(self::$router));
+            Logger::info('RouterOriginal -> ' . json_encode(self::$router, JSON_THROW_ON_ERROR));
             $result = '';
             if ($middleware) {
                 /**
@@ -535,7 +543,7 @@ class Router
                     ksort($middlewareLists);
                     self::$router['middleware'] = &$middlewareLists;
                     Logger::info('Router -> ' . $controllerName . '@' . $callback['method']);
-                    Logger::info('RouterOriginal -> ' . json_encode(self::$router));
+                    Logger::info('RouterOriginal -> ' . json_encode(self::$router, JSON_THROW_ON_ERROR));
                     $arguments = new Data($params);
                     $request = new Request($arguments);
                     $response = new Response($version->versionName);
