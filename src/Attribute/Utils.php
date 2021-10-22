@@ -43,7 +43,6 @@ class Utils
                 $data = [];
                 self::buildVersionDoc(scandir($path), $path, $app->nameSpace . '\\' . $version->versionDir,
                     $version->versionDir, $data, $path);
-                error_log(json_encode($data));
                 if (!isset($apis[$version->versionDir])) {
                     $apis[$version->versionDir] = [];
                 }
