@@ -546,12 +546,12 @@ class DB
      * @param bool $format
      * @return int
      */
-    final public function setField($field_name, $field_value, $format = false): int
+    final public function setField($field_name, $field_value, $format = true): int
     {
         $field_name = $this->_Field($field_name);
         return $this->update([
             $field_name => $field_value,
-        ], $format ? [$field_name => true] : []);
+        ], !$format ? [$field_name => true] : []);
     }
 
     /**
