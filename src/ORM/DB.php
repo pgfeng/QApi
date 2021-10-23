@@ -300,7 +300,7 @@ class DB
         $field = $this->_Field($field);
         return $this->update([
             $field => $field . ' + ' . $change,
-        ]);
+        ], [$field => true]);
     }
 
     /**
@@ -313,7 +313,7 @@ class DB
         $field = $this->_Field($field);
         return $this->update([
             $field => $field . ' - ' . $change,
-        ]);
+        ], [$field => true]);
     }
 
     /**
@@ -543,15 +543,15 @@ class DB
      *
      * @param $field_name
      * @param $field_value
-     *
+     * @param bool $format
      * @return int
      */
-    final public function setField($field_name, $field_value): int
+    final public function setField($field_name, $field_value, $format = false): int
     {
         $field_name = $this->_Field($field_name);
         return $this->update([
             $field_name => $field_value,
-        ]);
+        ], $format ? [$field_name => true] : []);
     }
 
     /**
