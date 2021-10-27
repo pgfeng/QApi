@@ -128,6 +128,25 @@ class ColumnCommand extends CommandHandler
     }
 
     /**
+     * @param $path
+     */
+    public function clearDir($path):void
+    {
+        if(is_dir($path)){
+            $p = scandir($path);
+            foreach($p as $val){
+                if($val !=="." && $val !==".."){
+                    if(is_dir($path.$val)){
+                        $this->clearDir($path.$val.'/');
+                        @rmdir($path.$val.'/');
+                    }else{
+                        unlink($path.$val);
+                    }
+                }
+            }
+        }
+    }
+    /**
      * @param $config
      * @param $nameSpace
      * @throws ErrorException
@@ -135,6 +154,7 @@ class ColumnCommand extends CommandHandler
     private function buildDatabaseColumn($config, $nameSpace): void
     {
         $tables = DB::table('', $config)->query("show tables");
+        $this->clearDir(PROJECT_PATH . Config::command('ColumnDir') . '_' . $config . DIRECTORY_SEPARATOR);
         foreach ($tables as $table) {
             $table = $table[array_keys($table->toArray())[0]];
             if (str_starts_with($table, Config::database($config)->tablePrefix)) {
