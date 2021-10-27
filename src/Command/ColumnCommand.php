@@ -130,22 +130,23 @@ class ColumnCommand extends CommandHandler
     /**
      * @param $path
      */
-    public function clearDir($path):void
+    public function clearDir($path): void
     {
-        if(is_dir($path)){
+        if (is_dir($path)) {
             $p = scandir($path);
-            foreach($p as $val){
-                if($val !=="." && $val !==".."){
-                    if(is_dir($path.$val)){
-                        $this->clearDir($path.$val.'/');
-                        @rmdir($path.$val.'/');
-                    }else{
-                        unlink($path.$val);
+            foreach ($p as $val) {
+                if ($val !== "." && $val !== "..") {
+                    if (is_dir($path . $val)) {
+                        $this->clearDir($path . $val . '/');
+                        @rmdir($path . $val . '/');
+                    } else {
+                        unlink($path . $val);
                     }
                 }
             }
         }
     }
+
     /**
      * @param $config
      * @param $nameSpace
@@ -154,7 +155,11 @@ class ColumnCommand extends CommandHandler
     private function buildDatabaseColumn($config, $nameSpace): void
     {
         $tables = DB::table('', $config)->query("show tables");
+        $this->command->cli->comment('[' . PROJECT_PATH . Config::command('ColumnDir') . '_' . $config .
+            DIRECTORY_SEPARATOR . '] Start cleaning!');
         $this->clearDir(PROJECT_PATH . Config::command('ColumnDir') . '_' . $config . DIRECTORY_SEPARATOR);
+        $this->command->cli->comment('[' . PROJECT_PATH . Config::command('ColumnDir') . '_' . $config .
+            DIRECTORY_SEPARATOR . '] Clean up complete!');
         foreach ($tables as $table) {
             $table = $table[array_keys($table->toArray())[0]];
             if (str_starts_with($table, Config::database($config)->tablePrefix)) {
@@ -180,7 +185,7 @@ class ColumnCommand extends CommandHandler
         $columns_comment = $columns_comment->transPrimaryIndex('column_name');
         $const = '';
         foreach ($columns as $column) {
-//            print_r($column['Type']);
+            //            print_r($column['Type']);
             $const .= '
             
     /**
@@ -189,7 +194,7 @@ class ColumnCommand extends CommandHandler
             $const .= $column;
             $const .= '
      */
-    #[Field(name: \''.$column['Field'].'\', comment: \''.addslashes($columns_comment[$column['Field']]['column_comment']).'\', type: \''.$column['Type'].'\')]
+    #[Field(name: \'' . $column['Field'] . '\', comment: \'' . addslashes($columns_comment[$column['Field']]['column_comment']) . '\', type: \'' . $column['Type'] . '\')]
     public const ' . strtoupper($column['Field']) . ' = \'' . $column['Field'] . '\';' . "\r\n";
         }
         $date = date('Y-m-d H:i:s');
@@ -225,7 +230,7 @@ $const
 Column;
         mkPathDir($columnPath);
         file_put_contents($columnPath, $ColumnContent);
-        $this->command->info($nameSpace . '\\' . $table . 'Column生成成功!');
+        $this->command->info('['.$nameSpace . '\\' . $table . 'Column] Generation complete!');
 
     }
 
