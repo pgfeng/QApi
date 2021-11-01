@@ -4,6 +4,16 @@
 use JetBrains\PhpStorm\Pure;
 
 /**
+ * 获取一个全局唯一键值
+ * @param string $prefix
+ * @return string
+ */
+function buildID($prefix = 'QApi-'): string
+{
+    return md5(uniqid(session_create_id($prefix), true), false);
+}
+
+/**
  * 解析正确路径
  *
  * @return string
