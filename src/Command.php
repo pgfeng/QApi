@@ -9,6 +9,7 @@
 namespace QApi;
 
 
+use ErrorException;
 use League\CLImate\CLImate;
 use QApi\Command\ClearCacheCommand;
 use QApi\Command\ColumnCommand;
@@ -51,12 +52,21 @@ class Command
 
     /**
      * Command constructor.
-     * @throws \ErrorException
+     * @param string|null $timezone
+     * @param string $routeDir
+     * @param string $configDir
+     * @param string $runtimeDir
+     * @throws ErrorException
      */
-    public function __construct()
+    public function __construct(?string $timezone = 'Asia/Shanghai', $routeDir = 'routes', $configDir = 'config', $runtimeDir =
+    'runtime')
     {
         error_reporting(E_ALL ^ E_NOTICE);
-        date_default_timezone_set("PRC");
+        App::$timezone = new \DateTimeZone($timezone);
+        date_default_timezone_set($timezone);
+        App::$routeDir = trim($routeDir, '/');
+        App::$runtimeDir = trim($runtimeDir, '/');
+        App::$configDir = trim($configDir, '/');
         $this->stdout = fopen('php://stdout', 'wb');
         $this->stdin = fopen('php://stdin', 'rb');
         $this->stderr = fopen('php://stderr', 'wb');

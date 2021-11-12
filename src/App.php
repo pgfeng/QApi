@@ -112,6 +112,7 @@ class App
             self::$apiPassword = trim($apiPassword);
             self::$routeDir = trim($routeDir, '/');
             self::$runtimeDir = trim($runtimeDir, '/');
+            self::$configDir = trim($configDir, '/');
             self::$uploadDir = trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
             try {
                 self::$app = Config::app();
