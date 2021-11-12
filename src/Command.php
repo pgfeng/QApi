@@ -65,6 +65,7 @@ class Command
         error_reporting(E_ALL ^ E_NOTICE);
         App::$timezone = new \DateTimeZone($timezone);
         date_default_timezone_set($timezone);
+        Logger::init('QApi-CLI');
         App::$routeDir = trim($routeDir, '/');
         App::$runtimeDir = trim($runtimeDir, '/');
         App::$configDir = trim($configDir, '/');
