@@ -19,6 +19,7 @@ use QApi\Command\RouteBuildCommand;
 use QApi\Command\RouteCacheClearCommand;
 use QApi\Command\RouteCommand;
 use QApi\Command\RunCommand;
+use QApi\Config\Application;
 
 /**
  * Class Console

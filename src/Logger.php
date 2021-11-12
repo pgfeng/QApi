@@ -21,12 +21,36 @@ class Logger
         if (self::$logger === null) {
             self::$logger = new \Monolog\Logger('QApi');
             self::$logger->setTimezone(App::$timezone);
-            if (Config::$app) {
+            if (is_cli()) {
+                $logHandler = Config::command('logHandler');
+                if (is_array($logHandler)) {
+                    foreach ($logHandler as $item) {
+                        self::$logger->pushHandler($item);
+                    }
+                } elseif (is_object($logHandler)) {
+                    self::$logger->pushHandler($logHandler);
+                }
+            } else if (Config::$app) {
                 foreach (Config::$app->logHandler as $item) {
                     self::$logger->pushHandler($item);
                 }
             }
         }
+    }
+
+    /**
+     * @return string
+     */
+    #[Pure] private static function getRunMode(): string
+    {
+        if (is_cli()) {
+            if ((defined('DEV_MODE') && DEV_MODE === true)) {
+                return defined('RUN_MODE') ? RUN_MODE : (RunMode::DEVELOPMENT);
+            }
+            return defined('RUN_MODE') ? RUN_MODE : (RunMode::PRODUCTION);
+        }
+
+        return App::$app->getRunMode();
     }
 
     /**
@@ -37,7 +61,7 @@ class Logger
         if (is_array($message)) {
             $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
-        if (Config::$app->getRunMode() === RunMode::DEVELOPMENT) {
+        if (self::getRunMode() === RunMode::DEVELOPMENT) {
             error_log(self::getData($message, CliColor::INFO));
         }
         self::$logger->info(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
@@ -51,10 +75,10 @@ class Logger
         if (is_array($message)) {
             $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
-        if (Config::$app && Config::$app->getRunMode() === RunMode::DEVELOPMENT) {
+        if (self::getRunMode() === RunMode::DEVELOPMENT) {
             error_log(self::getData(' SQL => ' . $message, CliColor::WARNING));
         }
-        if (!is_cli()){
+        if (!is_cli()) {
 
             self::$logger->info(' SQL => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
@@ -69,7 +93,7 @@ class Logger
         if (is_array($message)) {
             $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
-        if (Config::$app->getRunMode() === RunMode::DEVELOPMENT) {
+        if (self::getRunMode() === RunMode::DEVELOPMENT) {
 
             error_log(self::getData($message, CliColor::WARNING));
         }
@@ -84,7 +108,7 @@ class Logger
         if (is_array($message)) {
             $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
-        if (Config::$app->getRunMode() === RunMode::DEVELOPMENT) {
+        if (self::getRunMode() === RunMode::DEVELOPMENT) {
             error_log(self::getData($message, CliColor::SUCCESS));
         }
 
@@ -102,7 +126,7 @@ class Logger
             $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
 
-        if (Config::$app?->getRunMode() === RunMode::DEVELOPMENT) {
+        if (self::getRunMode() === RunMode::DEVELOPMENT) {
             error_log(self::getData($message, CliColor::ERROR));
         }
         self::$logger?->error(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
@@ -119,7 +143,7 @@ class Logger
             $message = json_encode($message, JSON_UNESCAPED_UNICODE);
         }
 
-        if (Config::$app->getRunMode() === RunMode::DEVELOPMENT) {
+        if (self::getRunMode() === RunMode::DEVELOPMENT) {
 
             error_log(self::getData($message, CliColor::ERROR));
         }
