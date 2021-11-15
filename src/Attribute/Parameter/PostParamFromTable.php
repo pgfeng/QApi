@@ -35,34 +35,42 @@ use QApi\Attribute\Column\Table;
      * @throws \ReflectionException
      */
     public function __construct(
-        public string $tableColumnClass,
+        public string|array $tableColumnClass,
         public array $replaceField = [],
         public array $ignoreField = [],
     )
     {
-        $ref = new \ReflectionClass($tableColumnClass);
-        $classAttributes = $ref->getAttributes(Table::class);
-        $constants = $ref->getReflectionConstants();
-        foreach ($classAttributes as $classAttribute) {
-            foreach ($constants as $constant) {
-                $attributes = $constant->getAttributes(Field::class);
-                foreach ($attributes as $attribute) {
-                    $argument = $attribute->getArguments();
-                    if (!in_array($argument['name'], $this->ignoreField)) {
-                        $this->postParams[] = new PostParam(
-                            name: $this->replaceField[$argument['name']]['name'] ?? $argument['name'],
-                            summary: $this->replaceField[$argument['name']]['summary'] ?? $argument['comment'],
-                            description: $this->replaceField[$argument['name']]['description'] ?? $argument['comment'],
-                            type: $this->replaceField[$argument['name']]['type'] ?? (stripos('int', $argument['type']) ?
-                                ParamsType::INT : ParamsType::STRING),
-                            required: $this->replaceField[$argument['name']]['required'] ?? false,
-                            default: $this->replaceField[$argument['name']]['default'] ?? '',
-                        );
+        if (is_string($tableColumnClass)) {
+            $this->tableColumnClass = $tableColumnClassArray = [$tableColumnClass];
+        } else {
+            $tableColumnClassArray = $this->tableColumnClass;
+        }
+        foreach ($tableColumnClassArray as $tableColumnClass) {
+            $ref = new \ReflectionClass($tableColumnClass);
+            $classAttributes = $ref->getAttributes(Table::class);
+            $constants = $ref->getReflectionConstants();
+            foreach ($classAttributes as $classAttribute) {
+                foreach ($constants as $constant) {
+                    $attributes = $constant->getAttributes(Field::class);
+                    foreach ($attributes as $attribute) {
+                        $argument = $attribute->getArguments();
+                        if (!in_array($argument['name'], $this->ignoreField)) {
+                            $this->postParams[] = new PostParam(
+                                name: $this->replaceField[$argument['name']]['name'] ?? $argument['name'],
+                                summary: $this->replaceField[$argument['name']]['summary'] ?? $argument['comment'],
+                                description: $this->replaceField[$argument['name']]['description'] ?? $argument['comment'],
+                                type: $this->replaceField[$argument['name']]['type'] ?? (stripos('int', $argument['type']) ?
+                                    ParamsType::INT : ParamsType::STRING),
+                                required: $this->replaceField[$argument['name']]['required'] ?? false,
+                                default: $this->replaceField[$argument['name']]['default'] ?? '',
+                            );
+                        }
                     }
                 }
             }
         }
     }
+
     /**
      * @return array
      */
