@@ -105,7 +105,11 @@ class Request
         }
         $this->header = new Data($headers);
         $this->server = new Data($_SERVER);
-        $this->routeUri = substr($_SERVER['PATH_INFO'] ?? '', 1) ?? isset($_GET['_router']);
+        if (isset($_GET['_router'])) {
+            $this->routeUri = $_GET['_router'];
+        } else {
+            $this->routeUri = substr($_SERVER['PATH_INFO'] ?? '', 1);
+        }
         unset($_GET['_router'], $_REQUEST['_router']);
         $this->get = new Data($_GET);
         $this->post = new Data($_POST);
@@ -148,7 +152,6 @@ class Request
     {
         return $this->method;
     }
-
 
 
     /**
