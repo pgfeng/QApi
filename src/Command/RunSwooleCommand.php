@@ -38,6 +38,7 @@ class RunSwooleCommand extends CommandHandler
                 $appDomain['port']));
         });
         $http->on("request", function ($request, $response) use ($http,$appDomain) {
+            $response->header('Access-Control-Allow-Origin', $appDomain['allowOrigin']);
             $argv = [];
             $request->server['HTTP_HOST'] = $request->header['host'];
             $request->server = array_change_key_case($request->server,CASE_UPPER);
@@ -76,6 +77,7 @@ class RunSwooleCommand extends CommandHandler
         $choseAppKey = $input->prompt();
         $data = parse_url($choseAppKey);
         $data['runMode'] = $this->apps[$choseAppKey]->getRunMode();
+        $data['allowOrigin'] = $this->apps[$choseAppKey]->allowOrigin;
         $data['host'] = (string)($data['host'] ?? '0.0.0.0');
         $data['port'] = (int)($data['port'] ?? 80);
         return $data;
