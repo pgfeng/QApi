@@ -31,6 +31,7 @@ class RunSwooleCommand extends CommandHandler
     public function handler(array $argv): mixed
     {
         $appDomain = $this->choseApp();
+        define('RUN_MODE', $appDomain['runMode']);
         $http = new Server("0.0.0.0", $appDomain['port']);
         $http->set(
             [
