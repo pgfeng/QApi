@@ -73,6 +73,8 @@ class Router
         if (!$request) {
             $arguments = [];
             self::$request = new Request(new Data($arguments));
+        } else {
+            self::$request = $request;
         }
         self::$config = Config::route();
         if (self::$config['cache']) {
@@ -503,7 +505,7 @@ class Router
                 $params = [];
             }
             $arguments = new Data($params);
-            $request = new Request($arguments);
+            self::$request->arguments = $arguments;
             $response = new Response();
             Logger::info('Router -> ' . $controllerName . '@' . $method);
             Logger::info('RouterOriginal -> ' . json_encode(self::$router, JSON_THROW_ON_ERROR));
@@ -515,7 +517,7 @@ class Router
                 $middlewareObject = null;
                 foreach ($middleware as $item) {
                     $middlewareObject = new $item;
-                    $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use ($controller, $method) {
+                    $result = $middlewareObject->handle(self::$request, $response, static function (Request $request, Response $response) use ($controller, $method) {
                         return $controller->$method($request, $response);
                     });
                     if ($result instanceof Response) {
@@ -523,13 +525,14 @@ class Router
                     }
                 }
             } else {
-                $result = $controller->$method(new Request($arguments), $response);
+                self::$request->arguments = $arguments;
+                $result = $controller->$method(self::$request, $response);
             }
             if ($result instanceof Response) {
                 return $result;
             }
             if ($result instanceof Closure) {
-                return $result($request, $response);
+                return $result(self::$request, $response);
             }
 
             return $result;
@@ -553,8 +556,7 @@ class Router
                     self::$router['middleware'] = &$middlewareLists;
                     Logger::info('Router -> ' . $controllerName . '@' . $callback['method']);
                     Logger::info('RouterOriginal -> ' . json_encode(self::$router, JSON_THROW_ON_ERROR));
-                    $arguments = new Data($params);
-                    $request = new Request($arguments);
+                    self::$request->arguments = new Data($params);
                     $response = new Response($version->versionName);
                     if (self::$router['middleware']) {
                         /**
@@ -563,7 +565,8 @@ class Router
                         $middlewareObject = null;
                         foreach (self::$router['middleware'] as $item) {
                             $middlewareObject = new $item;
-                            $result = $middlewareObject->handle($request, $response, static function (Request $request, Response $response) use ($controller, $callback) {
+                            $result = $middlewareObject->handle(self::$request, $response, static function (Request $request,
+                                                                                                            Response $response) use ($controller, $callback) {
                                 return $controller->{$callback['method']}($request, $response);
                             });
                             if ($result instanceof Response) {
@@ -572,14 +575,14 @@ class Router
                         }
 
                     } else {
-                        $result = $controller->{$callback['method']}($request, $response);
+                        $result = $controller->{$callback['method']}(self::$request, $response);
                     }
                     if (isset($result)) {
                         if ($result instanceof Response) {
                             return $result;
                         }
                         if ($result instanceof Closure) {
-                            return $result($request, $response);
+                            return $result(self::$request, $response);
                         }
                         return $result;
                     }

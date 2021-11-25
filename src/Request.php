@@ -103,13 +103,14 @@ class Request
      * @param array|null $server
      */
     public function __construct(public Data $arguments, array $get = null, array $post = null, array $request = null,
-                                string $input = null,
+                                string $input = null, array $files = [],
                                 array $cookie = null, array $session = null, array $server = null, array $header = null)
     {
         $_SESSION = $_SESSION ?? [];
         $_GET = $get ?? $_GET;
         $_POST = $post ?? $_POST;
         $_REQUEST = $request ?? $_REQUEST;
+        $_FILES = $files ?? $_FILES;
         $input = $input ?? file_get_contents('php://input');
         $_COOKIE = $cookie ?? $_COOKIE;
         $_SESSION = $session ?? $_SESSION;

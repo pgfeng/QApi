@@ -54,8 +54,10 @@ class RunSwooleCommand extends CommandHandler
             $request->server['HTTP_HOST'] = $request->header['host'];
             $request->server = array_change_key_case($request->server, CASE_UPPER);
             try {
+                $input = $request->rawContent();
                 $req = new \QApi\Request(new \QApi\Data($argv), $request->get, $request->post,
-                    array_merge($request->get ?? [], $request->post ?? []), $request->rawContent(), $request->cookie, null,
+                    array_merge($request->get ?? [], $request->post ?? []), $input,$request->files??[], $request->cookie,
+                    null,
                     $request->server, $request->header);
                 $response->end(\QApi\App::run(request: $req));
             } catch (RuntimeException $e) {
