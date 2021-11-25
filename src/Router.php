@@ -46,6 +46,8 @@ class Router
 
     private static bool|array|null $hitCache = null;
 
+    public static ?Request $request = null;
+
     /**
      * 存储路由
      * 如果当前请求类型不存在会自动向ALL中查找
@@ -63,9 +65,15 @@ class Router
 
     /**
      * 初始化
+     * @param Request|null $request
+     * @throws ErrorException
      */
-    public static function init(): void
+    public static function init(Request $request = null): void
     {
+        if (!$request) {
+            $arguments = [];
+            self::$request = new Request(new Data($arguments));
+        }
         self::$config = Config::route();
         if (self::$config['cache']) {
             self::$cache = new (self::$config['cacheDriver']->driver)(self::$config['cacheDriver']);
@@ -307,6 +315,7 @@ class Router
 
 
     /**
+     * @return mixed
      * @throws ErrorException
      * @throws JsonException
      */
@@ -449,7 +458,7 @@ class Router
                     $params = array();
                     $arguments = new Data($params);
                 }
-                $request = new Request($arguments);
+                self::$request->arguments = $arguments;
                 $response = new Response();
                 Logger::info('Router -> ' . 'Callable()');
                 Logger::info('RouterOriginal -> ' . json_encode(self::$router, JSON_THROW_ON_ERROR));
@@ -461,8 +470,8 @@ class Router
                     $middlewareObject = null;
                     foreach ($middleware as $item) {
                         $middlewareObject = new $item;
-                        $result = $middlewareObject->handle($request, $response, static function (Request $request,
-                                                                                                  Response $response)
+                        $result = $middlewareObject->handle(self::$request, $response, static function (Request $request,
+                                                                                                        Response $response)
                         use ($callback) {
                             return $callback($request, $response);
                         });
@@ -471,13 +480,13 @@ class Router
                         }
                     }
                 } else {
-                    $result = $callback($request, $response);
+                    $result = $callback(self::$request, $response);
                 }
                 if ($result instanceof Response) {
                     return $result;
                 }
                 if ($result instanceof Closure) {
-                    return $result($request, $response);
+                    return $result(self::$request, $response);
                 }
 
                 return $result;
@@ -565,14 +574,15 @@ class Router
                     } else {
                         $result = $controller->{$callback['method']}($request, $response);
                     }
-                    if ($result instanceof Response) {
+                    if (isset($result)) {
+                        if ($result instanceof Response) {
+                            return $result;
+                        }
+                        if ($result instanceof Closure) {
+                            return $result($request, $response);
+                        }
                         return $result;
                     }
-                    if ($result instanceof Closure) {
-                        return $result($request, $response);
-                    }
-
-                    return $result;
                 }
             }
         }

@@ -64,7 +64,7 @@ class Logger
         if (self::getRunMode() === RunMode::DEVELOPMENT) {
             error_log(self::getData($message, CliColor::INFO));
         }
-        self::$logger->info(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+        self::$logger?->info(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
     }
 
     /**
@@ -80,7 +80,7 @@ class Logger
         }
         if (!is_cli()) {
 
-            self::$logger->info(' SQL => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+            self::$logger?->info(' SQL => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
     }
 
@@ -97,7 +97,7 @@ class Logger
 
             error_log(self::getData($message, CliColor::WARNING));
         }
-        self::$logger->warning(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+        self::$logger?->warning(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
     }
 
     /**
@@ -112,7 +112,7 @@ class Logger
             error_log(self::getData($message, CliColor::SUCCESS));
         }
 
-        self::$logger->alert(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+        self::$logger?->alert(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
 
     }
 
@@ -148,7 +148,7 @@ class Logger
             error_log(self::getData($message, CliColor::ERROR));
         }
 
-        self::$logger->error(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+        self::$logger?->error(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
 
     }
 

@@ -94,10 +94,27 @@ class Request
     /**
      * 初始化
      * @param Data $arguments
+     * @param array|null $get
+     * @param array|null $post
+     * @param array|null $request
+     * @param string|null $input
+     * @param array|null $cookie
+     * @param array|null $session
+     * @param array|null $server
      */
-    public function __construct(public Data $arguments)
+    public function __construct(public Data $arguments, array $get = null, array $post = null, array $request = null,
+                                string $input = null,
+                                array $cookie = null, array $session = null, array $server = null, array $header = null)
     {
-        $headers = [];
+        $_SESSION = $_SESSION ?? [];
+        $_GET = $get ?? $_GET;
+        $_POST = $post ?? $_POST;
+        $_REQUEST = $request ?? $_REQUEST;
+        $input = $input ?? file_get_contents('php://input');
+        $_COOKIE = $cookie ?? $_COOKIE;
+        $_SESSION = $session ?? $_SESSION;
+        $_SERVER = $server ?? $_SERVER;
+        $headers = $header ?? [];
         foreach ($_SERVER as $name => $value) {
             if (str_starts_with($name, 'HTTP_')) {
                 $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
@@ -116,8 +133,7 @@ class Request
         $this->request = new Data($_REQUEST);
         $this->file = new Data($_FILES);
         $this->cookie = new Data($_COOKIE);
-        $this->input = file_get_contents('php://input');
-        $_SESSION = $_SESSION ?? [];
+        $this->input = $input;
         $this->session = new Data($_SESSION);
         $this->method = strtoupper($this->server->get('REQUEST_METHOD'));
         $this->requestUri = $this->prepareRequestUri();
@@ -143,12 +159,14 @@ class Request
      *
      * @return string
      */
-    public function getScriptName(): string
+    public
+    function getScriptName(): string
     {
         return $this->server->get('SCRIPT_NAME', $this->server->get('ORIG_SCRIPT_NAME', ''));
     }
 
-    public function getMethod(): string
+    public
+    function getMethod(): string
     {
         return $this->method;
     }
@@ -157,7 +175,8 @@ class Request
     /**
      * @return string
      */
-    public function getClientIp(): string
+    public
+    function getClientIp(): string
     {
         if ($this->server) {
 
@@ -180,7 +199,8 @@ class Request
         return preg_match('/[\d\.]{7,15}/', $ip_address, $matches) ? $matches [0] : '';
     }
 
-    private function prepareRequestUri()
+    private
+    function prepareRequestUri()
     {
         $requestUri = '';
 
@@ -220,7 +240,8 @@ class Request
     /**
      * @return bool
      */
-    public function isXmlHttpRequest(): bool
+    public
+    function isXmlHttpRequest(): bool
     {
         return 'XMLHttpRequest' === $this->header->get('X-Requested-With');
     }
@@ -229,7 +250,8 @@ class Request
      * 是否是Ajax请求
      * @return bool
      */
-    public function isAjaxHttpRequest(): bool
+    public
+    function isAjaxHttpRequest(): bool
     {
         return $this->server->has('HTTP_X_REQUESTED_WITH') && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
     }
@@ -237,7 +259,8 @@ class Request
     /**
      * @return string
      */
-    public function domain(): string
+    public
+    function domain(): string
     {
         return $this->getScheme() . '://' . $this->getHttpHost();
     }
@@ -245,7 +268,8 @@ class Request
     /**
      * @return bool
      */
-    private function isSecure(): bool
+    private
+    function isSecure(): bool
     {
         $https = $this->server->get('HTTPS');
 
@@ -255,7 +279,8 @@ class Request
     /**
      * @return string|null
      */
-    private function getHttpHost(): ?string
+    private
+    function getHttpHost(): ?string
     {
         $scheme = $this->getScheme();
         $port = $this->getPort();
@@ -275,7 +300,8 @@ class Request
      * 获取Host
      * @return string|null
      */
-    public function getHost(): ?string
+    public
+    function getHost(): ?string
     {
         return $this->server->get('HTTP_HOST');
     }
@@ -283,7 +309,8 @@ class Request
     /**
      * 获取当前完整网址
      */
-    public function currentUrl(): string
+    public
+    function currentUrl(): string
     {
         return $this->domain() . $this->requestUri;
     }
@@ -291,7 +318,8 @@ class Request
     /**
      * @return string
      */
-    public function getScheme(): string
+    public
+    function getScheme(): string
     {
         return $this->isSecure() ? 'https' : 'http';
     }
@@ -299,7 +327,8 @@ class Request
     /**
      * @return int
      */
-    public function getPort(): int
+    public
+    function getPort(): int
     {
         return (int)$this->server->get('SERVER_PORT');
     }

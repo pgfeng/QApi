@@ -61,6 +61,7 @@ class App
      * @param array $allowMethods
      * @param array $allowHeaders
      * @param string $apiPassword
+     * @param Request|null $request
      * @return Response|string
      * @throws CompileErrorException
      * @throws CoreErrorException
@@ -80,7 +81,7 @@ class App
     public static function run(?string $timezone = 'Asia/Shanghai', $routeDir = 'routes', $configDir = 'config', $runtimeDir =
     'runtime', $uploadDir = 'Upload', ?\Closure $getVersionFunction = null, array $allowMethods = [
         Methods::GET, Methods::POST, Methods::DELETE, Methods::HEAD, Methods::PUT
-    ], array $allowHeaders = ['*'], $apiPassword = null): Response|string
+    ], array $allowHeaders = ['*'], $apiPassword = null, Request $request = null): Response|string
     {
         set_error_handler(callback: static function ($err_severity, $err_msg, $err_file, $err_line) {
             if (0 === error_reporting()) {
@@ -114,15 +115,16 @@ class App
             self::$runtimeDir = trim($runtimeDir, '/');
             self::$configDir = trim($configDir, '/');
             self::$uploadDir = trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
+
             try {
                 self::$app = Config::app();
             } catch (\ErrorException $e) {
-                exit(json_encode([
+                return json_encode([
                     'status' => false,
                     'code' => 500,
                     'msg' => get_class($e) . '：' . $e->getMessage(),
                     'data' => null,
-                ], JSON_THROW_ON_ERROR));
+                ], JSON_THROW_ON_ERROR);
             }
             self::$app->init();
             self::$getVersionFunction = $getVersionFunction;
@@ -130,7 +132,7 @@ class App
                 header('Access-Control-Allow-Headers: ' . implode(',', $allowHeaders));
                 header('Access-Control-Allow-Methods: ' . implode(',', $allowMethods));
             }
-            Router::init();
+            Router::init($request);
             return \QApi\Router::run();
         } catch (\Exception $e) {
             $msg = $e->getMessage();
