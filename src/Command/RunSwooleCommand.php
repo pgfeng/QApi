@@ -3,6 +3,7 @@
 
 namespace QApi\Command;
 
+use QApi\App;
 use QApi\Command;
 use QApi\Config;
 use QApi\Config\Application;
@@ -31,8 +32,8 @@ class RunSwooleCommand extends CommandHandler
     public function handler(array $argv): mixed
     {
         $appDomain = $this->choseApp();
-        define('RUN_MODE', $appDomain['runMode']);
         $http = new Server("0.0.0.0", $appDomain['port']);
+        App::$app = $appDomain['app'];
         $http->set(
             [
                 'enable_static_handler' => true,
@@ -56,7 +57,7 @@ class RunSwooleCommand extends CommandHandler
             try {
                 $input = $request->rawContent();
                 $req = new \QApi\Request(new \QApi\Data($argv), $request->get, $request->post,
-                    array_merge($request->get ?? [], $request->post ?? []), $input,$request->files??[], $request->cookie,
+                    array_merge($request->get ?? [], $request->post ?? []), $input, $request->files ?? [], $request->cookie,
                     null,
                     $request->server, $request->header);
                 $response->end(\QApi\App::run(request: $req));
@@ -94,6 +95,7 @@ class RunSwooleCommand extends CommandHandler
         $data['allowHeaders'] = $this->apps[$choseAppKey]->allowHeaders;
         $data['host'] = (string)($data['host'] ?? '0.0.0.0');
         $data['port'] = (int)($data['port'] ?? 80);
+        $data['app'] = $this->apps[$choseAppKey];
         return $data;
     }
 

@@ -33,6 +33,8 @@ class Config
     {
         if (!is_cli()) {
             $runMode = self::app()->getRunMode();
+        }elseif (App::$app){
+            $runMode = App::$app->getRunMode();
         } else if (defined('RUN_MODE')) {
             $runMode = RUN_MODE;
         } else if (defined('DEV_MODE') && DEV_MODE === true) {

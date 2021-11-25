@@ -44,6 +44,9 @@ class Logger
     #[Pure] private static function getRunMode(): string
     {
         if (is_cli()) {
+            if (App::$app) {
+                return App::$app->getRunMode();
+            }
             if ((defined('DEV_MODE') && DEV_MODE === true)) {
                 return defined('RUN_MODE') ? RUN_MODE : (RunMode::DEVELOPMENT);
             }
@@ -78,10 +81,7 @@ class Logger
         if (self::getRunMode() === RunMode::DEVELOPMENT) {
             error_log(self::getData(' SQL => ' . $message, CliColor::WARNING));
         }
-        if (!is_cli()) {
-
-            self::$logger?->info(' SQL => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message));
-        }
+        self::$logger?->info(' SQL => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message));
     }
 
 
