@@ -20,7 +20,7 @@ class RunSwooleCommand extends CommandHandler
     /**
      * @var Application[]
      */
-    private array $apps = [];
+    private array $apps;
 
     public function __construct(Command $command, $argv = [])
     {
@@ -32,7 +32,12 @@ class RunSwooleCommand extends CommandHandler
     {
         $appDomain = $this->choseApp();
         $http = new Server("0.0.0.0", $appDomain['port']);
-
+        $this->http->set(
+            [
+                'enable_static_handler' => true,
+                'document_root' => Config::command('ServerRunDir'),
+            ]
+        );
         $http->on("start", function ($server) use ($appDomain) {
             $this->command->cli->blue(sprintf('QApi Server Startup On <http://%s:%s/>', $appDomain['host'],
                 $appDomain['port']));

@@ -19,7 +19,7 @@ class RunCommand extends CommandHandler
     /**
      * @var Application[]
      */
-    private array $apps = [];
+    private array $apps;
 
     public function __construct(Command $command, $argv = [])
     {
