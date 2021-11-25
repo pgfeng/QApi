@@ -32,7 +32,7 @@ class RunSwooleCommand extends CommandHandler
     {
         $appDomain = $this->choseApp();
         $http = new Server("0.0.0.0", $appDomain['port']);
-        $this->http->set(
+        $http->set(
             [
                 'enable_static_handler' => true,
                 'document_root' => Config::command('ServerRunDir'),
