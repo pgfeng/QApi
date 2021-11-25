@@ -27,6 +27,7 @@ class Application
      * @param Handler[]|null $logHandler
      * @param string|bool $nameSpace
      * @param string|array $allowOrigin
+     * @param string|array $allowHeaders
      * @param string $applicationName
      * @param string $scheme
      */
@@ -34,7 +35,8 @@ class Application
                                 public string $runMode,
                                 public string $defaultVersionName,
                                 public ?array $logHandler = null,
-                                public string|bool $nameSpace = false, public string|array $allowOrigin = '*',
+                                public string|bool $nameSpace = false, public array $allowOrigin = ['*'],
+                                public array $allowHeaders = ['request-sign'],
                                 public string $applicationName = '', public string $scheme = 'http')
     {
         $this->appDir = trim($this->appDir, '/');

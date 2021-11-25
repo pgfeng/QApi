@@ -37,11 +37,16 @@ class RunSwooleCommand extends CommandHandler
             $this->command->cli->blue(sprintf('QApi Server Startup On <http://%s:%s/>', $appDomain['host'],
                 $appDomain['port']));
         });
-        $http->on("request", function ($request, $response) use ($http,$appDomain) {
-            $response->header('Access-Control-Allow-Origin', $appDomain['allowOrigin']);
+        $http->on("request", function ($request, $response) use ($http, $appDomain) {
+            if (in_array('*', $appDomain['allowOrigin'], true)) {
+                $response->header('Access-Control-Allow-Origin', $appDomain['allowOrigin']);
+            } else if (in_array($request->header['host'], $appDomain, true)) {
+                $response->header('Access-Control-Allow-Origin', $request->header['host']);
+            }
+            $response->header('Access-Control-Allow-Headers', implode(',', $appDomain['allowHeaders']));
             $argv = [];
             $request->server['HTTP_HOST'] = $request->header['host'];
-            $request->server = array_change_key_case($request->server,CASE_UPPER);
+            $request->server = array_change_key_case($request->server, CASE_UPPER);
             try {
                 $req = new \QApi\Request(new \QApi\Data($argv), $request->get, $request->post,
                     array_merge($request->get ?? [], $request->post ?? []), $request->rawContent(), $request->cookie, null,
@@ -52,7 +57,7 @@ class RunSwooleCommand extends CommandHandler
                 $response->end((new \QApi\Response())->setCode(500)->setMsg($e->getMessage())->setExtra([
                 ])->fail());
             }
-            if ($appDomain['runMode']===RunMode::DEVELOPMENT){
+            if ($appDomain['runMode'] === RunMode::DEVELOPMENT) {
                 $http->reload();
             }
         });
@@ -78,6 +83,7 @@ class RunSwooleCommand extends CommandHandler
         $data = parse_url($choseAppKey);
         $data['runMode'] = $this->apps[$choseAppKey]->getRunMode();
         $data['allowOrigin'] = $this->apps[$choseAppKey]->allowOrigin;
+        $data['allowHeaders'] = $this->apps[$choseAppKey]->allowHeaders;
         $data['host'] = (string)($data['host'] ?? '0.0.0.0');
         $data['port'] = (int)($data['port'] ?? 80);
         return $data;
