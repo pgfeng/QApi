@@ -38,6 +38,7 @@ class RunSwooleCommand extends CommandHandler
             [
                 'enable_static_handler' => true,
                 'document_root' => Config::command('ServerRunDir'),
+                'package_max_length' => (int)ini_get('post_max_size') * 1024 * 1024,
             ]
         );
         $http->on("start", function ($server) use ($appDomain) {
