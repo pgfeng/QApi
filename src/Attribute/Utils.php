@@ -4,6 +4,7 @@
 namespace QApi\Attribute;
 
 
+use QApi\Attribute\Column\Field;
 use QApi\Attribute\Parameter\GetParam;
 use QApi\Attribute\Parameter\HeaderParam;
 use QApi\Attribute\Parameter\PathParam;
@@ -18,6 +19,8 @@ class Utils
 {
 
     public static array $docApp = [];
+
+    public static array $columns = [];
 
     /**
      * Rebuild
@@ -172,6 +175,38 @@ class Utils
             }
         }
         return $data;
+    }
+
+    /**
+     * @param string $columnClassName
+     * @param array $ignoreField
+     * @return array
+     * @throws ReflectionException
+     */
+    public static function tableColumn(string $columnClassName, array $ignoreField = []): array
+    {
+        if (isset(self::$columns[$columnClassName])) {
+            $columns = self::$columns[$columnClassName];
+        } else {
+            $columns = [];
+            $ref = new ReflectionClass($columnClassName);
+            $constants = $ref->getReflectionConstants();
+            foreach ($constants as $constant) {
+                $attributes = $constant->getAttributes(Field::class);
+                foreach ($attributes as $attribute) {
+                    $argument = $attribute->getArguments();
+                    $columns[$argument['name']] = [
+                        'name' => $argument['name'],
+                        'comment' => $argument['comment'],
+                        'type' => $argument['type'],
+                    ];
+                }
+            }
+            self::$columns[$columnClassName] = $columns;
+        }
+        return array_filter($columns, static function ($k) use ($ignoreField) {
+            return !in_array($k, $ignoreField, true);
+        }, ARRAY_FILTER_USE_KEY);
     }
 
     /**
