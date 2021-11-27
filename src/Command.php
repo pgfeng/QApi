@@ -84,7 +84,7 @@ class Command
         $this->addHandler(new RouteBuildCommand($this));
         $this->addHandler(new RouteCommand($this));
         $this->addHandler(new RouteCacheClearCommand($this));
-        $this->addHandler(new RunReactCommand($this));
+//        $this->addHandler(new RunReactCommand($this));
         $Handlers = Config::command('CommandHandlers');
 
         /**
