@@ -238,7 +238,9 @@ class Request
             }
             $this->server->remove('ORIG_PATH_INFO');
         }
-
+        if (strpos($requestUri, '?') === false && $this->get->count()) {
+            $requestUri .= '?' . $this->server->get('QUERY_STRING');
+        }
         $this->server->set('REQUEST_URI', $requestUri);
 
         return $requestUri;
