@@ -78,13 +78,13 @@ class Command
         $this->argv = $_SERVER['argv'];
         $this->addHandler(new RunCommand($this));
         $this->addHandler(new RunSwooleCommand($this));
-//        $this->addHandler(new RunReactCommand($this));
         $this->addHandler(new ColumnCommand($this));
         $this->addHandler(new DocBuildCommand($this));
         $this->addHandler(new ClearCacheCommand($this));
         $this->addHandler(new RouteBuildCommand($this));
         $this->addHandler(new RouteCommand($this));
         $this->addHandler(new RouteCacheClearCommand($this));
+        $this->addHandler(new RunReactCommand($this));
         $Handlers = Config::command('CommandHandlers');
 
         /**
