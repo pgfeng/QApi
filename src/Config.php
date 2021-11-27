@@ -33,7 +33,7 @@ class Config
     {
         if (!is_cli()) {
             $runMode = self::app()->getRunMode();
-        }elseif (App::$app){
+        } elseif (App::$app) {
             $runMode = App::$app->getRunMode();
         } else if (defined('RUN_MODE')) {
             $runMode = RUN_MODE;
@@ -66,6 +66,10 @@ class Config
     public static function &app(): Application
     {
         if (self::$app) {
+            return self::$app;
+        }
+        if (App::$app) {
+            self::$app = App::$app;
             return self::$app;
         }
         $configPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'app.php';

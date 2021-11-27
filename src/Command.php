@@ -19,6 +19,7 @@ use QApi\Command\RouteBuildCommand;
 use QApi\Command\RouteCacheClearCommand;
 use QApi\Command\RouteCommand;
 use QApi\Command\RunCommand;
+use QApi\Command\RunReactCommand;
 use QApi\Command\RunSwooleCommand;
 
 /**
@@ -77,6 +78,7 @@ class Command
         $this->argv = $_SERVER['argv'];
         $this->addHandler(new RunCommand($this));
         $this->addHandler(new RunSwooleCommand($this));
+//        $this->addHandler(new RunReactCommand($this));
         $this->addHandler(new ColumnCommand($this));
         $this->addHandler(new DocBuildCommand($this));
         $this->addHandler(new ClearCacheCommand($this));

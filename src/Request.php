@@ -93,19 +93,26 @@ class Request
 
     /**
      * 初始化
-     * @param Data $arguments
+     * @param Data|null $arguments
      * @param array|null $get
      * @param array|null $post
      * @param array|null $request
      * @param string|null $input
+     * @param array $files
      * @param array|null $cookie
      * @param array|null $session
      * @param array|null $server
+     * @param array|null $header
      */
-    public function __construct(public Data $arguments, array $get = null, array $post = null, array $request = null,
+    public function __construct(public Data|null $arguments = null, array $get = null, array $post = null, array $request =
+    null,
                                 string $input = null, array $files = [],
                                 array $cookie = null, array $session = null, array $server = null, array $header = null)
     {
+        if (!$this->arguments) {
+            $params = [];
+            $this->arguments = new Data($params);
+        }
         $_SESSION = $_SESSION ?? [];
         $_GET = $get ?? $_GET;
         $_POST = $post ?? $_POST;

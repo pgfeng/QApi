@@ -115,9 +115,10 @@ class App
             self::$runtimeDir = trim($runtimeDir, '/');
             self::$configDir = trim($configDir, '/');
             self::$uploadDir = trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
-
             try {
-                self::$app = Config::app();
+                if (!self::$app) {
+                    self::$app = Config::app();
+                }
             } catch (\ErrorException $e) {
                 return json_encode([
                     'status' => false,

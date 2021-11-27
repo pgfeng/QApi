@@ -73,6 +73,7 @@ class RunSwooleCommand extends CommandHandler
             }
         });
         $http->start();
+        swoole_set_process_name('QApiServer-' . $appDomain['port']);
         return null;
     }
 
