@@ -39,8 +39,8 @@ class RunSwooleCommand extends CommandHandler
                 'enable_static_handler' => true,
                 'document_root' => Config::command('ServerRunDir'),
                 'package_max_length' => (int)ini_get('post_max_size') * 1024 * 1024,
-                'http_autoindex' => true,
-                'http_index_files' => ['index.html', 'index.htm', 'index.php'],
+                'http_autoindex' => false,
+                'http_index_files' => ['index.html', 'index.htm'],
             ]
         );
         $http->on("start", function ($server) use ($appDomain) {
@@ -60,8 +60,11 @@ class RunSwooleCommand extends CommandHandler
             $request->server = array_change_key_case($request->server, CASE_UPPER);
             try {
                 $input = $request->rawContent();
-                $req = new \QApi\Request(new \QApi\Data($argv), $request->get, $request->post,
-                    array_merge($request->get ?? [], $request->post ?? []), $input, $request->files ?? [], $request->cookie,
+                $req = new \QApi\Request(
+                    new \QApi\Data($argv),
+                    $request->get, $request->post,
+                    array_merge($request->get ?? [], $request->post ?? []),
+                    $input, $request->files ?? [], $request->cookie,
                     null,
                     $request->server, $request->header);
                 $response->end(\QApi\App::run(request: $req));
