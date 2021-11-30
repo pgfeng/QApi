@@ -69,7 +69,7 @@ class Mysqli extends DBase
     {
         $query = $this->mysqli->query($sql);
         $result = [];
-        if ($query) {
+        if ($query!==false) {
             while ($row = $query->fetch_assoc()) {
                 $data = $row;
                 $result[] = new Data($data);
@@ -96,7 +96,11 @@ class Mysqli extends DBase
      */
     public function _exec($sql): bool
     {
-        return $this->mysqli->query($sql);
+        $result = $this->mysqli->query($sql);
+        if ($result !== false) {
+            return $result;
+        }
+        throw new \ErrorException($this->getError());
     }
 
     /**
