@@ -1011,6 +1011,40 @@ abstract class DBase
         return $this->exec();
     }
 
+    final public function insertAll(array $insertData): bool|int
+    {
+        $this->section['handle'] = 'insert';
+        $arg_num = func_num_args();
+
+        if ($arg_num > 1) {
+            $arg_list = func_get_args();
+            $this->setTable($arg_list[0])->insert($arg_list[1]);
+
+            return $this->exec();
+        }
+        //--强制开发者使用默认值,添加不可以设置空值,杜绝因为运营人员表单没输入而没有使用数据库默认值
+        $data = [];
+        foreach ($insertData as $insert) {
+
+            foreach ($insert as $key => $value) {
+                if ($value === '') {
+                    unset($insert[$key]);
+                }
+            }
+            foreach ($insert as $key => $value) {
+                $insert[$key] = is_array($value) ? $this->addslashes(json_encode($value, JSON_UNESCAPED_UNICODE)) : (is_object($value) ? $this->addslashes(serialize($value)) : $this->addslashes($value));
+            }
+            $data[] = '(' . implode(',', array_values($insert)) . ')';
+
+        }
+        if (is_array($insert)) {
+            $this->section['insert'] = '(' . implode(',', array_keys($insert)) . ') VALUES ' . implode(',', $data);
+            return $this->exec();
+        }
+
+        return 0;
+    }
+
     /**
      * @param $table
      * @param $on1

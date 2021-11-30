@@ -36,6 +36,7 @@ use QApi\Model\filesModel;
  * @method int|float avg(string $field)
  * @method int length(string $field)
  * @method bool|int insert(array|Data $insert)
+ * @method bool|int insertAll(array $insertData)
  * @method $this leftJoin(string $table, string $on1, string $on2)
  * @method $this rightJoin(string $table, string $on1, string $on2)
  * @method $this Join(string $table, string $on1, string $on2)
