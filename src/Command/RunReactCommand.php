@@ -41,6 +41,7 @@ class RunReactCommand extends CommandHandler
     public function handler(array $argv): mixed
     {
         $appDomain = $this->choseApp();
+        @cli_set_process_title('QApiServer-' . $appDomain['port']);
         App::$app = $appDomain['app'];
         $http = new HttpServer(function (ServerRequestInterface $request) use ($appDomain, $argv) {
             $headers = [];

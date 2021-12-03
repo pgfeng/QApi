@@ -32,6 +32,7 @@ class RunSwooleCommand extends CommandHandler
     public function handler(array $argv): mixed
     {
         $appDomain = $this->choseApp();
+        @cli_set_process_title('QApiServer-' . $appDomain['port']);
         $http = new Server("0.0.0.0", $appDomain['port']);
         App::$app = $appDomain['app'];
         $http->set(
@@ -39,8 +40,11 @@ class RunSwooleCommand extends CommandHandler
                 'enable_static_handler' => true,
                 'document_root' => Config::command('ServerRunDir'),
                 'package_max_length' => (int)ini_get('post_max_size') * 1024 * 1024,
+                'http_parse_cookie' => true,
                 'http_autoindex' => false,
                 'http_index_files' => ['index.html', 'index.htm'],
+                'daemonize' => in_array('--daemonize', $argv, true),
+                'log_date_format' => '%Y-%m-%d %H:%M:%S',
             ]
         );
         $http->on("start", function ($server) use ($appDomain) {
@@ -78,7 +82,6 @@ class RunSwooleCommand extends CommandHandler
             }
         });
         $http->start();
-        swoole_set_process_name('QApiServer-' . $appDomain['port']);
         return null;
     }
 
