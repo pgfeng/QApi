@@ -165,9 +165,9 @@ class Data extends ArrayObject implements JsonSerializableAlias
         return $this->data[$key] ?? NULL;
     }
 
-    public function offsetSet($key, $value): mixed
+    public function offsetSet($key, $value): void
     {
-        return $this->data[$key] = $value;
+        $this->data[$key] = $value;
     }
 
     /**
@@ -288,9 +288,9 @@ class Data extends ArrayObject implements JsonSerializableAlias
 
 
     /**
-     * @return ArrayObject|Data
+     * @return ArrayObject
      */
-    public function getIterator(): Data|ArrayObject
+    public function getIterator(): ArrayObject
     {
         return new ArrayObject($this->data);
     }
