@@ -81,7 +81,7 @@ class App
     public static function run(?string $timezone = 'Asia/Shanghai', $routeDir = 'routes', $configDir = 'config', $runtimeDir =
     'runtime', $uploadDir = 'Upload', ?\Closure $getVersionFunction = null, array $allowMethods = [
         Methods::GET, Methods::POST, Methods::DELETE, Methods::HEAD, Methods::PUT
-    ], array $allowHeaders = ['*'], $apiPassword = null, Request $request = null): Response|string
+    ], array $allowHeaders = ['*'], string $apiPassword = '', Request $request = null): Response|string
     {
         set_error_handler(callback: static function ($err_severity, $err_msg, $err_file, $err_line) {
             if (0 === error_reporting()) {
