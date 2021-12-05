@@ -71,7 +71,7 @@ class RunSwooleCommand extends CommandHandler
                     $input, $request->files ?? [], $request->cookie,
                     null,
                     $request->server, $request->header);
-                $response->end(\QApi\App::run(request: $req));
+                $response->end(\QApi\App::run(apiPassword: $appDomain['app']->docPassword, request: $req));
             } catch (RuntimeException $e) {
                 error_log(get_class($e) . '：' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
                 $response->end((new \QApi\Response())->setCode(500)->setMsg($e->getMessage())->setExtra([
