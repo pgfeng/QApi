@@ -3,6 +3,7 @@
 namespace QApi;
 
 use ArrayObject;
+use Iterator;
 use JetBrains\PhpStorm\Pure;
 use JsonSerializable as JsonSerializableAlias;
 
