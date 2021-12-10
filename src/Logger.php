@@ -15,11 +15,12 @@ class Logger
     /**
      * 初始化
      * @param string $name
+     * @param bool $force
      */
-    public static function init($name = 'QApi'): void
+    public static function init($name = 'QApi', $force = false): void
     {
-        if (self::$logger === null) {
-            self::$logger = new \Monolog\Logger('QApi');
+        if (self::$logger === null || $force) {
+            self::$logger = new \Monolog\Logger($name);
             self::$logger->setTimezone(App::$timezone);
             if (is_cli()) {
                 $logHandler = Config::command('logHandler');

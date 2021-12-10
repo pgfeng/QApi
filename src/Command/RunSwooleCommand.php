@@ -3,12 +3,14 @@
 
 namespace QApi\Command;
 
+use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use QApi\App;
 use QApi\Command;
 use QApi\Config;
 use QApi\Config\Application;
 use QApi\Enumeration\RunMode;
+use QApi\Logger;
 use RuntimeException;
 use Swoole\Http\Server;
 
@@ -49,8 +51,8 @@ class RunSwooleCommand extends CommandHandler
             ]
         );
         $http->on("start", function ($server) use ($appDomain) {
-            $this->command->cli->blue(sprintf('QApi Server Startup On <http://%s:%s/>', $appDomain['host'],
-                $appDomain['port']));
+            $this->command->cli->blue(sprintf('QApi Server Startup On <http://%s:%s/> Server-PID：%s', $appDomain['host'],
+                $appDomain['port'], $this->pid));
         });
         $http->on("request", function ($request, $response) use ($http, $appDomain) {
             if (in_array('*', $appDomain['allowOrigin'], true)) {
@@ -64,6 +66,23 @@ class RunSwooleCommand extends CommandHandler
             $request->server['HTTP_HOST'] = $request->header['host'];
             $request->server = array_change_key_case($request->server, CASE_UPPER);
             try {
+                /**
+                 * @var Application $app
+                 */
+                $app = &$appDomain['app'];
+                $defaultHandle = new StreamHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . App::$runtimeDir . DIRECTORY_SEPARATOR . 'CliLog' .
+                    DIRECTORY_SEPARATOR
+                    . date('Y-m-d')
+                    . DIRECTORY_SEPARATOR . (date('H') . '-' . ceil(((int)date('i')) / 10)) . '.log',
+                    \Monolog\Logger::API,
+                    true, null, true);
+                $formatter = new LineFormatter("%datetime% %channel%.%level_name% > %message%\n", '[Y-m-d H:i:s]');
+                $defaultHandle->setFormatter($formatter);
+                $app->logHandler = [
+                    $defaultHandle
+                ];
+                Config::$command['logHandler'] = $defaultHandle;
+                Logger::init('QApiServer-' . $appDomain['port'].'[' . $this->pid . ']', true);
                 $input = $request->rawContent();
                 $req = new \QApi\Request(
                     new \QApi\Data($argv),
@@ -72,18 +91,6 @@ class RunSwooleCommand extends CommandHandler
                     $input, $request->files ?? [], $request->cookie,
                     null,
                     $request->server, $request->header);
-                /**
-                 * @var Application $app
-                 */
-                $app = $appDomain['app'];
-                $app->logHandler = [
-                    new StreamHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . App::$runtimeDir . DIRECTORY_SEPARATOR . 'Log' .
-                        DIRECTORY_SEPARATOR
-                        . date('Y-m-d')
-                        . DIRECTORY_SEPARATOR . date('H') . '.log',
-                        \Monolog\Logger::API,
-                        true, null, true)
-                ];
                 $response->end(\QApi\App::run(apiPassword: $appDomain['app']->docPassword, request: $req));
             } catch (RuntimeException $e) {
                 error_log(get_class($e) . '：' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());

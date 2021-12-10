@@ -19,6 +19,7 @@ abstract class CommandHandler
 {
     protected Command $command;
     protected array $argv = [];
+    protected int $pid;
 
     /**
      * Handler constructor.
@@ -27,6 +28,7 @@ abstract class CommandHandler
      */
     public function __construct(Command $command, $argv = [])
     {
+        $this->pid = posix_getpid();
         $this->command = $command;
     }
 

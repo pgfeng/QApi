@@ -25,6 +25,7 @@ class Config
     public static ?array $databases = [];
     public static ?array $cache = [];
     public static ?array $other = [];
+    public static ?array $command = [];
     /**
      * @var Application[]
      */
@@ -128,6 +129,10 @@ class Config
      */
     public static function command($name): string|array|null
     {
+        if (self::$command) {
+            return self::$command;
+        }
+
         $configPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'command.php';
         if (!file_exists($configPath)) {
             mkPathDir($configPath);
@@ -136,11 +141,10 @@ class Config
         }
         $commandConfig = include PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'command.php';
         if ($name) {
-
             return $commandConfig[$name] ?? null;
         }
-
-        return $commandConfig;
+        self::$command = $commandConfig;
+        return self::$command;
     }
 
     /**
