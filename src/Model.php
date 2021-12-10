@@ -362,6 +362,7 @@ class Model
         } else {
             $table = substr($this->model, 0, strpos($this->model, 'Model'));
         }
+        $table = strtolower(preg_replace('/(?<=[a-z])([A-Z])/', '_$1', $table));
         $this->configName = $configName;
         $config = Config::database($configName);
         if (!isset($config)) {
