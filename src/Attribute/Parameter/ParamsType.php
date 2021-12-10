@@ -27,4 +27,6 @@ class ParamsType
 
     public const mobile = 'mobile';
 
+    public const Boolean = 'Boolean';
+
 }
