@@ -25,6 +25,10 @@ class Config
     public static ?array $databases = [];
     public static ?array $cache = [];
     public static ?array $other = [];
+    /**
+     * @var Application[]
+     */
+    public static ?array $apps = null;
 
     /**
      * @return string
@@ -50,13 +54,18 @@ class Config
      */
     public static function apps(): array
     {
-        $configPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'app.php';
-        if (!file_exists($configPath)) {
-            mkPathDir($configPath);
-            file_put_contents($configPath, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Config'
-                . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'app.php'), LOCK_EX);
+        if (!self::$apps) {
+            $configPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'app.php';
+            if (!file_exists($configPath)) {
+                mkPathDir($configPath);
+                file_put_contents($configPath, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Config'
+                    . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'app.php'), LOCK_EX);
+            }
+            self::$app = include $configPath;
+            return self::$apps;
         }
-        return include $configPath;
+        return self::$apps;
+
     }
 
     /**
@@ -73,12 +82,7 @@ class Config
             return self::$app;
         }
         $configPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'app.php';
-        if (!file_exists($configPath)) {
-            mkPathDir($configPath);
-            file_put_contents($configPath, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Config'
-                . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'app.php'), LOCK_EX);
-        }
-        $appConfig = include PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'app.php';
+        $appConfig = self::$apps;
         $appConfig = array_reverse($appConfig);
         $appHosts = array_keys($appConfig);
         $appHostPattern = str_replace('*', '(.+)', $appHosts);
