@@ -3,6 +3,7 @@
 
 namespace QApi\Command;
 
+use Monolog\Handler\StreamHandler;
 use QApi\App;
 use QApi\Command;
 use QApi\Config;
@@ -71,6 +72,18 @@ class RunSwooleCommand extends CommandHandler
                     $input, $request->files ?? [], $request->cookie,
                     null,
                     $request->server, $request->header);
+                /**
+                 * @var Application $app
+                 */
+                $app = $appDomain['app'];
+                $app->logHandler = [
+                    new StreamHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . App::$runtimeDir . DIRECTORY_SEPARATOR . 'Log' .
+                        DIRECTORY_SEPARATOR
+                        . date('Y-m-d')
+                        . DIRECTORY_SEPARATOR . date('H') . '.log',
+                        \Monolog\Logger::API,
+                        true, null, true)
+                ];
                 $response->end(\QApi\App::run(apiPassword: $appDomain['app']->docPassword, request: $req));
             } catch (RuntimeException $e) {
                 error_log(get_class($e) . '：' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
