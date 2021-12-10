@@ -129,10 +129,6 @@ class App
             }
             self::$app->init();
             self::$getVersionFunction = $getVersionFunction;
-            if (PHP_SAPI !== 'cli') {
-                header('Access-Control-Allow-Headers: ' . implode(',', $allowHeaders));
-                header('Access-Control-Allow-Methods: ' . implode(',', $allowMethods));
-            }
             Router::init($request);
             return \QApi\Router::run();
         } catch (\Exception $e) {

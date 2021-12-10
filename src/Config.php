@@ -83,14 +83,14 @@ class Config
             return self::$app;
         }
         $configPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'app.php';
-        $appConfig = self::$apps;
+        $appConfig = self::apps();
         $appConfig = array_reverse($appConfig);
         $appHosts = array_keys($appConfig);
         $appHostPattern = str_replace('*', '(.+)', $appHosts);
         foreach ($appHosts as $key => $host) {
             if (preg_match('/^' . $appHostPattern[$key] . '$/i', $_SERVER['HTTP_HOST'])) {
-                $var = self::$app = &$appConfig[$host];
-                return $var;
+                self::$app = App::$app = &$appConfig[$host];
+                return App::$app;
             }
         }
         throw new ErrorException('host ' . $_SERVER['HTTP_HOST'] . ' not bind app!', 0, 1,

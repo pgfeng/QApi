@@ -11,6 +11,7 @@ use QApi\Config;
 use QApi\Config\Application;
 use QApi\Enumeration\RunMode;
 use QApi\Logger;
+use QApi\Response;
 use RuntimeException;
 use Swoole\Http\Server;
 
@@ -82,7 +83,7 @@ class RunSwooleCommand extends CommandHandler
                     $defaultHandle
                 ];
                 Config::$command['logHandler'] = $defaultHandle;
-                Logger::init('QApiServer-' . $appDomain['port'].'[' . $this->pid . ']', true);
+                Logger::init('QApiServer-' . $appDomain['port'] . '[' . $this->pid . ']', true);
                 $input = $request->rawContent();
                 $req = new \QApi\Request(
                     new \QApi\Data($argv),
@@ -91,7 +92,24 @@ class RunSwooleCommand extends CommandHandler
                     $input, $request->files ?? [], $request->cookie,
                     null,
                     $request->server, $request->header);
-                $response->end(\QApi\App::run(apiPassword: $appDomain['app']->docPassword, request: $req));
+                /**
+                 * @var Response
+                 */
+                $res = \QApi\App::run(apiPassword: $appDomain['app']->docPassword, request: $req);
+                $headers = $res->getHeaders();
+                foreach ($headers as $name => $header) {
+                    if (strtoupper($name) === 'LOCATION') {
+                        $response->redirect($header, 301);
+                    }
+                    if (is_array($header)) {
+                        $response->header($name, implode(',', $header));
+                    } else {
+                        $response->header($name, $header);
+                    }
+                }
+                $response->header('Server', 'QApiServer');
+                //                $response->status($res->getStatusCode());
+                $response->end($res);
             } catch (RuntimeException $e) {
                 error_log(get_class($e) . '：' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
                 $response->end((new \QApi\Response())->setCode(500)->setMsg($e->getMessage())->setExtra([

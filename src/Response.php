@@ -20,6 +20,65 @@ class Response
      */
     public function __construct(private ?string $version = null)
     {
+        $app = Config::$app;
+        if ($app && Router::$request) {
+            if (in_array('*', $app->allowOrigin, true)) {
+                $this->withHeader('Access-Control-Allow-Origin', $app->allowOrigin);
+            } else if (in_array(Router::$request->getHost(), $app->allowOrigin, true)) {
+                $this->withHeader('Access-Control-Allow-Origin', Router::$request->getHost());
+            }
+            $this->withHeader('Access-Control-Allow-Headers', implode(',', $app->allowHeaders));
+        }
+        $this->withHeader('x-powered-by', 'QApi');
+        $this->withHeader('Content-Type', 'application/json;charset=utf-8');
+
+    }
+
+    /**
+     * @param string $name
+     * @param string|array $value
+     * @return $this
+     */
+    public function withHeader(string $name, string|array $value): Response
+    {
+        $this->headers[$name] = $value;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
+    /**
+     * @param string $name
+     * @return bool
+     */
+    public function hasHeader(string $name): bool
+    {
+        return isset($this->headers[$name]);
+    }
+
+    /**
+     * @param string $name
+     * @return $this
+     */
+    public function removeHeader(string $name): Response
+    {
+        unset($this->headers[$name]);
+        return $this;
+    }
+
+    /**
+     * @param string $name
+     * @return array|string
+     */
+    public function getHeader(string $name): array|string
+    {
+        return $this->headers[$name] ?? '';
     }
 
     /**
@@ -135,7 +194,15 @@ class Response
 
     public function __toString(): string
     {
-
+        if (!is_cli()) {
+            foreach ($this->headers as $name => $header) {
+                if (is_array($header)) {
+                    header($name . ':' . implode(',', $header));
+                } else {
+                    header($name . ':' . $header);
+                }
+            }
+        }
         $sendData = [
             'version' => $this->version ?? Config::version()->versionName,
             'code' => $this->statusCode,
@@ -161,8 +228,12 @@ class Response
             if (is_string($sendData)) {
                 echo $sendData;
             } else {
-                if (PHP_SAPI !== 'cli') {
-                    header('Content-Type:application/json');
+                foreach ($this->headers as $name => $header) {
+                    if (is_array($header)) {
+                        header($name . ':' . implode(',', $header));
+                    } else {
+                        header($name . ':' . $header);
+                    }
                 }
                 $responseData = new Data($sendData);
                 echo $responseData;
