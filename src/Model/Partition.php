@@ -49,7 +49,7 @@ abstract class Partition extends Model
     final public function getTable($partition_value): string
     {
         $num = ((int)$partition_value % $this->partition_num) + 1;
-        return $this->get_table() . '_' . $num;
+        return $this->db->table . '_' . $num;
     }
 
     /**
