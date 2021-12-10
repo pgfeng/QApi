@@ -61,7 +61,7 @@ class Config
                 file_put_contents($configPath, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Config'
                     . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'app.php'), LOCK_EX);
             }
-            self::$app = include $configPath;
+            self::$apps = include $configPath;
             return self::$apps;
         }
         return self::$apps;
