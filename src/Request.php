@@ -98,7 +98,7 @@ class Request
      * @param array|null $post
      * @param array|null $request
      * @param string|null $input
-     * @param array $files
+     * @param array|null $files
      * @param array|null $cookie
      * @param array|null $session
      * @param array|null $server
@@ -106,7 +106,7 @@ class Request
      */
     public function __construct(public Data|null $arguments = null, array $get = null, array $post = null, array $request =
     null,
-                                string $input = null, array $files = [],
+                                string $input = null, array $files = null,
                                 array $cookie = null, array $session = null, array $server = null, array $header = null)
     {
         if (!$this->arguments) {
