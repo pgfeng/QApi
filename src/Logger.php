@@ -35,6 +35,11 @@ class Logger
                 foreach (Config::$app->logHandler as $item) {
                     self::$logger->pushHandler($item);
                 }
+            } else {
+                $app = Config::app();
+                foreach ($app->logHandler as $item) {
+                    self::$logger->pushHandler($item);
+                }
             }
         }
     }
