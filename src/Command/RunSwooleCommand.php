@@ -46,6 +46,7 @@ class RunSwooleCommand extends CommandHandler
                 'package_max_length' => (int)ini_get('post_max_size') * 1024 * 1024,
                 'http_parse_cookie' => true,
                 'http_autoindex' => false,
+                'pid_file' => 'SwooleServer.pid',
                 'http_index_files' => ['index.html', 'index.htm'],
                 'daemonize' => in_array('--daemonize', $argv, true),
                 'log_date_format' => '%Y-%m-%d %H:%M:%S',
@@ -53,7 +54,7 @@ class RunSwooleCommand extends CommandHandler
         );
         $http->on("start", function ($server) use ($appDomain) {
             $this->command->cli->blue(sprintf('QApi Server Startup On <http://%s:%s/> Server-PID：%s', $appDomain['host'],
-                $appDomain['port'], $this->pid));
+                $appDomain['port'], $server->master_pid.'-'.$server->manager_pid));
         });
         $http->on("request", function ($request, $response) use ($http, $appDomain) {
             if (in_array('*', $appDomain['allowOrigin'], true)) {
