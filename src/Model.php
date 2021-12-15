@@ -382,6 +382,7 @@ class Model
             $db = new $driver;
             $db->connect($configName);
             DB::$DBC[$configName] = clone $db;
+            DB::$DBC_CON_TIME[$configName] = time();
         }
         if (!$db) {
             throw new \Exception('数据库配置有误!');

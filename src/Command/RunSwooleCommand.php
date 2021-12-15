@@ -9,6 +9,7 @@ use QApi\App;
 use QApi\Command;
 use QApi\Config;
 use QApi\Config\Application;
+use QApi\Database\DB;
 use QApi\Enumeration\RunMode;
 use QApi\Logger;
 use QApi\Response;
@@ -54,9 +55,10 @@ class RunSwooleCommand extends CommandHandler
         );
         $http->on("start", function ($server) use ($appDomain) {
             $this->command->cli->blue(sprintf('QApi Server Startup On <http://%s:%s/> Server-PID：%s', $appDomain['host'],
-                $appDomain['port'], $server->master_pid.'-'.$server->manager_pid));
+                $appDomain['port'], $server->master_pid . '-' . $server->manager_pid));
         });
         $http->on("request", function ($request, $response) use ($http, $appDomain) {
+            DB::clearDBC();
             if (in_array('*', $appDomain['allowOrigin'], true)) {
                 $response->header('Access-Control-Allow-Origin', $appDomain['allowOrigin']);
             } else if (in_array($request->header['host'], $appDomain, true)) {

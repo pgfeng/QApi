@@ -13,6 +13,7 @@ use QApi\Model;
 class DB
 {
     public static array $DBC = [];
+    public static array $DBC_CON_TIME = [];
 
     /**
      * @param        $table_name
@@ -22,6 +23,25 @@ class DB
     public static function table($table_name, $config_name = 'default'): Model
     {
         return new Model($table_name, $config_name);
+    }
+
+    public static function clearDBC($wait_timeout = 3600): void
+    {
+        foreach (self::$DBC_CON_TIME as $configName => $time) {
+            if (time() - $time > $wait_timeout - 300) {
+                self::remove($configName);
+            }
+        }
+    }
+
+    public static function remove(string $configName): void
+    {
+        if (isset(self::$DBC[$configName])) {
+            unset(self::$DBC[$configName]);
+        }
+        if (isset(self::$DBC_CON_TIME[$configName])) {
+            unset(self::$DBC_CON_TIME[$configName]);
+        }
     }
 
     /**
