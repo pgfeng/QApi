@@ -98,20 +98,24 @@ class RunSwooleCommand extends CommandHandler
                  * @var Response
                  */
                 $res = \QApi\App::run(apiPassword: $appDomain['app']->docPassword, request: $req);
-                $headers = $res->getHeaders();
-                foreach ($headers as $name => $header) {
-                    if (strtoupper($name) === 'LOCATION') {
-                        $response->redirect($header, 301);
-                    }
-                    if (is_array($header)) {
-                        $response->header($name, implode(',', $header));
-                    } else {
-                        $response->header($name, $header);
-                    }
-                }
                 $response->header('Server', 'QApiServer');
-                //                $response->status($res->getStatusCode());
-                $response->end($res);
+                if ($res instanceof Response) {
+                    $headers = $res->getHeaders();
+                    foreach ($headers as $name => $header) {
+                        if (strtoupper($name) === 'LOCATION') {
+                            $response->redirect($header, 301);
+                        }
+                        if (is_array($header)) {
+                            $response->header($name, implode(',', $header));
+                        } else {
+                            $response->header($name, $header);
+                        }
+                    }
+                    //                $response->status($res->getStatusCode());
+                    $response->end($res);
+                }else{
+                    $response->end($res);
+                }
             } catch (RuntimeException $e) {
                 error_log(get_class($e) . '：' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
                 $response->end((new \QApi\Response())->setCode(500)->setMsg($e->getMessage())->setExtra([
