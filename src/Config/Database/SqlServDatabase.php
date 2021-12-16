@@ -22,9 +22,10 @@ class SqlServDatabase extends Database
      * @param string $user
      * @param string $password
      * @param string $tablePrefix
+     * @param int $wait_timeout
      */
     public function __construct(public string $host, public int $port, public string $dbName, public string $user,
-                                public string $password, public string $tablePrefix = 'p_')
+                                public string $password, public string $tablePrefix = 'p_', public int $wait_timeout = 100)
     {
     }
 }

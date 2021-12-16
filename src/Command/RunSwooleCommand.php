@@ -58,7 +58,6 @@ class RunSwooleCommand extends CommandHandler
                 $appDomain['port'], $server->master_pid . '-' . $server->manager_pid));
         });
         $http->on("request", function ($request, $response) use ($http, $appDomain) {
-            DB::clearDBC();
             if (in_array('*', $appDomain['allowOrigin'], true)) {
                 $response->header('Access-Control-Allow-Origin', $appDomain['allowOrigin']);
             } else if (in_array($request->header['host'], $appDomain, true)) {

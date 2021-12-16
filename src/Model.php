@@ -374,10 +374,12 @@ class Model
             DatabaseDriver::MYSQLI => Mysqli::class,
             DatabaseDriver::PDO_SQLSERV => PdoSqlServ::class,
         };
-
-        if (isset(DB::$DBC[$configName])) {
+        if (isset(DB::$DBC[$configName]) && (DB::$DBC_CON_TIME[$configName] + $config->wait_timeout) > time()) {
             $db = clone DB::$DBC[$configName];
         } else {
+            if (isset(DB::$DBC_CON_TIME[$configName])) {
+                Logger::error('Database [' . $configName . '] reconnection!');
+            }
             /** @var DBase $db */
             $db = new $driver;
             $db->connect($configName);

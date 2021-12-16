@@ -13,6 +13,7 @@ class MysqliDatabase extends Database
     public string $name = 'mysqli';
     public string $driver = DatabaseDriver::MYSQLI;
     public string $connectorClass = MysqliConnector::class;
+
     /**
      * PdoMysqlDatabase constructor.
      * @param string $host
@@ -22,12 +23,12 @@ class MysqliDatabase extends Database
      * @param string $password
      * @param string $tablePrefix
      * @param string $charset
+     * @param int $wait_timeout
      */
     public function __construct(public string $host, public int $port, public string $dbName, public string $user,
-                                public string $password,public string $tablePrefix = 'p_',public string $charset='utf8mb4')
+                                public string $password, public string $tablePrefix = 'p_', public string $charset = 'utf8mb4', public int $wait_timeout = 3600)
     {
     }
-
 
 
 }

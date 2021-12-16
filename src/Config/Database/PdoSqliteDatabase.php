@@ -18,9 +18,11 @@ class PdoSqliteDatabase extends Database
      * @param string $filename
      * @param string $tablePrefix
      * @param string $charset
+     * @param int $wait_timeout
      */
     public function __construct(
-        public string $filename = ':memory:', public string $tablePrefix = 'p_', public string $charset = 'utf8mb4'
+        public string $filename = ':memory:', public string $tablePrefix = 'p_', public string $charset = 'utf8mb4',
+        public int $wait_timeout = 80
     )
     {
     }

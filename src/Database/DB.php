@@ -12,6 +12,9 @@ use QApi\Model;
  */
 class DB
 {
+    /**
+     * @var PdoSqlServ[]|PdoMysql[]|PdoSqlite[]|Mysqli[]
+     */
     public static array $DBC = [];
     public static array $DBC_CON_TIME = [];
 
