@@ -14,8 +14,8 @@ $formatter = new LineFormatter("%datetime% %channel%.%level_name% > %message%\n"
 $defaultHandle->setFormatter($formatter);
 return [
     'ColumnDir' => 'Model/_Column',
-    'BaseColumnNameSpace' => 'Test\Model\_Column',
-    'ServerRunDir' => PROJECT_PATH,
+    'BaseColumnNameSpace' => 'Model\_Column',
+    'ServerRunDir' => PROJECT_PATH.'public',
     'CommandHandlers' => [
 
     ],
