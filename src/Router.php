@@ -147,6 +147,9 @@ class Router
 
         $uri = preg_replace('#(/+)#', '/', '/' . $_SERVER["REQUEST_URI"]);
         $uri = parse_url($uri, PHP_URL_PATH);
+        if (!$uri) {
+            $uri = '/';
+        }
         self::$URI = $uri;
         self::$METHOD = $_SERVER['REQUEST_METHOD'];
         if (self::$cache !== null) {
