@@ -1,6 +1,7 @@
 <?php
 
 
+use JetBrains\PhpStorm\Deprecated;
 use JetBrains\PhpStorm\Pure;
 
 /**
@@ -277,6 +278,7 @@ function dump($var, $echo = TRUE, $label = NULL, $strict = TRUE): null|bool|stri
  * @param $url
  * @param $time
  */
+#[Deprecated(reason: 'Compatible with swoole', replacement: '$response->withLocation(\'Location\',\'url\')')]
 function redirect($url, $time = 0)
 {
     if ($time > 0) {
