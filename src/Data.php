@@ -2,6 +2,7 @@
 
 namespace QApi;
 
+use ArrayIterator;
 use ArrayObject;
 use Iterator;
 use JetBrains\PhpStorm\Pure;
@@ -289,9 +290,9 @@ class Data extends ArrayObject implements JsonSerializableAlias
 
 
     /**
-     * @return ArrayObject
+     * @return ArrayIterator|ArrayObject
      */
-    public function getIterator(): ArrayObject
+    public function getIterator(): ArrayObject|ArrayIterator
     {
         return new ArrayObject($this->data);
     }
