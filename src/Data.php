@@ -290,11 +290,11 @@ class Data extends ArrayObject implements JsonSerializableAlias
 
 
     /**
-     * @return ArrayIterator|ArrayObject
+     * @return ArrayIterator
      */
-    public function getIterator(): ArrayObject|ArrayIterator
+    public function getIterator(): ArrayIterator
     {
-        return new ArrayObject($this->data);
+        return (new ArrayObject($this->data))->getIterator();
     }
 
 }
