@@ -981,20 +981,22 @@ abstract class DBase
      * 一个参数时只设置插入内容
      * 多个参数参考下面函数
      * INSERT($table,$value)
-     *
-     * @param $insert
-     *
+     * @param array|Data $insert
      * @return bool|int
      */
-    final public function insert($insert): bool|int
+    final public function insert(array|Data $insert): bool|int
     {
         $this->section['handle'] = 'insert';
         $arg_num = func_num_args();
-
+        if ($insert instanceof Data) {
+            $insert = $insert->toArray();
+        }
         if ($arg_num > 1) {
             $arg_list = func_get_args();
+            if ($arg_list[1] instanceof Data) {
+                $arg_list[1] = $arg_list[1]->toArray();
+            }
             $this->setTable($arg_list[0])->insert($arg_list[1]);
-
             return $this->exec();
         }
         //--强制开发者使用默认值,添加不可以设置空值,杜绝因为运营人员表单没输入而没有使用数据库默认值
