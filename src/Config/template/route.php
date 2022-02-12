@@ -34,5 +34,8 @@ return [
      */
     'defaultAction' => 'index',
 
-
+    /**
+     * 请求对象读取文档参数
+     */
+    'RequestReadDocumentParameters' => true,
 ];

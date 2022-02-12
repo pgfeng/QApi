@@ -20,13 +20,13 @@ use RuntimeException;
 /**
  * Class Router
  * @package QApi
- * @method static Router get(string|null $path = null, Callable|string|null $callback = null)
- * @method static Router post(string|null $path = null, Callable|string|null $callback = null)
- * @method static Router put(string|null $path = null, Callable|string|null $callback = null)
- * @method static Router delete(string|null $path = null, Callable|string|null $callback = null)
- * @method static Router options(string|null $path = null, Callable|string|null $callback = null)
- * @method static Router head(string|null $path = null, Callable|string|null $callback = null)
- * @method static Router all(string|null $path = null, Callable|string|null $callback = null)
+ * @method static Router get(string|null $path = null, Callable|string|null $callback = null, array $pattern = [],QApi\Http\MiddlewareInterface[]|string  $middleware = [])
+ * @method static Router post(string|null $path = null, Callable|string|null $callback = null, array $pattern = [], QApi\Http\MiddlewareInterface[] $middleware = [])
+ * @method static Router put(string|null $path = null, Callable|string|null $callback = null, array $pattern = [], QApi\Http\MiddlewareInterface[] $middleware = [])
+ * @method static Router delete(string|null $path = null, Callable|string|null $callback = null, array $pattern = [], QApi\Http\MiddlewareInterface[] $middleware = [])
+ * @method static Router options(string|null $path = null, Callable|string|null $callback = null, array $pattern = [], QApi\Http\MiddlewareInterface[] $middleware = [])
+ * @method static Router head(string|null $path = null, Callable|string|null $callback = null, array $pattern = [], QApi\Http\MiddlewareInterface[] $middleware = [])
+ * @method static Router all(string|null $path = null, Callable|string|null $callback = null, array $pattern = [], QApi\Http\MiddlewareInterface[] $middleware = [])
  */
 class Router
 {
@@ -252,14 +252,20 @@ class Router
      * @param string $method
      * @param string|null $path
      * @param  $runData
+     * @param array $pattern
+     * @param QApi\Http\MiddlewareInterface[]|string $middleware
      */
     public
-    function __construct(protected string $method, protected string|null $path, protected $runData)
+    function __construct(protected string $method, protected string|null $path, protected $runData, array $pattern = [],
+                         array|string $middleware = [])
     {
+        if (is_string($middleware)){
+            $middleware = [$middleware];
+        }
         self::$routeLists[$method][$path] = [
             'callback' => $runData,
-            'pattern' => [],
-            'middleware' => [],
+            'pattern' => $pattern,
+            'middleware' => $middleware,
         ];
     }
 
@@ -276,13 +282,16 @@ class Router
             $params = [
                 'path' => $params[0],
                 'callback' => $params[1],
+                'pattern' => $params[2] ?? [],
+                'middleware' => $params[3] ?? [],
             ];
         }
         if ((!isset($params['path']) || !$params['path']) && isset($params['callback']) && !is_callable($params['callback'])) {
             $params['path'] = str_replace(array(Config::$app->getNameSpace() . '\\' . Config::version()->versionDir, '\\'), array('', '/'), $params['callback']);
             $params['path'] = substr(str_replace('Controller@', '/', $params['path']), 0, -6);
         }
-        return new static(strtoupper($method), $params['path'] ?? null, $params['callback']);
+        return new static(strtoupper($method), $params['path'] ?? null, $params['callback'], $params['pattern']??[],
+            $params['middleware']??[]);
     }
 
     /**
