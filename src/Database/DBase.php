@@ -909,10 +909,10 @@ abstract class DBase
         $this->lastSql = $sql;
         $this->_reset();
         Logger::sql($sql);
-        if ($this->_exec($sql) !== FALSE) {
+        $result = $this->_exec($sql);
+        if ($result !== FALSE) {
             return true;
         }
-
         new Exception($this->getError());
         return false;
     }
