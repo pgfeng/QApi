@@ -264,9 +264,8 @@ abstract class DBase
     final public function getField($field_name): mixed
     {
         $field_name = $this->_Field($field_name);
-        $this->select($field_name);
         $this->limit(0, 1);
-        $fetch = $this->getOne();
+        $fetch = $this->find($field_name);
         if (!$fetch) {
             return null;
         }
