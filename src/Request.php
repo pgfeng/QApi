@@ -164,11 +164,11 @@ class Request
         Logger::info("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Request Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
         Logger::info(' RequestMethod' . ' -> ' . $this->method);
         Logger::info(' HeaderData -> ' . $this->header);
-        if ($this->requestReadDocumentParameters) {
-            $cache = Cache::initialization('__document');
-            $dd = $cache->get('__apiDocument');
-            Logger::error($dd);
-        }
+//        if ($this->requestReadDocumentParameters) {
+//            $cache = Cache::initialization('__document');
+//            $dd = $cache->get('__apiDocument');
+//            Logger::error($dd);
+//        }
         if ($this->method === MethodsEnum::METHOD_POST) {
             Logger::info(' PostData -> ' . $this->post);
             if ($this->file->count()) {
