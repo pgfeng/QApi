@@ -37,10 +37,10 @@ class Response
 
     /**
      * @param string $name
-     * @param string|array $value
+     * @param string|array|null $value
      * @return $this
      */
-    public function withHeader(string $name, string|array $value): Response
+    public function withHeader(string $name, string|array $value=null): Response
     {
         $this->headers[$name] = $value;
         return $this;
@@ -201,16 +201,25 @@ class Response
         return $this->status;
     }
 
-    public function __toString(): string
+    private function setHeader(): void
     {
-        if (!is_cli()) {
-            foreach ($this->headers as $name => $header) {
+        foreach ($this->headers as $name => $header) {
+            if ($header) {
                 if (is_array($header)) {
                     header($name . ':' . implode(',', $header));
                 } else {
                     header($name . ':' . $header);
                 }
+            } else {
+                header($name);
             }
+        }
+    }
+
+    public function __toString(): string
+    {
+        if (!is_cli()) {
+            $this->setHeader();
         }
         if (!$this->raw) {
             $sendData = [
