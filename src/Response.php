@@ -97,7 +97,7 @@ class Response
             }
             $this->withHeader('Access-Control-Allow-Headers', implode(',', $app->allowHeaders));
         }
-        $this->withHeader('x-powered-by', 'QApi');
+        $this->withHeader('X-Powered-By', 'QApi');
         $this->withHeader('Content-Type', 'application/json;charset=utf-8');
 
     }
@@ -324,7 +324,7 @@ class Response
         }
         if (!$this->raw) {
             $sendData = [
-                'version' => $this->version ?? Config::version()->versionName,
+                'version' => Config::version()->versionName,
                 'code' => $this->statusCode,
                 'status' => $this->status,
                 'msg' => $this->msg,
