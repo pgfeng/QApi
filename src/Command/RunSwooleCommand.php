@@ -87,19 +87,28 @@ class RunSwooleCommand extends CommandHandler
                 Config::$command['logHandler'] = $defaultHandle;
                 Logger::init('QApiServer-' . $appDomain['port'] . '[' . $this->pid . ']', true);
                 $input = $request->rawContent();
+                $headers = [];
+                foreach ($request->header as $name => $header) {
+                    $name = explode('-', $name);
+                    foreach ($name as &$n) {
+                        $n = ucfirst($n);
+                    }
+                    $name = implode('-', $name);
+                    $headers[$name] = $header;
+                }
                 $req = new \QApi\Request(
                     new \QApi\Data($argv),
                     $request->get, $request->post,
                     array_merge($request->get ?? [], $request->post ?? []),
                     $input, $request->files ?? [], $request->cookie,
                     null,
-                    $request->server, $request->header);
+                    $request->server, $headers);
                 /**
                  * @var Response
                  */
                 $res = \QApi\App::run(apiPassword: $appDomain['app']->docPassword, request: $req);
                 $response->header('Server', 'QApiServer');
-                $response->status($res->getStatusCode(),$res->getReason());
+                $response->status($res->getStatusCode(), $res->getReason());
                 if ($res instanceof Response) {
                     $headers = $res->getHeaders();
                     foreach ($headers as $name => $header) {
@@ -113,7 +122,7 @@ class RunSwooleCommand extends CommandHandler
                         }
                     }
                     $response->end($res);
-                }else{
+                } else {
                     $response->end($res);
                 }
             } catch (RuntimeException $e) {
