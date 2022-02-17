@@ -13,6 +13,7 @@ class Response
     private array $extra = [];
     // TODO
     private array $headers = [];
+    private bool $raw = false;
 
     /**
      * Response constructor.
@@ -185,6 +186,14 @@ class Response
     }
 
     /**
+     * @param false $status
+     */
+    public function setRaw($status = false): void
+    {
+        $this->raw = $status;
+    }
+
+    /**
      * @return bool
      */
     public function getStatus(): bool
@@ -203,18 +212,20 @@ class Response
                 }
             }
         }
-        $sendData = [
-            'version' => $this->version ?? Config::version()->versionName,
-            'code' => $this->statusCode,
-            'status' => $this->status,
-            'msg' => $this->msg,
-            'data' => $this->data,
-        ];
-        Logger::success("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Response Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
-        Logger::success($sendData);
-        Logger::success("↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑  Response Data ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ");
-
-        return json_encode(array_merge($sendData, $this->extra), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+        if (!$this->raw) {
+            $sendData = [
+                'version' => $this->version ?? Config::version()->versionName,
+                'code' => $this->statusCode,
+                'status' => $this->status,
+                'msg' => $this->msg,
+                'data' => $this->data,
+            ];
+            Logger::success("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Response Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
+            Logger::success($sendData);
+            Logger::success("↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑  Response Data ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ");
+            return json_encode(array_merge($sendData, $this->extra), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+        }
+        return $this->data;
     }
 
     /**

@@ -17,18 +17,6 @@ class Request
     use Methods;
 
     /**
-     * 存储的请求参数
-     * @var array
-     */
-    public array $documentParameters = [];
-
-    /**
-     * 请求对象读取文档参数
-     * @var bool
-     */
-    protected bool $requestReadDocumentParameters = true;
-
-    /**
      * 头部信息
      * @var Data
      */
@@ -164,11 +152,6 @@ class Request
         Logger::info("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Request Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
         Logger::info(' RequestMethod' . ' -> ' . $this->method);
         Logger::info(' HeaderData -> ' . $this->header);
-//        if ($this->requestReadDocumentParameters) {
-//            $cache = Cache::initialization('__document');
-//            $dd = $cache->get('__apiDocument');
-//            Logger::error($dd);
-//        }
         if ($this->method === MethodsEnum::METHOD_POST) {
             Logger::info(' PostData -> ' . $this->post);
             if ($this->file->count()) {
