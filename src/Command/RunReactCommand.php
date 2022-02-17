@@ -94,6 +94,8 @@ class RunReactCommand extends CommandHandler
                 $res->getStatusCode(),
                 $responseHeader,
                 (string)$res,
+                $res->getVersion(),
+                $res->getReason(),
             );
         });
         $socket = new SocketServer("0.0.0.0:{$appDomain['port']}");

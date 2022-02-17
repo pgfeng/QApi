@@ -99,6 +99,7 @@ class RunSwooleCommand extends CommandHandler
                  */
                 $res = \QApi\App::run(apiPassword: $appDomain['app']->docPassword, request: $req);
                 $response->header('Server', 'QApiServer');
+                $response->status($res->getStatusCode(),$res->getReason());
                 if ($res instanceof Response) {
                     $headers = $res->getHeaders();
                     foreach ($headers as $name => $header) {
@@ -111,7 +112,6 @@ class RunSwooleCommand extends CommandHandler
                             $response->header($name, $header);
                         }
                     }
-                    //                $response->status($res->getStatusCode());
                     $response->end($res);
                 }else{
                     $response->end($res);

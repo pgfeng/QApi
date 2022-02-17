@@ -6,11 +6,78 @@ namespace QApi;
 
 class Response
 {
+
+    /** @var array Response code */
+    private static $phrases = array(
+        100 => 'Continue',
+        101 => 'Switching Protocols',
+        102 => 'Processing',
+        200 => 'OK',
+        201 => 'Created',
+        202 => 'Accepted',
+        203 => 'Non-Authoritative Information',
+        204 => 'No Content',
+        205 => 'Reset Content',
+        206 => 'Partial Content',
+        207 => 'Multi-status',
+        208 => 'Already Reported',
+        300 => 'Multiple Choices',
+        301 => 'Moved Permanently',
+        302 => 'Found',
+        303 => 'See Other',
+        304 => 'Not Modified',
+        305 => 'Use Proxy',
+        306 => 'Switch Proxy',
+        307 => 'Temporary Redirect',
+        400 => 'Bad Request',
+        401 => 'Unauthorized',
+        402 => 'Payment Required',
+        403 => 'Forbidden',
+        404 => 'Not Found',
+        405 => 'Method Not Allowed',
+        406 => 'Not Acceptable',
+        407 => 'Proxy Authentication Required',
+        408 => 'Request Time-out',
+        409 => 'Conflict',
+        410 => 'Gone',
+        411 => 'Length Required',
+        412 => 'Precondition Failed',
+        413 => 'Request Entity Too Large',
+        414 => 'Request-URI Too Large',
+        415 => 'Unsupported Media Type',
+        416 => 'Requested range not satisfiable',
+        417 => 'Expectation Failed',
+        418 => 'I\'m a teapot',
+        422 => 'Unprocessable Entity',
+        423 => 'Locked',
+        424 => 'Failed Dependency',
+        425 => 'Unordered Collection',
+        426 => 'Upgrade Required',
+        428 => 'Precondition Required',
+        429 => 'Too Many Requests',
+        431 => 'Request Header Fields Too Large',
+        500 => 'Internal Server Error',
+        501 => 'Not Implemented',
+        502 => 'Bad Gateway',
+        503 => 'Service Unavailable',
+        504 => 'Gateway Time-out',
+        505 => 'HTTP Version not supported',
+        506 => 'Variant Also Negotiates',
+        507 => 'Insufficient Storage',
+        508 => 'Loop Detected',
+        511 => 'Network Authentication Required',
+    );
     private bool $status = true;
     private int $statusCode = 200;
     private mixed $data = [];
     private string $msg = 'Ok';
     private array $extra = [];
+    /**
+     * custom HTTP response phrase
+     * @var string|null
+     */
+    private ?string $reason = null;
+
     // TODO
     private array $headers = [];
     private bool $raw = false;
@@ -19,7 +86,7 @@ class Response
      * Response constructor.
      * @param string|null $version
      */
-    public function __construct(private ?string $version = null)
+    public function __construct(private ?string $version = '1.1')
     {
         $app = Config::$app;
         if ($app && Router::$request) {
@@ -36,11 +103,47 @@ class Response
     }
 
     /**
+     * @return string
+     */
+    public function getVersion(): string
+    {
+        return $this->version;
+    }
+
+    /**
+     * @param string $version
+     * @return Response
+     */
+    public function setVersion(string $version = '1.1'): Response
+    {
+        $this->version = $version;
+        return $this;
+    }
+
+    /**
+     * @param string|null $reason
+     * @return Response
+     */
+    public function setReason(string $reason = null): Response
+    {
+        $this->reason = $reason;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getReason(): ?string
+    {
+        return $this->reason ?: (self::$phrases[$this->statusCode] ?? '');
+    }
+
+    /**
      * @param string $name
-     * @param string|array|null $value
+     * @param string|array $value
      * @return $this
      */
-    public function withHeader(string $name, string|array $value=null): Response
+    public function withHeader(string $name, string|array $value): Response
     {
         $this->headers[$name] = $value;
         return $this;
@@ -187,10 +290,12 @@ class Response
 
     /**
      * @param false $status
+     * @return Response
      */
-    public function setRaw($status = false): void
+    public function setRaw($status = false): Response
     {
         $this->raw = $status;
+        return $this;
     }
 
     /**
@@ -204,14 +309,10 @@ class Response
     private function setHeader(): void
     {
         foreach ($this->headers as $name => $header) {
-            if ($header) {
-                if (is_array($header)) {
-                    header($name . ':' . implode(',', $header));
-                } else {
-                    header($name . ':' . $header);
-                }
+            if (is_array($header)) {
+                header($name . ':' . implode(',', $header));
             } else {
-                header($name);
+                header($name . ':' . $header);
             }
         }
     }
@@ -245,6 +346,11 @@ class Response
     {
         if ($sendData) {
             Logger::success("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Response Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
+            if (!is_cli()) {
+                header('HTTP/' . $this->version . ' ' . $this->statusCode . ($this->reason ?:
+                        (self::$phrases[$this->statusCode] ??
+                            '')));
+            }
             if (is_string($sendData)) {
                 echo $sendData;
             } else {
