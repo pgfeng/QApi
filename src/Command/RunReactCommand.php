@@ -48,6 +48,15 @@ class RunReactCommand extends CommandHandler
             foreach ($request->getHeaders() as $k => $header) {
                 $headers[$k] = implode(',', $header);
             }
+            $realHeaders = [];
+            foreach ($headers as $name => $header) {
+                $name = explode('-', $name);
+                foreach ($name as &$n) {
+                    $n = ucfirst($n);
+                }
+                $name = implode('-', $name);
+                $realHeaders[$name] = $header;
+            }
             $server = $request->getServerParams();
             $server['REQUEST_URI'] = $request->getUri()->getPath();
             foreach ($headers as $k => $header) {
@@ -81,7 +90,7 @@ class RunReactCommand extends CommandHandler
                 cookie: $request->getCookieParams(),
                 session: [],
                 server: $server,
-                header: $headers);
+                header: $realHeaders);
             if (in_array('*', $appDomain['allowOrigin'], true)) {
                 $responseHeader['Access-Control-Allow-Origin'] = $appDomain['allowOrigin'];
             } else if (in_array($headers['host'], $appDomain, true)) {
