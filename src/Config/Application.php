@@ -37,7 +37,7 @@ class Application
                                 public string $defaultVersionName,
                                 public ?array $logHandler = null,
                                 public string|bool $nameSpace = false, public array $allowOrigin = ['*'],
-                                public array $allowHeaders = ['request-sign', 'request-time'],
+                                public array $allowHeaders = ['Request-Sign', 'Request-Time'],
                                 public string $applicationName = '', public string $scheme = 'http', public string $docPassword = '')
     {
         $this->appDir = trim($this->appDir, '/');
