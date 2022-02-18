@@ -292,7 +292,7 @@ class Response
      * @param false $status
      * @return Response
      */
-    public function setRaw($status = false): Response
+    public function setRaw($status = true): Response
     {
         $this->raw = $status;
         return $this;
