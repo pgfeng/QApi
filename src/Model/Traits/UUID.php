@@ -8,7 +8,7 @@ use QApi\Model;
 
 /**
  * UUID
- * Trait AutoSave
+ * Trait UUID
  * @mixin Model
  * @package QApi\Model\Traits
  */
