@@ -37,6 +37,13 @@ trait Auxiliary
     protected string $updateTimeField = 'update_time';
 
     /**
+     * 当前操作的内容
+     *
+     * @var string
+     */
+    protected string $modelName = '';
+
+    /**
      * 修改文本描述
      * @var string
      */
