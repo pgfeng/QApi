@@ -308,6 +308,9 @@ class Response
 
     private function setHeader(): void
     {
+        header('HTTP/' . $this->version . ' ' . $this->statusCode . ($this->reason ?:
+                (self::$phrases[$this->statusCode] ??
+                    '')));
         foreach ($this->headers as $name => $header) {
             if (is_array($header)) {
                 header($name . ':' . implode(',', $header));
@@ -344,23 +347,14 @@ class Response
      */
     public function send(mixed $sendData = null): void
     {
+        if (!is_cli()) {
+            $this->setHeader();
+        }
         if ($sendData) {
             Logger::success("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Response Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
-            if (!is_cli()) {
-                header('HTTP/' . $this->version . ' ' . $this->statusCode . ($this->reason ?:
-                        (self::$phrases[$this->statusCode] ??
-                            '')));
-            }
             if (is_string($sendData)) {
                 echo $sendData;
             } else {
-                foreach ($this->headers as $name => $header) {
-                    if (is_array($header)) {
-                        header($name . ':' . implode(',', $header));
-                    } else {
-                        header($name . ':' . $header);
-                    }
-                }
                 $responseData = new Data($sendData);
                 echo $responseData;
             }
