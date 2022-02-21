@@ -28,7 +28,7 @@ trait UUID
             $primary_key = $this->primary_key;
         }
         if (!isset($data[$primary_key])) {
-            $data[$primary_key] = buildID($this->uuidPrefix?:$this->db->get_table());
+            $data[$primary_key] = buildID($this->uuidPrefix?:substr(get_class($this), 6).'-');
             return $this->insert($data);
         }
         return $this->db->save($data);
