@@ -31,6 +31,6 @@ trait UUID
             $data[$primary_key] = buildID($this->uuidPrefix?:substr(get_class($this), 6).'-');
             return $this->insert($data);
         }
-        return $this->db->save($data);
+        return $this->db->save($data,$primary_key);
     }
 }
