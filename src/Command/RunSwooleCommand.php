@@ -15,6 +15,7 @@ use QApi\Logger;
 use QApi\Response;
 use RuntimeException;
 use Swoole\Http\Server;
+use Swoole\Table;
 
 class RunSwooleCommand extends CommandHandler
 {
@@ -40,24 +41,29 @@ class RunSwooleCommand extends CommandHandler
         @cli_set_process_title('QApiServer-' . $appDomain['port']);
         $http = new Server("0.0.0.0", $appDomain['port']);
         App::$app = $appDomain['app'];
-        $http->set(
-            [
-                'enable_static_handler' => true,
-                'document_root' => Config::command('ServerRunDir'),
-                'package_max_length' => (int)ini_get('post_max_size') * 1024 * 1024,
-                'http_parse_cookie' => true,
-                'http_autoindex' => false,
-                'pid_file' => 'SwooleServer.pid',
-                'http_index_files' => ['index.html', 'index.htm'],
-                'daemonize' => in_array('--daemonize', $argv, true),
-                'log_date_format' => '%Y-%m-%d %H:%M:%S',
-            ]
-        );
+        $options = [
+            'enable_static_handler' => true,
+            'document_root' => Config::command('ServerRunDir'),
+            'package_max_length' => (int)ini_get('post_max_size') * 1024 * 1024,
+            'http_parse_cookie' => true,
+            'http_autoindex' => false,
+            'pid_file' => 'SwooleServer.pid',
+            'http_index_files' => ['index.html', 'index.htm'],
+            'daemonize' => in_array('--daemonize', $argv, true),
+            'log_date_format' => '%Y-%m-%d %H:%M:%S',
+        ];
+        $http->set($options);
+        $table = new \Swoole\Table(1);
+        $table->column('number', Table::TYPE_INT, 4);
+        $table->create();
         $http->on("start", function ($server) use ($appDomain) {
             $this->command->cli->blue(sprintf('QApi Server Startup On <http://%s:%s/> Server-PID：%s', $appDomain['host'],
                 $appDomain['port'], $server->master_pid . '-' . $server->manager_pid));
         });
-        $http->on("request", function ($request, $response) use ($http, $appDomain) {
+        $http->on("request", function ($request, $response) use ($http, $appDomain, $table) {
+            $table->set('requestNumber', [
+                'number' => (int)$table->get('requestNumber', 'number') + 1,
+            ]);
             if (in_array('*', $appDomain['allowOrigin'], true)) {
                 $response->header('Access-Control-Allow-Origin', $appDomain['allowOrigin']);
             } else if (in_array($request->header['host'], $appDomain, true)) {
@@ -130,7 +136,10 @@ class RunSwooleCommand extends CommandHandler
                 $response->end((new \QApi\Response())->setCode(500)->setMsg($e->getMessage())->setExtra([
                 ])->fail());
             }
-            if ($appDomain['runMode'] === RunMode::DEVELOPMENT) {
+            $table->set('requestNumber', [
+                'number' => (int)$table->get('requestNumber', 'number') - 1,
+            ]);
+            if ($appDomain['runMode'] === RunMode::DEVELOPMENT && (int)$table->get('requestNumber', 'number') == 0) {
                 $http->reload();
             }
         });
