@@ -97,6 +97,7 @@ use QApi\Http\MiddlewareInterface;
             mkPathDir($save_path);
             file_put_contents($save_path, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '../Route/buildTemplate.php'), LOCK_EX);
         }
+        $write_data = file_get_contents($save_path);
         //        $fp = fopen($save_path, 'a+');
         //        if (!flock($fp, LOCK_EX)) {
         //            usleep(500);
@@ -112,7 +113,7 @@ use QApi\Http\MiddlewareInterface;
             foreach ($this->methods as $method) {
                 if ($this->paramPattern === []) {
                     if ($classRoute) {
-                        $write_data = file_get_contents($save_path)."\n".$this->getRouterData($method, $classRoute->path .
+                        $write_data = $this->getRouterData($method, $classRoute->path .
                                 ($attr ?
                                 $this->path : ''),
                             $class->getName() . '@' . $methodName);
@@ -149,7 +150,7 @@ use QApi\Http\MiddlewareInterface;
                     }
                 } else if ($classRoute) {
 
-                    $write_data = file_get_contents($save_path)."\n".$this->getRouterData($method, $classRoute->path .
+                    $write_data = $this->getRouterData($method, $classRoute->path .
                             ($attr ? $this->path : ''),
                         $class->getName() .
                         '@' . $methodName);
@@ -176,7 +177,7 @@ use QApi\Http\MiddlewareInterface;
                     }
 
                 } else {
-                    $write_data = file_get_contents($save_path)."\n".$this->getRouterData($method, $this->path,
+                    $write_data = $this->getRouterData($method, $this->path,
                             $class->getName() . '@' . $methodName);
 
                     if (is_string($this->middleware) && $this->middleware) {
@@ -199,7 +200,7 @@ use QApi\Http\MiddlewareInterface;
             }
         } else if ($this->paramPattern === []) {
             if ($classRoute) {
-                $write_data = file_get_contents($save_path)."\n".$this->getRouterData($this->methods, $classRoute->path .
+                $write_data = $this->getRouterData($this->methods, $classRoute->path .
                         ($attr ? $this->path : ''),
                     $class->getName() . '@' . $methodName);
                 if (is_string($classRoute->middleware) && $classRoute->middleware) {
@@ -220,7 +221,7 @@ use QApi\Http\MiddlewareInterface;
                     $write_data .= '->paramPattern(paramName: \'' . $key . '\', pattern: \'' . $pattern . '\')';
                 }
             } else {
-                $write_data = file_get_contents($save_path)."\n".$this->getRouterData($this->methods, $this->path,
+                $write_data = $this->getRouterData($this->methods, $this->path,
                         $class->getName()
                     . '@'
                     . $methodName);
@@ -241,7 +242,7 @@ use QApi\Http\MiddlewareInterface;
             //                }
         } else {
             if ($classRoute) {
-                $write_data = file_get_contents($save_path)."\n".$this->getRouterData($this->methods, $classRoute->path .
+                $write_data = $this->getRouterData($this->methods, $classRoute->path .
                         ($attr ? $this->path : ''),
                     $class->getName()
                     . '@'
@@ -267,7 +268,7 @@ use QApi\Http\MiddlewareInterface;
                     }
                 }
             } else {
-                $write_data = file_get_contents($save_path)."\n".$this->getRouterData($this->methods, $this->path,
+                $write_data = $this->getRouterData($this->methods, $this->path,
                         $class->getName() . '@' . $methodName);
                 if (is_string($this->middleware) && $this->middleware) {
                     $write_data .= '->addMiddleware(middleware: \'' . $this->middleware . '\')';
