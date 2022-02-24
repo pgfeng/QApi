@@ -139,7 +139,7 @@ class RunSwooleCommand extends CommandHandler
             $table->set('requestNumber', [
                 'number' => (int)$table->get('requestNumber', 'number') - 1,
             ]);
-            if ($appDomain['runMode'] === RunMode::DEVELOPMENT && (int)$table->get('requestNumber', 'number') == 0) {
+            if ($appDomain['runMode'] === RunMode::DEVELOPMENT && (int)$table->get('requestNumber', 'number') === 0) {
                 $http->reload();
             }
         });
