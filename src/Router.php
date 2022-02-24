@@ -163,11 +163,9 @@ class Router
                 $base_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
                     . str_replace('.', '', $version->versionName) . DIRECTORY_SEPARATOR;
                 mkPathDir($base_path . 'builder.php');
-                $data = scandir($base_path);
+                $data = glob($base_path.'*.php');
                 foreach ($data as $file) {
-                    if ($file !== '.' && $file !== '..') {
-                        include $base_path . $file;
-                    }
+                    include $file;
                 }
                 unset($base_path);
                 if ($version->versionName === App::getVersion()) {
