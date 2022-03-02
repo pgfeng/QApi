@@ -13,6 +13,7 @@ use QApi\Exception\CacheErrorException;
 
 class Cache
 {
+    private static array $cacheObjects = [];
 
     /**
      * @param string $configName
@@ -21,8 +22,11 @@ class Cache
      */
     public static function initialization(string $configName = 'default'): CacheInterface
     {
+        if (isset(self::$cacheObjects[$configName])) {
+            return self::$cacheObjects[$configName];
+        }
         if ($configName === '__document') {
-            return new FileSystemCache(new FileSystem(PROJECT_PATH . '.document'));
+            return self::$cacheObjects[$configName] = new FileSystemCache(new FileSystem(PROJECT_PATH . '.document'));
         }
         if (!is_cli()) {
             $runMode = Config::app()->getRunMode();
@@ -39,7 +43,6 @@ class Cache
                 0, 1, PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
                 . DIRECTORY_SEPARATOR . 'cache.php');
         }
-
-        return new $cache->driver($cache);
+        return (self::$cacheObjects[$configName] = new $cache->driver($cache));
     }
 }
