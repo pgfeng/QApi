@@ -14,7 +14,7 @@ use QApi\Config\Cache\Redis;
  * Class RedisCache
  * @package QApi\Cache
  */
-class RedisCache implements CacheInterface
+class RedisAdapter implements CacheInterface
 {
     protected Client $client;
     protected Redis $config;

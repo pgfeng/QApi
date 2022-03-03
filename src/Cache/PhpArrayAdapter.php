@@ -7,7 +7,7 @@ namespace QApi\Cache;
 use DateInterval;
 use DateTime;
 
-class PhpArrayCache implements CacheInterface
+class PhpArrayAdapter implements CacheInterface
 {
     private array $values = [];
 

@@ -26,7 +26,7 @@ class Cache
             return self::$cacheObjects[$configName];
         }
         if ($configName === '__document') {
-            return self::$cacheObjects[$configName] = new FileSystemCache(new FileSystem(PROJECT_PATH . '.document'));
+            return self::$cacheObjects[$configName] = new FileSystemAdapter(new FileSystem(PROJECT_PATH . '.document'));
         }
         if (!is_cli()) {
             $runMode = Config::app()->getRunMode();

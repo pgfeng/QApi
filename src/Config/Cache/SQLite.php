@@ -4,12 +4,12 @@
 namespace QApi\Config\Cache;
 
 
-use QApi\Cache\SQLite3Cache;
+use QApi\Cache\SQLite3Adapter;
 use QApi\Config\Abstracts\Cache;
 
 class SQLite extends Cache
 {
-    public string $driver = SQLite3Cache::class;
+    public string $driver = SQLite3Adapter::class;
     public string $name = 'SQLite3';
 
     /**

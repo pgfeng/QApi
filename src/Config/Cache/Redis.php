@@ -4,7 +4,7 @@
 namespace QApi\Config\Cache;
 
 
-use QApi\Cache\RedisCache;
+use QApi\Cache\RedisAdapter;
 use QApi\Config\Abstracts\Cache;
 
 /**
@@ -14,7 +14,7 @@ use QApi\Config\Abstracts\Cache;
  */
 class Redis extends Cache
 {
-    public string $driver = RedisCache::class;
+    public string $driver = RedisAdapter::class;
     public string $name = 'Redis';
 
     /**

@@ -14,7 +14,7 @@ use SQLite3Result;
  * Class SQLite3Cache
  * @package QApi\Cache
  */
-class SQLite3Cache implements CacheInterface
+class SQLite3Adapter implements CacheInterface
 {
     /**
      * @var SQLite3
@@ -25,6 +25,7 @@ class SQLite3Cache implements CacheInterface
      * @var string
      */
     private string $table;
+
     /**
      * The ID field will store the cache key.
      */

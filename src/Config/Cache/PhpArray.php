@@ -4,8 +4,8 @@
 namespace QApi\Config\Cache;
 
 
-use QApi\Cache\PhpArrayCache;
-use QApi\Cache\RedisCache;
+use QApi\Cache\PhpArrayAdapter;
+use QApi\Cache\RedisAdapter;
 use QApi\Config\Abstracts\Cache;
 
 /**
@@ -15,7 +15,7 @@ use QApi\Config\Abstracts\Cache;
  */
 class PhpArray extends Cache
 {
-    public string $driver = PhpArrayCache::class;
+    public string $driver = PhpArrayAdapter::class;
     public string $name = 'PhpArray';
 
     /**

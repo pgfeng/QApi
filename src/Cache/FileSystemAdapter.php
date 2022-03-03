@@ -14,7 +14,7 @@ use QApi\Exception\CacheErrorException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
-class FileSystemCache implements CacheInterface
+class FileSystemAdapter implements CacheInterface
 {
     /**
      * @var string
@@ -213,6 +213,7 @@ class FileSystemCache implements CacheInterface
      */
     public function set(string $key, mixed $value, DateInterval|int|null $ttl = null): bool
     {
+        $lifeTime = 0;
         if (is_int($ttl)) {
             $lifeTime = time() + $ttl;
         } else if ($ttl === null) {
