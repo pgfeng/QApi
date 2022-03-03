@@ -25,6 +25,7 @@ class MySQL extends Cache
      * @param string $expiresTimeCol
      * @param string $timeCol
      * @param string $namespace
+     * @param int $cleanUpTime
      */
     public function __construct(
         public MysqliDatabase|PdoMysqlDatabase $database,
@@ -36,7 +37,7 @@ class MySQL extends Cache
         public string $expiresTimeCol = 'item_expires_time',
         public string $timeCol = 'item_time',
         public string $namespace = 'default-->',
-
+        public int $cleanUpTime = 60 * 60,
     )
     {
 

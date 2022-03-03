@@ -25,6 +25,8 @@ class MySQLAdapter implements CacheInterface
 {
     private Connection $connection;
     private string $tableName;
+    private int $cleanUpTime = 0;
+    private int $connectionTime = 0;
 
     /**
      * MySQLAdapter constructor.
@@ -33,9 +35,49 @@ class MySQLAdapter implements CacheInterface
      */
     public function __construct(private MySQL $config)
     {
-        $this->connection = ((new $config->database->connectorClass)->getConnector
-        ($config->database));
+        $this->tableName = $this->config->database->tablePrefix . $this->config->table;
+        $this->connect();
         $this->inspectTable();
+    }
+
+
+    public function connect(): void
+    {
+        $this->connection = ((new $this->config->database->connectorClass)->getConnector
+        ($this->config->database));
+        $this->connectionTime = time();
+    }
+
+    public function check(): void
+    {
+        $time = time();
+        $this->checkConnect($time);
+        $this->checkCleanUp($time);
+    }
+
+    public function checkCleanUp(int $time): void
+    {
+        if ($time >= ($this->cleanUpTime + $this->config->cleanUpTime - 10)) {
+            try {
+                $this->connection->executeStatement('DELETE FROM ' . $this->tableName . ' WHERE ' .
+                    $this->config->expiresTimeCol . ' > ? AND ' . $this->config->lifetimeCol . ' > 0', [
+                    time(),
+                ], [
+                    ParameterType::INTEGER
+                ]);
+                $this->cleanUpTime = time();
+            } catch (Exception $e) {
+                Logger::error($e->getMessage());
+            }
+        }
+    }
+
+    public function checkConnect(int $time): void
+    {
+        if ($time >= ($this->connectionTime + $this->config->database->wait_timeout - 10)) {
+            $this->connection->close();
+            $this->connect();
+        }
     }
 
     /**
@@ -44,7 +86,6 @@ class MySQLAdapter implements CacheInterface
     public function inspectTable(): void
     {
         $schema = $this->connection->createSchemaManager();
-        $this->tableName = $this->config->database->tablePrefix . $this->config->table;
         if (!$schema->tablesExist($this->tableName)) {
             $table = new Table($this->tableName);
             $table->addColumn($this->config->keyCol, Types::STRING, ['length' => $this->config->maxKeyLength]);
@@ -59,13 +100,14 @@ class MySQLAdapter implements CacheInterface
 
     public function get(string $key, mixed $default = null): mixed
     {
+        $this->check();
         $data = $this->connection->fetchOne(
             'SELECT ' . $this->config->dataCol . ' FROM ' . $this->tableName . ' WHERE (' .
             $this->config->expiresTimeCol . ' >= ? OR ' . $this->config->lifetimeCol . ' = 0) AND ' .
             $this->config->keyCol . ' = ?'
             , [
             time(),
-            $this->config->namespace.$key,
+            $this->config->namespace . $key,
         ], [
             ParameterType::INTEGER,
             ParameterType::STRING,
@@ -100,6 +142,7 @@ class MySQLAdapter implements CacheInterface
 
     public function set(string $key, mixed $value, DateInterval|int|null $ttl = null): bool
     {
+        $this->check();
         $lifeTime = $this->getDateIntervalToSecond($ttl);
         $time = time();
         $value = serialize($value);
@@ -135,6 +178,7 @@ class MySQLAdapter implements CacheInterface
 
     public function delete(string $key): bool
     {
+        $this->check();
         try {
             return $this->connection->executeStatement('DELETE FROM ' . $this->tableName . ' WHERE '
                     . $this->config->keyCol . ' = ?', [
@@ -150,6 +194,7 @@ class MySQLAdapter implements CacheInterface
 
     public function clear(): bool
     {
+        $this->check();
         if ($this->config->namespace === '') {
             try {
                 return $this->connection->executeStatement('TRUNCATE TABLE ' . $this->tableName) > 0;
@@ -173,6 +218,7 @@ class MySQLAdapter implements CacheInterface
 
     public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
+        $this->check();
         $realKeys = [];
         foreach ($keys as $key) {
             $realKeys[] = $this->config->namespace . $key;
@@ -196,7 +242,7 @@ class MySQLAdapter implements CacheInterface
         }
         $result = [];
         foreach ($keys as $key) {
-            $k = $this->config->namespace.$key;
+            $k = $this->config->namespace . $key;
             if (isset($data[$k])) {
                 $result[$key] = unserialize($data[$k][$this->config->dataCol], [
                     'allowed_classes' => true,
@@ -218,6 +264,7 @@ class MySQLAdapter implements CacheInterface
 
     public function deleteMultiple(iterable $keys): bool
     {
+        $this->check();
         $realKeys = [];
         foreach ($keys as $key) {
             $realKeys[] = $this->config->namespace . $key;
@@ -237,7 +284,7 @@ class MySQLAdapter implements CacheInterface
 
     public function realHas($key): bool
     {
-
+        $this->check();
         try {
             $count = $this->connection->executeQuery('SELECT COUNT(' . $this->config->keyCol . ') FROM ' .
                 $this->tableName . ' WHERE ' . $this->config->keyCol . ' = ?', [
@@ -253,6 +300,7 @@ class MySQLAdapter implements CacheInterface
 
     public function has($key): bool
     {
+        $this->check();
         try {
             $count = $this->connection->executeQuery('SELECT COUNT(' . $this->config->keyCol . ') FROM ' .
                 $this->tableName . ' WHERE '
