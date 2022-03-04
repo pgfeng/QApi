@@ -145,7 +145,9 @@ class RunSwooleCommand extends CommandHandler
                     $time = explode('.', microtime(true));
                     if ((count($time) === 2) && ($request->fd === (ceil($time[1] / 10)) % 100)) {
                         $http->reload();
+                        break;
                     }
+                    break;
                 }
             }
         });
