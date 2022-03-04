@@ -61,6 +61,7 @@ class RunSwooleCommand extends CommandHandler
                 $appDomain['port'], $server->master_pid . '-' . $server->manager_pid));
         });
         $http->on("request", function ($request, $response) use ($http, $appDomain, $table) {
+            print_r($request);
             $table->set('requestNumber', [
                 'number' => (int)$table->get('requestNumber', 'number') + 1,
             ]);
@@ -139,8 +140,13 @@ class RunSwooleCommand extends CommandHandler
             $table->set('requestNumber', [
                 'number' => (int)$table->get('requestNumber', 'number') - 1,
             ]);
-            if ($appDomain['runMode'] === RunMode::DEVELOPMENT && (int)$table->get('requestNumber', 'number') === 0) {
-                $http->reload();
+            if ($appDomain['runMode'] === RunMode::DEVELOPMENT) {
+                while (true){
+                    $time = explode('.', microtime(true));
+                    if ((count($time) === 2) && ($request->fd === (ceil($time[1] / 10)) % 100)) {
+                        $http->reload();
+                    }
+                }
             }
         });
         $http->start();
