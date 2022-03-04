@@ -137,14 +137,14 @@ class RunSwooleCommand extends CommandHandler
                 $response->end((new \QApi\Response())->setCode(500)->setMsg($e->getMessage())->setExtra([
                 ])->fail());
             }
-            $table->set('requestNumber', [
-                'number' => (int)$table->get('requestNumber', 'number') - 1,
-            ]);
             if ($appDomain['runMode'] === RunMode::DEVELOPMENT) {
                 while (true) {
                     $time = explode('.', microtime(true));
                     if ((count($time) === 2) && ($request->fd === (ceil($time[1] / 10)) % 100)) {
-                        if ((int)$table->get('requestNumber') === 0){
+                        $table->set('requestNumber', [
+                            'number' => (int)$table->get('requestNumber', 'number') - 1,
+                        ]);
+                        if ((int)$table->get('requestNumber','number') === 0){
                             $http->reload();
                         }
                         break;
