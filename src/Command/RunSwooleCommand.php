@@ -53,18 +53,11 @@ class RunSwooleCommand extends CommandHandler
             'log_date_format' => '%Y-%m-%d %H:%M:%S',
         ];
         $http->set($options);
-        $table = new \Swoole\Table(1);
-        $table->column('number', Table::TYPE_INT, 4);
-        $table->create();
         $http->on("start", function ($server) use ($appDomain) {
             $this->command->cli->blue(sprintf('QApi Server Startup On <http://%s:%s/> Server-PID：%s', $appDomain['host'],
                 $appDomain['port'], $server->master_pid . '-' . $server->manager_pid));
         });
-        $http->on("request", function ($request, $response) use ($http, $appDomain, $table) {
-            print_r($request);
-            $table->set('requestNumber', [
-                'number' => (int)$table->get('requestNumber', 'number') + 1,
-            ]);
+        $http->on("request", function ($request, $response) use ($http, $appDomain) {
             if (in_array('*', $appDomain['allowOrigin'], true)) {
                 $response->header('Access-Control-Allow-Origin', $appDomain['allowOrigin']);
             } else if (in_array($request->header['host'], $appDomain, true)) {
@@ -137,9 +130,6 @@ class RunSwooleCommand extends CommandHandler
                 $response->end((new \QApi\Response())->setCode(500)->setMsg($e->getMessage())->setExtra([
                 ])->fail());
             }
-            $table->set('requestNumber', [
-                'number' => (int)$table->get('requestNumber', 'number') - 1,
-            ]);
             if ($appDomain['runMode'] === RunMode::DEVELOPMENT) {
                 while (true){
                     $time = explode('.', microtime(true));
