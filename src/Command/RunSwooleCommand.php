@@ -61,7 +61,6 @@ class RunSwooleCommand extends CommandHandler
                 $appDomain['port'], $server->master_pid . '-' . $server->manager_pid));
         });
         $http->on("request", function ($request, $response) use ($http, $appDomain, $table) {
-            print_r($request);
             $table->set('requestNumber', [
                 'number' => (int)$table->get('requestNumber', 'number') + 1,
             ]);
