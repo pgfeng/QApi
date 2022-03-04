@@ -147,7 +147,7 @@ class RunSwooleCommand extends CommandHandler
                         $http->reload();
                         break;
                     }
-                    break;
+                    usleep(100);
                 }
             }
         });
