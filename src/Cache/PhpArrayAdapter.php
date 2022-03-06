@@ -13,6 +13,11 @@ class PhpArrayAdapter implements CacheInterface
 
     private array $expires = [];
 
+    /**
+     * @param string $key
+     * @param mixed|null $default
+     * @return mixed
+     */
     public function get(string $key, mixed $default = null): mixed
     {
         if ($this->has($key)) {
@@ -21,6 +26,12 @@ class PhpArrayAdapter implements CacheInterface
         return $default;
     }
 
+    /**
+     * @param string $key
+     * @param mixed $value
+     * @param DateInterval|int|null $ttl
+     * @return bool
+     */
     public function set(string $key, mixed $value, DateInterval|int|null $ttl = null): bool
     {
         $lifeTime = 0;
@@ -36,12 +47,19 @@ class PhpArrayAdapter implements CacheInterface
         return true;
     }
 
+    /**
+     * @param string $key
+     * @return bool
+     */
     public function delete(string $key): bool
     {
         unset($this->values[$key], $this->expires[$key]);
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function clear(): bool
     {
         $this->values = [];
@@ -49,6 +67,11 @@ class PhpArrayAdapter implements CacheInterface
         return true;
     }
 
+    /**
+     * @param iterable $keys
+     * @param mixed|null $default
+     * @return iterable
+     */
     public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
         $data = [];
@@ -58,6 +81,11 @@ class PhpArrayAdapter implements CacheInterface
         return $data;
     }
 
+    /**
+     * @param iterable $values
+     * @param DateInterval|int|null $ttl
+     * @return bool
+     */
     public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
     {
         foreach ($values as $key => $value) {
@@ -68,6 +96,10 @@ class PhpArrayAdapter implements CacheInterface
         return true;
     }
 
+    /**
+     * @param iterable $keys
+     * @return bool
+     */
     public function deleteMultiple(iterable $keys): bool
     {
         foreach ($keys as $key) {
@@ -78,6 +110,10 @@ class PhpArrayAdapter implements CacheInterface
         return true;
     }
 
+    /**
+     * @param $key
+     * @return bool
+     */
     public function has($key): bool
     {
         if (isset($this->expires[$key])) {

@@ -155,30 +155,28 @@ class MySQLAdapter implements CacheInterface
         $lifeTime = $this->getDateIntervalToSecond($ttl);
         $time = time();
         $value = serialize($value);
-        if ($this->realHas($this->config->namespace . $key)) {
-            try {
-                return $this->connection->update($this->tableName, [
-                        $this->config->dataCol => $value,
-                        $this->config->expiresTimeCol => $time + $lifeTime,
-                        $this->config->lifetimeCol => $lifeTime,
-                        $this->config->timeCol => $time,
-                    ], [
-                        $this->config->keyCol => $this->config->namespace . $key,
-                    ]) > 0;
-            } catch (Exception $e) {
-                Logger::error($e->getMessage());
-                return false;
-            }
-        }
-
         try {
-            return $this->connection->insert($this->tableName, [
-                    $this->config->keyCol => $this->config->namespace . $key,
-                    $this->config->dataCol => $value,
-                    $this->config->expiresTimeCol => $time + $lifeTime,
-                    $this->config->lifetimeCol => $lifeTime,
-                    $this->config->timeCol => $time,
-                ]) > 0;
+            return $this->connection->executeStatement('REPLACE INTO ' . $this->tableName .
+                    ' (' .
+                    $this->config->keyCol . ',' .
+                    $this->config->dataCol . ',' .
+                    $this->config->expiresTimeCol . ',' .
+                    $this->config->lifetimeCol . ',' .
+                    $this->config->timeCol .
+                    ') VALUES (?,?,?,?,?)'
+                    , [
+                        $this->config->namespace . $key,
+                        $value,
+                        $time + $lifeTime,
+                        $lifeTime,
+                        $time,
+                    ], [
+                        ParameterType::STRING,
+                        ParameterType::BINARY,
+                        ParameterType::INTEGER,
+                        ParameterType::INTEGER,
+                        ParameterType::INTEGER
+                    ]) > 0;
         } catch (Exception $e) {
             Logger::error($e->getMessage());
             return false;

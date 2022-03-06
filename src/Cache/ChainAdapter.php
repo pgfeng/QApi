@@ -26,6 +26,11 @@ class ChainAdapter implements CacheInterface
         }
     }
 
+    /**
+     * @param string $key
+     * @param mixed|null $default
+     * @return mixed
+     */
     public function get(string $key, mixed $default = null): mixed
     {
         $value = $default;
@@ -38,6 +43,12 @@ class ChainAdapter implements CacheInterface
         return $value;
     }
 
+    /**
+     * @param string $key
+     * @param mixed $value
+     * @param DateInterval|int|null $ttl
+     * @return bool
+     */
     public function set(string $key, mixed $value, DateInterval|int|null $ttl = null): bool
     {
         $status = true;
@@ -51,6 +62,10 @@ class ChainAdapter implements CacheInterface
         return $status;
     }
 
+    /**
+     * @param string $key
+     * @return bool
+     */
     public function delete(string $key): bool
     {
         $status = true;
@@ -64,6 +79,9 @@ class ChainAdapter implements CacheInterface
         return $status;
     }
 
+    /**
+     * @return bool
+     */
     public function clear(): bool
     {
         $status = true;
@@ -98,6 +116,11 @@ class ChainAdapter implements CacheInterface
         return $data;
     }
 
+    /**
+     * @param iterable $values
+     * @param DateInterval|int|null $ttl
+     * @return bool
+     */
     public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
     {
         $status = true;
@@ -111,6 +134,10 @@ class ChainAdapter implements CacheInterface
         return $status;
     }
 
+    /**
+     * @param iterable $keys
+     * @return bool
+     */
     public function deleteMultiple(iterable $keys): bool
     {
 
@@ -125,6 +152,10 @@ class ChainAdapter implements CacheInterface
         return $status;
     }
 
+    /**
+     * @param $key
+     * @return bool
+     */
     public function has($key): bool
     {
         $status = false;
