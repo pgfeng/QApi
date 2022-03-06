@@ -5,21 +5,15 @@ namespace QApi\Cache;
 
 
 use DateInterval;
-use DateTime;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\ParameterType;
-use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Schema\Table;
-use Doctrine\DBAL\Schema\TableDiff;
-use Doctrine\DBAL\Types\BlobType;
-use Doctrine\DBAL\Types\IntegerType;
-use Doctrine\DBAL\Types\StringType;
-use Doctrine\DBAL\Types\Type;
 use Doctrine\DBAL\Types\Types;
 use JetBrains\PhpStorm\Pure;
 use QApi\Config\Cache\MySQL;
 use QApi\Logger;
+
 
 class MySQLAdapter implements CacheInterface
 {
@@ -40,7 +34,6 @@ class MySQLAdapter implements CacheInterface
         $this->inspectTable();
     }
 
-
     public function connect(): void
     {
         $this->connection = ((new $this->config->database->connectorClass)->getConnector
@@ -55,6 +48,9 @@ class MySQLAdapter implements CacheInterface
         $this->checkCleanUp($time);
     }
 
+    /**
+     * @param int $time
+     */
     public function checkCleanUp(int $time): void
     {
         if ($time >= ($this->cleanUpTime + $this->config->cleanUpTime - 10)) {
@@ -98,6 +94,12 @@ class MySQLAdapter implements CacheInterface
         }
     }
 
+    /**
+     * @param string $key
+     * @param mixed|null $default
+     * @return mixed
+     * @throws Exception
+     */
     public function get(string $key, mixed $default = null): mixed
     {
         $this->check();
@@ -130,7 +132,7 @@ class MySQLAdapter implements CacheInterface
             return 0;
         }
 
-        if ($ttl instanceof \DateInterval) {
+        if ($ttl instanceof DateInterval) {
             return $ttl->days * 86400 + $ttl->h * 3600
                 + $ttl->i * 60 + $ttl->s;
         }
@@ -138,8 +140,15 @@ class MySQLAdapter implements CacheInterface
         if (is_int($ttl)) {
             return $ttl;
         }
+        return 0;
     }
 
+    /**
+     * @param string $key
+     * @param mixed $value
+     * @param DateInterval|int|null $ttl
+     * @return bool
+     */
     public function set(string $key, mixed $value, DateInterval|int|null $ttl = null): bool
     {
         $this->check();
@@ -176,6 +185,10 @@ class MySQLAdapter implements CacheInterface
         }
     }
 
+    /**
+     * @param string $key
+     * @return bool
+     */
     public function delete(string $key): bool
     {
         $this->check();
@@ -192,6 +205,9 @@ class MySQLAdapter implements CacheInterface
         }
     }
 
+    /**
+     * @return bool
+     */
     public function clear(): bool
     {
         $this->check();
@@ -216,6 +232,11 @@ class MySQLAdapter implements CacheInterface
         }
     }
 
+    /**
+     * @param iterable $keys
+     * @param mixed|null $default
+     * @return iterable
+     */
     public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
         $this->check();
@@ -254,6 +275,11 @@ class MySQLAdapter implements CacheInterface
         return $result;
     }
 
+    /**
+     * @param iterable $values
+     * @param DateInterval|int|null $ttl
+     * @return bool
+     */
     public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
     {
         foreach ($values as $key => $value) {
@@ -262,6 +288,10 @@ class MySQLAdapter implements CacheInterface
         return true;
     }
 
+    /**
+     * @param iterable $keys
+     * @return bool
+     */
     public function deleteMultiple(iterable $keys): bool
     {
         $this->check();
@@ -282,6 +312,10 @@ class MySQLAdapter implements CacheInterface
         }
     }
 
+    /**
+     * @param $key
+     * @return bool
+     */
     public function realHas($key): bool
     {
         $this->check();
@@ -294,10 +328,15 @@ class MySQLAdapter implements CacheInterface
             ])->fetchOne();
             return $count > 0;
         } catch (Exception $e) {
+            Logger::error($e->getMessage());
             return false;
         }
     }
 
+    /**
+     * @param $key
+     * @return bool
+     */
     public function has($key): bool
     {
         $this->check();
@@ -313,6 +352,7 @@ class MySQLAdapter implements CacheInterface
             ])->fetchOne();
             return $count > 0;
         } catch (Exception $e) {
+            Logger::error($e->getMessage());
             return false;
         }
     }
