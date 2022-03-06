@@ -60,7 +60,7 @@ class MySQLAdapter implements CacheInterface
         if ($time >= ($this->cleanUpTime + $this->config->cleanUpTime - 10)) {
             try {
                 $this->connection->executeStatement('DELETE FROM ' . $this->tableName . ' WHERE ' .
-                    $this->config->expiresTimeCol . ' > ? AND ' . $this->config->lifetimeCol . ' > 0', [
+                    $this->config->expiresTimeCol . ' < ? AND ' . $this->config->lifetimeCol . ' > 0', [
                     time(),
                 ], [
                     ParameterType::INTEGER
