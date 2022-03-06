@@ -156,14 +156,18 @@ class MySQLAdapter implements CacheInterface
         $time = time();
         $value = serialize($value);
         try {
-            return $this->connection->executeStatement('REPLACE INTO ' . $this->tableName .
+            return $this->connection->executeStatement('INSERT INTO ' . $this->tableName .
                     ' (' .
                     $this->config->keyCol . ',' .
                     $this->config->dataCol . ',' .
                     $this->config->expiresTimeCol . ',' .
                     $this->config->lifetimeCol . ',' .
                     $this->config->timeCol .
-                    ') VALUES (?,?,?,?,?)'
+                    ') VALUES (?,?,?,?,?) ON DUPLICATE KEY UPDATE ' .
+                    $this->config->dataCol . '= VALUES(' . $this->config->dataCol . '),' .
+                    $this->config->expiresTimeCol . '= VALUES(' . $this->config->expiresTimeCol . '),' .
+                    $this->config->lifetimeCol . '= VALUES(' . $this->config->lifetimeCol . '),' .
+                    $this->config->timeCol . '= VALUES(' . $this->config->timeCol . ');'
                     , [
                         $this->config->namespace . $key,
                         $value,
