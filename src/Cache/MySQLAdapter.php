@@ -36,8 +36,7 @@ class MySQLAdapter implements CacheInterface
 
     public function connect(): void
     {
-        $this->connection = ((new $this->config->database->connectorClass)->getConnector
-        ($this->config->database));
+        $this->connection = ((new $this->config->database->connectorClass)->getConnector($this->config->database));
         $this->connectionTime = time();
     }
 
@@ -246,7 +245,6 @@ class MySQLAdapter implements CacheInterface
         foreach ($keys as $key) {
             $realKeys[] = $this->config->namespace . $key;
         }
-        print_r($realKeys);
         try {
             $data = $this->connection->fetchAllAssociativeIndexed(
                 'SELECT ' . $this->config->keyCol . ',' . $this->config->dataCol . ' FROM ' . $this->tableName . ' WHERE (' .
