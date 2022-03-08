@@ -316,27 +316,6 @@ class MySQLAdapter implements CacheInterface
      * @param $key
      * @return bool
      */
-    public function realHas($key): bool
-    {
-        $this->check();
-        try {
-            $count = $this->connection->executeQuery('SELECT COUNT(' . $this->config->keyCol . ') FROM ' .
-                $this->tableName . ' WHERE ' . $this->config->keyCol . ' = ?', [
-                $this->config->namespace . $key,
-            ], [
-                ParameterType::INTEGER,
-            ])->fetchOne();
-            return $count > 0;
-        } catch (Exception $e) {
-            Logger::error($e->getMessage());
-            return false;
-        }
-    }
-
-    /**
-     * @param $key
-     * @return bool
-     */
     public function has($key): bool
     {
         $this->check();

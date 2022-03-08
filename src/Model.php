@@ -250,20 +250,13 @@ class Model
     /**
      * Model constructor.
      *
-     * @param bool $model
+     * @param bool|string|null $table
      * @param string $configName
+     * @throws \Exception
      */
-    public function __construct($model = FALSE, $configName = 'default')
+    public function __construct(null|string|bool $table = null, string $configName = 'default')
     {
-        if ($configName === FALSE) {
-            $configName = $this->configName;
-        }
-        $this->database($configName);
-
-        if ($model) {
-            $this->table($model);
-        }
-
+        $this->initialization();
         /**
          * 添加自动上传验证规则
          */
@@ -287,6 +280,19 @@ class Model
 
             return NULL;
         }, NULL);
+    }
+
+    /**
+     * @param string|bool|null $table
+     * @param string $configName
+     * @throws \Exception
+     */
+    public function initialization(null|string|bool $table = null, string $configName = 'default'){
+        $this->database($configName);
+
+        if ($table) {
+            $this->table($table);
+        }
     }
 
     /**
@@ -351,7 +357,7 @@ class Model
      * @param string $configName
      * @return DBase
      */
-    final public function database($configName = 'default'): DBase
+    final public function database(string $configName = 'default'): DBase
     {
         //--计算表名
         $tb_name = substr(get_class($this), 6);
@@ -410,7 +416,7 @@ class Model
 
     /**
      * 自动保存
-     * @param      $data
+     * @param Data|array $data
      * @param string $primary_key
      * @return bool|int
      */
@@ -455,7 +461,7 @@ class Model
      * @param $func
      * @param $val
      *
-     * @return bool|DBase|Data|array|self|string
+     * @return Data|bool|array|DBase|Model|string|null
      */
     final public function __call($func, $val): Data|bool|array|DBase|self|string|null
     {

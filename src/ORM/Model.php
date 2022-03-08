@@ -32,9 +32,17 @@ class Model extends DB
      */
     public function __construct(string $table = null, string $configName = 'default')
     {
-        if ($table) {
-            parent::__construct($table, $configName);
-        } else {
+        $this->initialization($table, $configName);
+    }
+
+    /**
+     * @param string|null $table
+     * @param string $configName
+     */
+    protected function initialization(string $table = null, string $configName = 'default')
+    {
+
+        if (!$table) {
             $tb_name = substr(get_class($this), 6);
             $class = substr($tb_name, (($start = strrpos($tb_name, '\\')) > 0 ? $start + 1 : 0));
             $num = strpos($class, 'Model');
@@ -44,8 +52,8 @@ class Model extends DB
                 $table = substr($table, 0, strpos($table, 'Model'));
             }
             $table = strtolower(preg_replace('/(?<=[a-z])([A-Z])/', '_$1', $table));
-            parent::__construct($table, $configName);
         }
+        parent::__construct($table, $configName);
     }
 
     /**

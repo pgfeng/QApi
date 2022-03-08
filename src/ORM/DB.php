@@ -64,6 +64,7 @@ class DB
         $config;
     private bool $hasWhere = false;
     protected Connection $connection;
+    private ?AbstractSchemaManager $schemaManager = null;
 
     /**
      * DB constructor.
@@ -82,6 +83,19 @@ class DB
         }
     }
 
+    public function getSchemaManager(): AbstractSchemaManager
+    {
+        if ($this->schemaManager) {
+            return $this->schemaManager;
+        } else {
+            return $this->schemaManager = $this->connection->createSchemaManager();
+        }
+    }
+
+    public function getTableName(): string
+    {
+        return $this->table ? $this->config->tablePrefix . $this->table : '';
+    }
 
     /**
      * @param string $table
@@ -599,7 +613,7 @@ class DB
      * @param int $page
      * @return Data|array
      */
-    final public function paginate($number = 10, $page = 1): Data|array
+    final public function paginate(int $number = 10, int $page = 1): Data|array
     {
         $page = $page > 0 ? $page : 1;
         $min = ((int)$page - 1) * $number;

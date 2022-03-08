@@ -86,19 +86,21 @@ trait Auxiliary
     /**
      * 自动保存数据，返回Response
      * @param Data|array $data
-     * @param string|bool $primary_key
+     * @param bool|string $primary_key
      * @param Response|null $response
      * @return Response
      */
-    public function autoSave(Data|array $data, $primary_key = false, ?Response $response = null): Response
+    public function autoSave(Data|array $data, bool|string $primary_key, ?Response $response = null): Response
     {
         !$primary_key && $primary_key = $this->primary_key;
         if ($response === null) {
             $response = new Response();
         }
-        $message = $this->checkColumn($data);
-        if ($message) {
-            return $response->fail()->setMsg($message);
+        if (method_exists($this,'checkColumn')){
+            $message = $this->checkColumn($data);
+            if ($message) {
+                return $response->fail()->setMsg($message);
+            }
         }
 
         if (!defined('__NOW__')) {
@@ -164,4 +166,5 @@ trait Auxiliary
         }
         return $response->fail()->setMsg($this->modelName . $this->deleteString . $this->errorString);
     }
+
 }
