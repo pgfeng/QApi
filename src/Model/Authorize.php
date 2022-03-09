@@ -55,10 +55,11 @@ abstract class Authorize extends Model
     /**
      * 重写保存
      * @param array|Data $data
-     * @param bool $primary_key
-     * @return bool|int
+     * @param string|null $primary_key
+     * @return int
+     * @throws \Exception
      */
-    public function save(Data|array $data, $primary_key = false): bool|int
+    public function save(Data|array $data, ?string $primary_key = null): int
     {
         if (isset($data[$this->password_field])) {
             $salt = random($this->password_salt_length, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz$_=-0123456789');
