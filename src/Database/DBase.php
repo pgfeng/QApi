@@ -828,6 +828,9 @@ abstract class DBase
      */
     final public function update($update): bool
     {
+        if ($update instanceof Data){
+            $update = $update->toArray();
+        }
         $this->section['handle'] = 'update';
         $arg_num = func_num_args();
         $arg_num = $arg_num > 4 ? 4 : $arg_num;
