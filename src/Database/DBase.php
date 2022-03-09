@@ -1233,12 +1233,12 @@ abstract class DBase
      * 如果设置主键字段 $primary_key 将会判断此字段是否存在，如果存在则会为更新数据
      *
      * @param ArrayAccess|array $data
-     * @param String $primary_key
+     * @param string|null $primary_key
      *
-     * @return  Bool|int
+     * @return int
      * @throws Exception
      */
-    final public function save(ArrayAccess|array $data, $primary_key = ''): bool|int
+    final public function save(ArrayAccess|array $data, ?string $primary_key = ''): int
     {
         if (($primary_key !== '') && isset($data[$primary_key]) && $data[$primary_key]) {
             $primary_value = $data[$primary_key];

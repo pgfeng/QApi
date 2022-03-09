@@ -31,6 +31,6 @@ trait UUID
             $data[$primary_key] = buildID($this->uuidPrefix ?: str_replace('_', '-', $this->getTableName()) . '-');
             return $this->insert($data);
         }
-        return $this->db->save($data, $primary_key);
+        return self::model()->where($primary_key, $data[$primary_key])->update($data);
     }
 }
