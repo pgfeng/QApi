@@ -78,4 +78,17 @@ class Model extends DB
         return new static();
     }
 
+    /**
+     * 写法兼容
+     * @param      $primary_value
+     * @param bool $primary_key
+     * @return Data|null
+     */
+    public function findByPk($primary_value, string|false|null $primary_key = false): Data|null
+    {
+        if (!$primary_key) {
+            $primary_key = $this->primary_key;
+        }
+        return $this->where($primary_key, $primary_value)->find();
+    }
 }
