@@ -256,7 +256,7 @@ class Model
      */
     public function __construct(null|string|bool $table = null, string $configName = 'default')
     {
-        $this->initialization();
+        $this->initialization($table,$configName);
         /**
          * 添加自动上传验证规则
          */

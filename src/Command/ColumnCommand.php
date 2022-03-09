@@ -189,18 +189,18 @@ class ColumnCommand extends CommandHandler
             $const .= '
             
     /**
-     * @var string ' . addslashes($columns_comment[$column['Field']]['column_comment']) . '
+     * @var string ' . addslashes($columns_comment[$column['Field']]['column_comment']??'') . '
      * ';
             $const .= $column;
             $const .= '
      */
-    #[Field(name: \'' . $column['Field'] . '\', comment: \'' . addslashes($columns_comment[$column['Field']]['column_comment']) . '\', type: \'' . $column['Type'] . '\')]
+    #[Field(name: \'' . $column['Field'] . '\', comment: \'' . addslashes($columns_comment[$column['Field']]['column_comment']??'') . '\', type: \'' . $column['Type'] . '\')]
     public const ' . strtoupper($column['Field']) . ' = \'' . $column['Field'] . '\';' . "\r\n";
         }
         $date = date('Y-m-d H:i:s');
         $tableComment = DB::table('', $config)->query("SELECT TABLE_COMMENT FROM INFORMATION_SCHEMA.TABLES  WHERE TABLE_NAME = '" . Config::database($config)->tablePrefix . $table . "' AND TABLE_SCHEMA = '" . Config::database($config)->dbName . "'");
         if ($tableComment) {
-            $tableComment = addslashes($tableComment[0]['TABLE_COMMENT']);
+            $tableComment = addslashes($tableComment[0]['TABLE_COMMENT']??'');
         } else {
             $tableComment = '';
         }

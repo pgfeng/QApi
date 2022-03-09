@@ -120,9 +120,9 @@ trait Validate
     ];
 
 
-    public function __construct()
+    public function __construct(null|string|bool $table = null, string $configName = 'default')
     {
-        $this->initialization();
+        $this->initialization($table,$configName);
         $this->addCheckRule('file', static function ($Column, &$value) {
             $filesModel = new filesModel();
             $allow_type = $Column['allow_type'] ?? [];
