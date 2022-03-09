@@ -18,19 +18,19 @@ trait UUID
 
     /**
      * @param Data|array $data
-     * @param string $primary_key
-     * @return bool|int
+     * @param string|null $primary_key
+     * @return int
      * @throws \Exception
      */
-    public function save(Data|array $data, string $primary_key = ''): bool|int
+    public function save(Data|array $data, ?string $primary_key = null): int
     {
         if (!$primary_key) {
             $primary_key = $this->primary_key;
         }
-        if (!isset($data[$primary_key])) {
-            $data[$primary_key] = buildID($this->uuidPrefix?:substr(get_class($this), 6).'-');
+        if (!isset($data[$primary_key]) || !$data[$primary_key]) {
+            $data[$primary_key] = buildID($this->uuidPrefix ?: str_replace('_', '-', $this->getTableName()) . '-');
             return $this->insert($data);
         }
-        return $this->db->save($data,$primary_key);
+        return $this->db->save($data, $primary_key);
     }
 }

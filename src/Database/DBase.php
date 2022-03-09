@@ -917,6 +917,11 @@ abstract class DBase
         return false;
     }
 
+    public function getTableName(): string
+    {
+        return $this->table ? $this->config->tablePrefix . $this->table : '';
+    }
+
     /**
      * 解析出完整的SQL命令
      * 返回解析好的SQL命令或者返回false

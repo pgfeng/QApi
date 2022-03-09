@@ -57,11 +57,11 @@ class Model extends DB
     }
 
     /**
-     * @param $data
+     * @param Data|array $data
      * @param null $primary_key
      * @return int
      */
-    public function save($data, $primary_key = null): int
+    public function save(Data|array $data, $primary_key = null): int
     {
         if (!$primary_key) {
             $primary_key = $this->primary_key;

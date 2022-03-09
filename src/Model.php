@@ -53,6 +53,7 @@ use QApi\Model\filesModel;
  * @method string setField(string $column, string $value)
  * @method Data paginate(int $size, int $page = 1)
  * @method string get_table(string $table = FALSE)
+ * @method string getTableName()
  * @method int|bool setInc(string $column, int $num = 1) 字段自增加
  * @method int|bool setDnc(string $column, int $num = 1) 字段自减少
  * @method string compile()
