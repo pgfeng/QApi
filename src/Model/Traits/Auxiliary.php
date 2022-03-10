@@ -76,11 +76,12 @@ trait Auxiliary
     /**
      * 设置是否保存时间
      * @param bool $autoSaveTime
-     * @return Auxiliary
+     * @return self
      */
     final public function saveTime(bool $autoSaveTime = true): self
     {
         $this->autoSaveTime = $autoSaveTime;
+        return $this;
     }
 
     /**
@@ -90,13 +91,13 @@ trait Auxiliary
      * @param Response|null $response
      * @return Response
      */
-    public function autoSave(Data|array $data, $primary_key = false, ?Response $response = null): Response
+    public function autoSave(Data|array $data, bool|string $primary_key = false, ?Response $response = null): Response
     {
         !$primary_key && $primary_key = $this->primary_key;
         if ($response === null) {
             $response = new Response();
         }
-        if (method_exists($this,'checkColumn')){
+        if (method_exists($this, 'checkColumn')) {
             $message = $this->checkColumn($data);
             if ($message) {
                 return $response->fail()->setMsg($message);
