@@ -157,13 +157,19 @@ trait Auxiliary
      * @param Response|null $response
      * @return Response
      */
-    public function autoDelete(?Response $response = null): Response
+    public function autoDelete(?Response $response = null, bool $softDelete = true): Response
     {
         if (!$response) {
             $response = new Response();
         }
-        if ($this->delete() !== false) {
-            return $response->ok()->setMsg($this->modelName . $this->deleteString . $this->successString);
+        if (method_exists($this, 'softDelete')) {
+            if ($this->softDelete($softDelete) !== false) {
+                return $response->ok()->setMsg($this->modelName . $this->deleteString . $this->successString);
+            }
+        } else {
+            if ($this->softDelete() !== false) {
+                return $response->ok()->setMsg($this->modelName . $this->deleteString . $this->successString);
+            }
         }
         return $response->fail()->setMsg($this->modelName . $this->deleteString . $this->errorString);
     }
