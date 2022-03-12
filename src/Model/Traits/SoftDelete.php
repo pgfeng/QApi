@@ -36,9 +36,13 @@ trait SoftDelete
      * @param bool $softDelete
      * @return bool|int
      */
-    public function delete(bool $softDelete = true): bool|int
+    public function softDelete(bool $softDelete = true): bool|int
     {
-        return $this->setField($this->softDeleteField, $this->deleted);
+        if ($softDelete) {
+            return $this->setField($this->softDeleteField, $this->deleted);
+        } else {
+            return $this->delete();
+        }
     }
 
     /**
