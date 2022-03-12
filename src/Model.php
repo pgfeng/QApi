@@ -27,6 +27,7 @@ use QApi\Model\filesModel;
  * @method $this notIn(string $field, array $in)
  * @method $this where(string|array $field, string|array $comPar = '', string $val = '')
  * @method $this orderBy(string|array $field = '', string $by = '')
+ * @method $this addOrderBy(string|array $field = '', string $by = '')
  * @method $this limit(int $offset, int $size = '')
  * @method $this orWhere(string $field, string|array $comPar = '', string $val = '')
  * @method bool|int update(array|Data $update)
