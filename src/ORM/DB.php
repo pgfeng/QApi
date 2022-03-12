@@ -575,7 +575,7 @@ class DB
      */
     final public function delete(?string $delete = null, ?string $alias = null): int
     {
-        return $this->queryBuilder->delete($delete, $alias)->executeStatement();
+        return $this->queryBuilder->delete($delete?:$this->getTableName(), $alias)->executeStatement();
     }
 
     /**
