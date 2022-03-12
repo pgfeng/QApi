@@ -45,6 +45,11 @@ trait SoftDelete
         }
     }
 
+    public function deleteTrashed(): int
+    {
+        return $this->where($this->softDeleteField, $this->deleted)->delete();
+    }
+
     /**
      * 只获取已删除数据
      * @return $this
