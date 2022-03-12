@@ -670,6 +670,18 @@ abstract class DBase
     }
 
     /**
+     * @param string|array $field
+     * @param string|null $by
+     * @return $this
+     */
+    final public function addOrderBy(string|array $field, string|null $by = null): static
+    {
+        return call_user_func_array([
+            $this, 'orderBy'
+        ], func_get_args());
+    }
+
+    /**
      * @return $this
      */
     final public function limit()
@@ -828,7 +840,7 @@ abstract class DBase
      */
     final public function update($update): bool
     {
-        if ($update instanceof Data){
+        if ($update instanceof Data) {
             $update = $update->toArray();
         }
         $this->section['handle'] = 'update';
