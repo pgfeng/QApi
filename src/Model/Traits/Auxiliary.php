@@ -167,7 +167,7 @@ trait Auxiliary
                 return $response->ok()->setMsg($this->modelName . $this->deleteString . $this->successString);
             }
         } else {
-            if ($this->softDelete() !== false) {
+            if ($this->delete() !== false) {
                 return $response->ok()->setMsg($this->modelName . $this->deleteString . $this->successString);
             }
         }
