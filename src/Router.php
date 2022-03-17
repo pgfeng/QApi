@@ -20,7 +20,7 @@ use RuntimeException;
 /**
  * Class Router
  * @package QApi
- * @method static Router get(string|null $path = null, Callable|string|null $callback = null, array $pattern = [],QApi\Http\MiddlewareInterface[]|string  $middleware = [])
+ * @method static Router get(string|null $path = null, Callable|string|null $callback = null, array $pattern = [], QApi\Http\MiddlewareInterface[]|string $middleware = [])
  * @method static Router post(string|null $path = null, Callable|string|null $callback = null, array $pattern = [], QApi\Http\MiddlewareInterface[] $middleware = [])
  * @method static Router put(string|null $path = null, Callable|string|null $callback = null, array $pattern = [], QApi\Http\MiddlewareInterface[] $middleware = [])
  * @method static Router delete(string|null $path = null, Callable|string|null $callback = null, array $pattern = [], QApi\Http\MiddlewareInterface[] $middleware = [])
@@ -144,7 +144,6 @@ class Router
         if (Config::app()->getRunMode() === QApi\Enumeration\RunMode::DEVELOPMENT) {
             self::BuildRoute(Config::$app->getNameSpace());
         }
-
         $uri = preg_replace('#(/+)#', '/', '/' . $_SERVER["REQUEST_URI"]);
         $uri = parse_url($uri, PHP_URL_PATH);
         if (!$uri) {
@@ -163,7 +162,10 @@ class Router
                 $base_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
                     . str_replace('.', '', $version->versionName) . DIRECTORY_SEPARATOR;
                 mkPathDir($base_path . 'builder.php');
-                $data = glob($base_path.'*.php');
+                $data = glob($base_path . '*.php');
+                while (!in_array($base_path . 'builder.php', $data)) {
+                    $data = glob($base_path . '*.php');
+                }
                 foreach ($data as $file) {
                     include $file;
                 }
@@ -183,9 +185,6 @@ class Router
         $builder_file_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
             DIRECTORY_SEPARATOR
             . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builder.php';
-        if (file_exists($builder_file_path)) {
-            unlink($builder_file_path);
-        }
         $version_path = str_replace('.', '', App::getVersion());
         $base_path = PROJECT_PATH . App::$app->getDir() . DIRECTORY_SEPARATOR . $version_path .
             DIRECTORY_SEPARATOR;
@@ -255,9 +254,9 @@ class Router
      */
     public
     function __construct(protected string $method, protected string|null $path, protected $runData, array $pattern = [],
-                         array|string $middleware = [])
+                         array|string     $middleware = [])
     {
-        if (is_string($middleware)){
+        if (is_string($middleware)) {
             $middleware = [$middleware];
         }
         self::$routeLists[$method][$path] = [
@@ -288,8 +287,8 @@ class Router
             $params['path'] = str_replace(array(Config::$app->getNameSpace() . '\\' . Config::version()->versionDir, '\\'), array('', '/'), $params['callback']);
             $params['path'] = substr(str_replace('Controller@', '/', $params['path']), 0, -6);
         }
-        return new static(strtoupper($method), $params['path'] ?? null, $params['callback'], $params['pattern']??[],
-            $params['middleware']??[]);
+        return new static(strtoupper($method), $params['path'] ?? null, $params['callback'], $params['pattern'] ?? [],
+            $params['middleware'] ?? []);
     }
 
     /**
@@ -482,7 +481,7 @@ class Router
                     $middlewareObject = null;
                     foreach ($middleware as $item) {
                         $middlewareObject = new $item;
-                        $result = $middlewareObject->handle(self::$request, $response, static function (Request $request,
+                        $result = $middlewareObject->handle(self::$request, $response, static function (Request  $request,
                                                                                                         Response $response)
                         use ($callback) {
                             return $callback($request, $response);
@@ -575,7 +574,7 @@ class Router
                         $middlewareObject = null;
                         foreach (self::$router['middleware'] as $item) {
                             $middlewareObject = new $item;
-                            $result = $middlewareObject->handle(self::$request, $response, static function (Request $request,
+                            $result = $middlewareObject->handle(self::$request, $response, static function (Request  $request,
                                                                                                             Response $response) use ($controller, $callback) {
                                 return $controller->{$callback['method']}($request, $response);
                             });

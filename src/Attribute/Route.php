@@ -17,20 +17,6 @@ use QApi\Http\MiddlewareInterface;
 {
 
     /**
-     * @param $path
-     * @return bool|string
-     */
-    public function getData($path): bool|string
-    {
-        try {
-            return file_get_contents($path);
-        } catch (WarningException $e) {
-            usleep(500);
-            return $this->getData($path);
-        }
-    }
-
-    /**
      * Create path if needed.
      *
      * @param string $path
@@ -82,18 +68,27 @@ use QApi\Http\MiddlewareInterface;
     public function builder(\ReflectionClass $class, string $controllerName, string $methodName, bool $attr = true):
     mixed
     {
+
         $tmpControllerName = trim(str_replace(App::$app->getNameSpace(), '', $controllerName), '\\');
         $versionDir = substr($tmpControllerName, 0, stripos($tmpControllerName, '\\'));
+        if (count(glob(PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
+                DIRECTORY_SEPARATOR
+                . $versionDir . DIRECTORY_SEPARATOR . 'swap*')) > 0) {
+            return null;
+        }
         $save_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
             . $versionDir . DIRECTORY_SEPARATOR . 'builder.php';
         if (!file_exists($save_path)) {
             mkPathDir($save_path);
-            @file_put_contents($save_path, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '../Route/buildTemplate.php'), LOCK_EX);
-        }
-        $write_data = '';
-        try {
-            $write_data = @file_get_contents($save_path);
-        } catch (\Exception $e) {
+            $write_data = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '../Route/buildTemplate.php');
+
+            @file_put_contents($save_path, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '../Route/buildTemplate.php'));
+        } else {
+            $write_data = '';
+            try {
+                $write_data = @file_get_contents($save_path);
+            } catch (\Exception $e) {
+            }
         }
         if ($write_data) {
             $classRoute = $class->getAttributes(__CLASS__);
@@ -291,14 +286,14 @@ use QApi\Http\MiddlewareInterface;
      * @param array $params
      */
     public function __construct(
-        public string $path = '',
-        public string|array $methods = 'ALL',
-        public array $paramPattern = [],
+        public string            $path = '',
+        public string|array      $methods = 'ALL',
+        public array             $paramPattern = [],
         public array|string|null $middleware = null,
-        public string|null $summary = null,
-        public string|null $description = null,
-        public string|null $tag = '',
-        public bool $checkParams = false,
+        public string|null       $summary = null,
+        public string|null       $description = null,
+        public string|null       $tag = '',
+        public bool              $checkParams = false,
     )
     {
     }
