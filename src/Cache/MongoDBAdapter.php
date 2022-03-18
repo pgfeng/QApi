@@ -30,7 +30,6 @@ class MongoDBAdapter implements CacheInterface
     public function checkConnect(int $time)
     {
         if ($time - $this->connectionTime > $this->config->config->wait_timeout) {
-            print_r('链接');
             $this->Mongo = new \QApi\ODM\Mongo($this->config->config);
             $this->connectionTime = $time;
         }
@@ -43,7 +42,6 @@ class MongoDBAdapter implements CacheInterface
     public function checkCleanUp(int $time)
     {
         if ($time - $this->cleanUpTime > $this->config->cleanUpTime) {
-            print_r('清理');
             $this->Mongo->delete($this->config->table, [
                 $this->config->lifetimeCol => [
                     '$gt' => 0,
