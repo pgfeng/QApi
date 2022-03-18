@@ -32,7 +32,8 @@
     "ext-sqlite3": "*",
     "ext-swoole": ">=4",
     "ext-bcmath": "*",
-    "ext-sqlsrv": "*"
+    "ext-sqlsrv": "*",
+    "ext-mongodb": "*"
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest"
