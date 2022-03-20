@@ -11,6 +11,11 @@ namespace QApi\Command;
 
 use JetBrains\PhpStorm\Pure;
 use QApi\Command;
+use QApi\Config;
+use QApi\Database\DBase;
+use QApi\Logger;
+use QApi\ORM\DB;
+use QApi\ORM\Model;
 
 /**
  * @package QApi\Command
@@ -61,4 +66,47 @@ abstract class CommandHandler
      */
     abstract public function help(): mixed;
 
+    /**
+     * select a database configuration
+     */
+    public function choseDatabase(): string
+    {
+        $configs = Config::database();
+        $choseData = [];
+        foreach ($configs as $configName => $config) {
+            $choseData[$configName] = '[' . $configName . ']' . $config->name . '://' . $config->user . ':'
+                 . '***@' .
+                $config->host
+                . ':' .
+                $config->port
+                . '/' .
+                $config->dbName;
+        }
+        $input = $this->command->cli->blue()->radio('Please select a database configuration item:',
+            $choseData);
+        return $input->prompt();
+    }
+
+    /**
+     * input table name
+     */
+    public function getTable($databaseConfigName)
+    {
+        $config = Config::database($databaseConfigName);
+        $input = $this->command->cli->blue()->input('Please enter the table name：');
+        $table = $input->prompt();
+        $model = new Model('', $databaseConfigName);
+        $manager = $model->getSchemaManager();
+        if (!$manager->tablesExist($config->tablePrefix . $table)) {
+            $this->command->cli->red('[' . $config->tablePrefix . $table . '] not exist!');
+            return $this->getTable($databaseConfigName);
+        }
+        $column = new ColumnCommand($this->command,[
+            $databaseConfigName,$table,
+        ]);
+        $column->handler([
+            $databaseConfigName,$table,
+        ]);
+        return $table;
+    }
 }

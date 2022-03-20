@@ -15,6 +15,7 @@ use QApi\Command\ClearCacheCommand;
 use QApi\Command\ColumnCommand;
 use QApi\Command\CommandHandler;
 use QApi\Command\DocBuildCommand;
+use QApi\Command\ModelCommand;
 use QApi\Command\RouteBuildCommand;
 use QApi\Command\RouteCacheClearCommand;
 use QApi\Command\RouteCommand;
@@ -79,12 +80,13 @@ class Command
         $this->addHandler(new RunCommand($this));
         $this->addHandler(new RunSwooleCommand($this));
         $this->addHandler(new ColumnCommand($this));
+        $this->addHandler(new ModelCommand($this));
         $this->addHandler(new DocBuildCommand($this));
         $this->addHandler(new ClearCacheCommand($this));
         $this->addHandler(new RouteBuildCommand($this));
         $this->addHandler(new RouteCommand($this));
         $this->addHandler(new RouteCacheClearCommand($this));
-//        $this->addHandler(new RunReactCommand($this));
+        //        $this->addHandler(new RunReactCommand($this));
         $Handlers = Config::command('CommandHandlers');
 
         /**
