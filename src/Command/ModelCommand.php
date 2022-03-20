@@ -277,8 +277,7 @@ ModelFileContent;
 
         mkPathDir($savePath);
         file_put_contents($savePath, $modelContent);
-        $this->command->info($savePath);
-        $this->command->info('Model file generated successfully!');
+        $this->command->info('Generated successfully ' . $savePath);
     }
 
     /**
