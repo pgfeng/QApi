@@ -16,7 +16,7 @@ class ColumnCommand extends CommandHandler
      * handler名称
      * @var string
      */
-    public string $name = 'column';
+    public string $name = 'build:column';
 
     /**
      * 判断表是否存在
