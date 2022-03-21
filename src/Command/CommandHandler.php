@@ -75,7 +75,7 @@ abstract class CommandHandler
         $choseData = [];
         foreach ($configs as $configName => $config) {
             $choseData[$configName] = '[' . $configName . ']' . $config->name . '://' . $config->user . ':'
-                 . '***@' .
+                . '***@' .
                 $config->host
                 . ':' .
                 $config->port
@@ -101,12 +101,30 @@ abstract class CommandHandler
             $this->command->cli->red('[' . $config->tablePrefix . $table . '] not exist!');
             return $this->getTable($databaseConfigName);
         }
-        $column = new ColumnCommand($this->command,[
-            $databaseConfigName,$table,
+        $column = new ColumnCommand($this->command, [
+            $databaseConfigName, $table,
         ]);
         $column->handler([
-            $databaseConfigName,$table,
+            $databaseConfigName, $table,
         ]);
         return $table;
+    }
+
+    /**
+     * @param string $name
+     * @param int $type
+     * @param bool $uc_first
+     * @return string
+     */
+    public function parseName(string $name, int $type = 0, bool $uc_first = true): string
+    {
+        if ($type) {
+            $name = preg_replace_callback('/_([a-zA-Z])/', function ($match) {
+                return strtoupper($match[1]);
+            }, $name);
+            return $uc_first ? ucfirst($name) : lcfirst($name);
+        } else {
+            return strtolower(trim(preg_replace("/[A-Z]/", "_\\0", $name), "_"));
+        }
     }
 }

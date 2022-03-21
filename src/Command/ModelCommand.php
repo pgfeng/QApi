@@ -25,23 +25,6 @@ class ModelCommand extends CommandHandler
         parent::__construct($command, $argv);
     }
 
-    /**
-     * @param string $name
-     * @param int $type
-     * @param bool $uc_first
-     * @return string
-     */
-    public function parseName(string $name, int $type = 0, bool $uc_first = true): string
-    {
-        if ($type) {
-            $name = preg_replace_callback('/_([a-zA-Z])/', function ($match) {
-                return strtoupper($match[1]);
-            }, $name);
-            return $uc_first ? ucfirst($name) : lcfirst($name);
-        } else {
-            return strtolower(trim(preg_replace("/[A-Z]/", "_\\0", $name), "_"));
-        }
-    }
 
     public function handler(array $argv): mixed
     {

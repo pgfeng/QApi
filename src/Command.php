@@ -14,6 +14,7 @@ use League\CLImate\CLImate;
 use QApi\Command\ClearCacheCommand;
 use QApi\Command\ColumnCommand;
 use QApi\Command\CommandHandler;
+use QApi\Command\ControllerCommand;
 use QApi\Command\DocBuildCommand;
 use QApi\Command\ModelCommand;
 use QApi\Command\RouteBuildCommand;
@@ -81,6 +82,7 @@ class Command
         $this->addHandler(new RunSwooleCommand($this));
         $this->addHandler(new ColumnCommand($this));
         $this->addHandler(new ModelCommand($this));
+        $this->addHandler(new ControllerCommand($this));
         $this->addHandler(new DocBuildCommand($this));
         $this->addHandler(new ClearCacheCommand($this));
         $this->addHandler(new RouteBuildCommand($this));
