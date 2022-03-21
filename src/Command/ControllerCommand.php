@@ -183,6 +183,8 @@ CONTROLLERCONTENT;
         if ($hitCount < $count) {
             $dir = $psr4Dir[$tempSpace] . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, array_slice($nameSpace, $hitCount - 1)) .
                 DIRECTORY_SEPARATOR;
+        } else {
+            $dir .= DIRECTORY_SEPARATOR;
         }
         return $dir;
     }
