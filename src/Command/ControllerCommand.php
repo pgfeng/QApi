@@ -41,7 +41,7 @@ class ControllerCommand extends CommandHandler
         $choseData = [
             'lists', 'info', 'save', 'delete', 'add', 'edit'
         ];
-        $input = $this->command->cli->checkboxes('Please select the trait you want to use:', $choseData);
+        $input = $this->command->cli->blue()->checkboxes('Please select the trait you want to use:', $choseData);
         $actions = $input->prompt();
         return implode(',', $actions);
     }
