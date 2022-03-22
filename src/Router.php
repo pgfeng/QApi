@@ -191,13 +191,18 @@ class Router
         mkPathDir($base_path . 'builder.php');
         $nameSpace .= '\\' . $version_path;
         try {
-            @rename($builder_file_path, PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
-                DIRECTORY_SEPARATOR
-                . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builderTmp.php');
+            try {
+                rename($builder_file_path, (PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
+                    DIRECTORY_SEPARATOR
+                    . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builderTmp.php'));
+            }
+            catch (\Exception){}
             self::build(scandir($base_path), $base_path, $nameSpace, $base_path);
-            @unlink(PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
-                DIRECTORY_SEPARATOR
-                . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builderTmp.php');
+            try {
+                unlink(PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
+                    DIRECTORY_SEPARATOR
+                    . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builderTmp.php');
+            }catch (\Exception){}
         } catch (ReflectionException $e) {
             $message = $e->getMessage();
             $file = $e->getFile();
