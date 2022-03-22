@@ -3,9 +3,11 @@
 
 namespace QApi\Command;
 
+use ErrorException;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use QApi\App;
+use QApi\Cache\Cache;
 use QApi\Command;
 use QApi\Config;
 use QApi\Config\Application;
@@ -35,12 +37,25 @@ class RunSwooleCommand extends CommandHandler
         $this->apps = Config::apps();
     }
 
+    public function getApp($http_host)
+    {
+        $appConfig = Config::apps();
+        $appConfig = array_reverse($appConfig);
+        $appHosts = array_keys($appConfig);
+        $appHostPattern = str_replace('*', '(.+)', $appHosts);
+        foreach ($appHosts as $key => $host) {
+            if (preg_match('/^' . $appHostPattern[$key] . '$/i', $http_host)) {
+                return App::$app = &$appConfig[$host];
+            }
+        }
+        return null;
+    }
+
     public function handler(array $argv): mixed
     {
         $appDomain = $this->choseApp();
         @cli_set_process_title('QApiServer-' . $appDomain['port']);
         $http = new Server("0.0.0.0", $appDomain['port']);
-        App::$app = $appDomain['app'];
         $options = [
             'enable_static_handler' => true,
             'document_root' => Config::command('ServerRunDir'),
@@ -72,7 +87,21 @@ class RunSwooleCommand extends CommandHandler
                 /**
                  * @var Application $app
                  */
-                $app = &$appDomain['app'];
+                $app = $this->getApp($request->server['HTTP_HOST']);
+                if (!$app) {
+                    $configPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'app.php';
+                    $response->header('Server', 'QApiServer');
+                    $response->status(404);
+                    $response->header('Content-Type', 'application/json;charset=utf-8');
+                    $response->end(json_encode([
+                        'status' => false,
+                        'code' => 404,
+                        'msg' => 'host ' . $request->header['host'] . ' not bind app!'
+                    ]));
+                    throw new ErrorException('host ' . $request->header['host'] . ' not bind app!', 0, 1,
+                        $configPath);
+                    return;
+                }
                 $defaultHandle = new StreamHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . App::$runtimeDir . DIRECTORY_SEPARATOR . 'CliLog' .
                     DIRECTORY_SEPARATOR
                     . date('Y-m-d')
@@ -126,9 +155,10 @@ class RunSwooleCommand extends CommandHandler
                     $response->end($res);
                 }
             } catch (RuntimeException $e) {
-                error_log(get_class($e) . '：' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' . $e->getLine());
-                $response->end((new \QApi\Response())->setCode(500)->setMsg($e->getMessage())->setExtra([
-                ])->fail());
+                throw new ErrorException($e->getMessage(), 0, 1,
+                    $e->getFile(),$e->getLine());
+                $response->end((new \QApi\Response())->setCode(500)->setMsg($e->getMessage())->fail());
+                return;
             }
             if ($appDomain['runMode'] === RunMode::DEVELOPMENT) {
                 while (true) {
