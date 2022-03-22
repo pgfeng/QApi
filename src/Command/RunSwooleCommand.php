@@ -84,7 +84,7 @@ class RunSwooleCommand extends CommandHandler
                     $response->header('Access-Control-Allow-Origin', $request->header['host']);
                 }
                 $response->header('Access-Control-Allow-Headers', implode(',', $app->allowHeaders));
-                $response->header('x-powered-by', 'QApi');
+                $response->header('X-Powered-By', 'QApi');
                 $argv = [];
                 $request->server['HTTP_HOST'] = $request->header['host'];
                 $request->server = array_change_key_case($request->server, CASE_UPPER);
