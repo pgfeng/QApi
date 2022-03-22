@@ -73,21 +73,21 @@ class RunSwooleCommand extends CommandHandler
                 $appDomain['port'], $server->master_pid . '-' . $server->manager_pid));
         });
         $http->on("request", function ($request, $response) use ($http, $appDomain) {
-            if (in_array('*', $appDomain['allowOrigin'], true)) {
-                $response->header('Access-Control-Allow-Origin', $appDomain['allowOrigin']);
-            } else if (in_array($request->header['host'], $appDomain, true)) {
-                $response->header('Access-Control-Allow-Origin', $request->header['host']);
-            }
-            $response->header('Access-Control-Allow-Headers', implode(',', $appDomain['allowHeaders']));
-            $response->header('x-powered-by', 'QApi');
-            $argv = [];
-            $request->server['HTTP_HOST'] = $request->header['host'];
-            $request->server = array_change_key_case($request->server, CASE_UPPER);
             try {
                 /**
                  * @var Application $app
                  */
-                $app = $this->getApp($request->server['HTTP_HOST']);
+                $app = $this->getApp($request->header['host']);
+                if (in_array('*', $app->allowOrigin, true)) {
+                    $response->header('Access-Control-Allow-Origin', $appDomain['allowOrigin']);
+                } else if (in_array($request->header['host'], $app->allowOrigin, true)) {
+                    $response->header('Access-Control-Allow-Origin', $request->header['host']);
+                }
+                $response->header('Access-Control-Allow-Headers', implode(',', $app->allowHeaders));
+                $response->header('x-powered-by', 'QApi');
+                $argv = [];
+                $request->server['HTTP_HOST'] = $request->header['host'];
+                $request->server = array_change_key_case($request->server, CASE_UPPER);
                 if (!$app) {
                     $configPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'app.php';
                     $response->header('Server', 'QApiServer');
