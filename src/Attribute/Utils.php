@@ -117,6 +117,11 @@ class Utils
                         }
                     }
                 }
+                foreach ($apis[$version->versionDir] as $tag => $docArray) {
+                    if (!count($docArray)) {
+                        unset($apis[$version->versionDir][$tag]);
+                    }
+                }
             }
             self::$docApp[$app->appDir][] = [
                 'host' => $host,
@@ -141,7 +146,7 @@ class Utils
      * @return void
      */
     public static function buildVersionDoc(array $san_files, string $parent_path, string $nameSpace, string $versionDir, &$data =
-    [], $base_path = ''): void
+    [],                                          $base_path = ''): void
     {
         foreach ($san_files as $path) {
             if ($path !== '.' && $path !== '..') {
