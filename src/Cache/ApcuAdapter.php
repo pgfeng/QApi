@@ -3,11 +3,13 @@
 namespace QApi\Cache;
 
 use DateInterval;
-use DateTime;
 use JetBrains\PhpStorm\Pure;
 use QApi\Config\Cache\Apcu;
 use QApi\Exception\CacheErrorException;
 
+/**
+ * ApcuAdapter
+ */
 class ApcuAdapter implements CacheInterface
 {
 
@@ -54,6 +56,11 @@ class ApcuAdapter implements CacheInterface
         return false;
     }
 
+    /**
+     * @param string $key
+     * @param mixed|null $default
+     * @return mixed
+     */
     public function get(string $key, mixed $default = null): mixed
     {
         $data = apcu_fetch($this->config->namespace . $key, $success);
@@ -85,22 +92,40 @@ class ApcuAdapter implements CacheInterface
         return 0;
     }
 
+    /**
+     * @param string $key
+     * @param mixed $value
+     * @param DateInterval|int|null $ttl
+     * @return bool
+     */
     public function set(string $key, mixed $value, DateInterval|int|null $ttl = null): bool
     {
         $lifeTime = $this->getDateIntervalToSecond($ttl);
         return apcu_store($this->config->namespace . $key, $value, $lifeTime);
     }
 
+    /**
+     * @param string $key
+     * @return bool
+     */
     public function delete(string $key): bool
     {
         return apc_delete($this->config->namespace . $key);
     }
 
+    /**
+     * @return bool
+     */
     public function clear(): bool
     {
         return apcu_delete(new \APCuIterator(sprintf('/^%s/', preg_quote($this->config->namespace, '/'))));
     }
 
+    /**
+     * @param iterable $keys
+     * @param mixed|null $default
+     * @return iterable
+     */
     public function getMultiple(iterable $keys, mixed $default = null): iterable
     {
         $data = [];
@@ -111,6 +136,11 @@ class ApcuAdapter implements CacheInterface
     }
 
 
+    /**
+     * @param iterable $values
+     * @param DateInterval|int|null $ttl
+     * @return bool
+     */
     public function setMultiple(iterable $values, DateInterval|int|null $ttl = null): bool
     {
         foreach ($values as $key => $value) {
@@ -119,6 +149,10 @@ class ApcuAdapter implements CacheInterface
         return true;
     }
 
+    /**
+     * @param iterable $keys
+     * @return bool
+     */
     public function deleteMultiple(iterable $keys): bool
     {
         foreach ($keys as &$key) {
@@ -128,6 +162,10 @@ class ApcuAdapter implements CacheInterface
         return true;
     }
 
+    /**
+     * @param $key
+     * @return bool
+     */
     public function has($key): bool
     {
         return apcu_exists($this->config->namespace . $key);
