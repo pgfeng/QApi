@@ -42,7 +42,7 @@ class YacAdapter implements CacheInterface
             } else {
                 if (!filter_var(ini_get('yac.enable'), \FILTER_VALIDATE_BOOLEAN)) {
                     if ($throwError) {
-                        throw new CacheErrorException('Yac is not enabled,Please check php.ini[apc..enable]');
+                        throw new CacheErrorException('Yac is not enabled,Please check php.ini[apc.enable]');
                     }
                     return false;
                 }
