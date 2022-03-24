@@ -139,9 +139,9 @@ class App
             Logger::error("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
                 $line);
             try {
-                $response = new Response(Config::version()->versionName);
+                $response = new Response();
             } catch (\ErrorException $e) {
-                $response = new Response('NotFound');
+                $response = new Response();
             }
             $response->setCode(500)->setExtra([
                 'status' => false,
@@ -158,9 +158,9 @@ class App
             Logger::error("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
                 $line);
             try {
-                $response = new Response(Config::version()->versionName);
+                $response = new Response();
             } catch (\ErrorException $e) {
-                $response = new Response('NotFound');
+                $response = new Response();
             }
             $response->setCode(500)->setExtra([
                 'status' => false,

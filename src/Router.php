@@ -577,7 +577,7 @@ class Router
                     Logger::info('Router -> ' . $controllerName . '@' . $callback['method']);
                     Logger::info('RouterOriginal -> ' . json_encode(self::$router, JSON_THROW_ON_ERROR));
                     self::$request->arguments = new Data($params);
-                    $response = new Response($version->versionName);
+                    $response = new Response();
                     if (self::$router['middleware']) {
                         /**
                          * @var QApi\Http\MiddlewareInterface $middlewareObject

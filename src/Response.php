@@ -308,7 +308,7 @@ class Response
 
     private function setHeader(): void
     {
-        header('HTTP/' . $this->version . ' ' . $this->statusCode . ($this->reason ?:
+        header('HTTP/' . $this->version . ' ' . $this->statusCode . ' ' . ($this->reason ?:
                 (self::$phrases[$this->statusCode] ??
                     '')));
         foreach ($this->headers as $name => $header) {
