@@ -145,8 +145,8 @@ class Utils
      * @param string $base_path
      * @return void
      */
-    public static function buildVersionDoc(array $san_files, string $parent_path, string $nameSpace, string $versionDir, &$data =
-    [],                                          $base_path = ''): void
+    public static function buildVersionDoc(array $san_files, string $parent_path, string $nameSpace, string $versionDir, array &$data =
+    [], string                                   $base_path = ''): void
     {
         foreach ($san_files as $path) {
             if ($path !== '.' && $path !== '..') {

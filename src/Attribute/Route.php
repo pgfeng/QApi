@@ -81,8 +81,7 @@ use QApi\Http\MiddlewareInterface;
         if (!file_exists($save_path)) {
             mkPathDir($save_path);
             $write_data = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '../Route/buildTemplate.php');
-
-            @file_put_contents($save_path, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '../Route/buildTemplate.php'));
+            @file_put_contents($save_path, $write_data);
         } else {
             $write_data = '';
             try {

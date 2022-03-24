@@ -253,6 +253,12 @@ class Router
                 }
             }
         }
+        $save_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
+            . Config::version()->versionDir . DIRECTORY_SEPARATOR . 'builder.php';
+        if (!file_exists($save_path)){
+            mkPathDir($save_path);
+            @file_put_contents($save_path, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Route/buildTemplate.php'));
+        }
     }
 
     /**

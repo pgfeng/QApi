@@ -18,9 +18,6 @@ class PhpArray extends Cache
     public string $driver = PhpArrayAdapter::class;
     public string $name = 'PhpArray';
 
-    /**
-     * PhpArray constructor.
-     */
     public function __construct()
     {
     }
