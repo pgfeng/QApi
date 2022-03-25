@@ -33,7 +33,8 @@
     "ext-swoole": ">=4",
     "ext-bcmath": "*",
     "ext-sqlsrv": "*",
-    "ext-mongodb": "*"
+    "ext-mongodb": "*",
+    "ext-apcu": "*"
   },
   "require-dev": {
     "swoole/ide-helper": "~4.4.7",
