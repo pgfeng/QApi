@@ -20,9 +20,10 @@ class ModelCommand extends CommandHandler
 
     public string $name = 'build:model';
 
-    #[Pure] public function __construct(Command $command, $argv = [])
+    public function __construct(Command $command, $argv = [])
     {
         parent::__construct($command, $argv);
+        $this->hideLogger();
     }
 
 

@@ -21,7 +21,7 @@ class Logger
     {
         if (self::$logger === null || $force) {
             self::$logger = new \Monolog\Logger($name);
-            self::$logger->setTimezone(App::$timezone??new \DateTimeZone('Asia/Shanghai'));
+            self::$logger->setTimezone(App::$timezone ?? new \DateTimeZone('Asia/Shanghai'));
             if (is_cli()) {
                 $logHandler = Config::command('logHandler');
                 if (is_array($logHandler)) {
@@ -50,13 +50,17 @@ class Logger
     #[Pure] private static function getRunMode(): string
     {
         if (is_cli()) {
-            if (App::$app) {
-                return App::$app->getRunMode();
+            if (Command::$showLogger) {
+                if (App::$app) {
+                    return App::$app->getRunMode();
+                }
+                if ((defined('DEV_MODE') && DEV_MODE === true)) {
+                    return defined('RUN_MODE') ? RUN_MODE : (RunMode::DEVELOPMENT);
+                }
+                return defined('RUN_MODE') ? RUN_MODE : (RunMode::PRODUCTION);
+            } else {
+                return RunMode::PRODUCTION;
             }
-            if ((defined('DEV_MODE') && DEV_MODE === true)) {
-                return defined('RUN_MODE') ? RUN_MODE : (RunMode::DEVELOPMENT);
-            }
-            return defined('RUN_MODE') ? RUN_MODE : (RunMode::PRODUCTION);
         }
 
         return App::$app->getRunMode();

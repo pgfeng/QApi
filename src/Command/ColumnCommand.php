@@ -6,6 +6,7 @@ namespace QApi\Command;
 
 use ErrorException;
 use QApi\Attribute\Column\Table;
+use QApi\Command;
 use QApi\Config;
 use QApi\Database\DB;
 use QApi\Logger;
@@ -48,6 +49,7 @@ class ColumnCommand extends CommandHandler
      */
     public function handler($argv): mixed
     {
+        $this->hideLogger();
         $this->argv = $argv;
         if (isset($argv[0]) && $argv[0] === '--all') {
             unset($this->argv[0], $argv[0]);

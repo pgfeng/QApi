@@ -31,10 +31,19 @@ abstract class CommandHandler
      * @param Command $command
      * @param array $argv
      */
-    public function __construct(Command $command, $argv = [])
+    public function __construct(Command $command, array $argv = [])
     {
         $this->pid = posix_getpid();
         $this->command = $command;
+    }
+
+    public function hideLogger():void
+    {
+        Command::$showLogger = false;
+    }
+    public function showLogger():void
+    {
+        Command::$showLogger = true;
     }
 
     /**

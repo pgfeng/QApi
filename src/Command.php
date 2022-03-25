@@ -30,6 +30,8 @@ use QApi\Command\RunSwooleCommand;
  */
 class Command
 {
+    public static bool $showLogger = true;
+
     protected string $name = " = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
  .----------------.   .----------------.   .----------------.   .----------------. 
 | .--------------. | | .--------------. | | .--------------. | | .--------------. |
@@ -62,7 +64,7 @@ class Command
      * @param string $runtimeDir
      * @throws ErrorException
      */
-    public function __construct(?string $timezone = 'Asia/Shanghai', $routeDir = 'routes', $configDir = 'config', $runtimeDir =
+    public function __construct(?string $timezone = 'Asia/Shanghai', string $routeDir = 'routes', string $configDir = 'config', string $runtimeDir =
     'runtime')
     {
         error_reporting(E_ALL ^ E_NOTICE);
