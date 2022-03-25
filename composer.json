@@ -36,6 +36,7 @@
     "ext-mongodb": "*"
   },
   "require-dev": {
+    "swoole/ide-helper": "~4.4.7",
     "roave/security-advisories": "dev-latest"
   },
   "autoload": {
