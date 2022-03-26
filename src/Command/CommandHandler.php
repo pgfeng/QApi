@@ -41,6 +41,7 @@ abstract class CommandHandler
     {
         Command::$showLogger = false;
     }
+
     public function showLogger():void
     {
         Command::$showLogger = true;

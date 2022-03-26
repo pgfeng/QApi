@@ -49,6 +49,7 @@ class Logger
      */
     #[Pure] private static function getRunMode(): string
     {
+        var_dump(Command::$showLogger);
         if (is_cli()) {
             if (Command::$showLogger) {
                 if (App::$app) {

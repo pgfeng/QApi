@@ -25,6 +25,7 @@ class RunCommand extends CommandHandler
     {
         parent::__construct($command, $argv);
         $this->apps = Config::apps();
+        $this->showLogger();
     }
 
     public function handler(array $argv): mixed
