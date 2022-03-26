@@ -97,7 +97,7 @@ class DB
      */
     public function alias(string $formAlias): self
     {
-        $this->from($this->getTableName(), $formAlias);
+        $this->from($this->table, $formAlias);
         return $this;
     }
 
@@ -381,10 +381,10 @@ class DB
 
     /**
      * @param array|Data $data
-     * @param array $where
      * @param array $types
      * @param string|null $table
      * @return int
+     * @throws \Doctrine\DBAL\Exception
      */
     public function update(array|Data $data, array $types = [], ?string $table = null): int
     {
@@ -411,7 +411,7 @@ class DB
      * @param int $type
      * @return mixed
      */
-    public function quote($value, $type = ParameterType::STRING): mixed
+    public function quote($value, int $type = ParameterType::STRING): mixed
     {
         if (is_array($value)) {
             foreach ($value as &$v) {
