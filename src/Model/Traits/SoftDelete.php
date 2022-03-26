@@ -8,7 +8,7 @@ use QApi\Response;
 
 /**
  * Trait SoftDelete
- * @mixin Model
+ * @mixin Model|\QApi\ORM\Model
  * @package QApi\Model\Traits
  */
 trait SoftDelete

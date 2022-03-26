@@ -42,10 +42,6 @@ use QApi\Logger;
  * @method int getFirstResult()
  * @method int getMaxResults()
  * @method $this distinct()
- * @method $this join(string $fromAlias, string $join, string $alias, string $condition = null)
- * @method $this innerJoin(string $fromAlias, string $join, string $alias, string $condition = null)
- * @method $this leftJoin(string $fromAlias, string $join, string $alias, string $condition = null)
- * @method $this rightJoin(string $fromAlias, string $join, string $alias, string $condition = null)
  * @method $this groupBy(string|array $groupBy)
  * @method $this addGroupBy(string|array $groupBy)
  * @method $this having($having)
@@ -65,6 +61,7 @@ class DB
     private bool $hasWhere = false;
     protected Connection $connection;
     private ?AbstractSchemaManager $schemaManager = null;
+    protected ?string $aliasName = null;
 
     /**
      * DB constructor.
@@ -98,13 +95,150 @@ class DB
     }
 
     /**
+     * @param string $formAlias
+     * @return $this
+     */
+    public function alias(string $formAlias): self
+    {
+        $this->from($this->getTableName(), $formAlias);
+        return $this;
+    }
+
+    /**
+     * @param string $join
+     * @param string $condition
+     * @param string|null $joinAlias
+     * @param string|null $fromAlias
+     * @return $this
+     */
+    public function join(string $join, string $condition, ?string $joinAlias = null, ?string $fromAlias = null): self
+    {
+        $join = $this->config->tablePrefix . $join;
+        if ($fromAlias) {
+            $this->alias($fromAlias);
+        } else {
+            if ($this->aliasName) {
+                $fromAlias = $this->aliasName;
+            } else {
+                $fromAlias = $this->getTableName();
+            }
+        }
+        if (!$joinAlias) {
+            $joinAlias = $join;
+        }
+        $this->queryBuilder->join($fromAlias, $join, $joinAlias, $condition);
+        return $this;
+    }
+
+
+    /**
+     * @param string $join
+     * @param string $condition
+     * @param string|null $joinAlias
+     * @param string|null $fromAlias
+     * @return $this
+     */
+    public function innerJoin(string $join, string $condition, ?string $joinAlias = null, ?string $fromAlias = null): self
+    {
+        $join = $this->config->tablePrefix . $join;
+        if ($fromAlias) {
+            $this->alias($fromAlias);
+        } else {
+            if ($this->aliasName) {
+                $fromAlias = $this->aliasName;
+            } else {
+                $fromAlias = $this->getTableName();
+            }
+        }
+        if (!$joinAlias) {
+            $joinAlias = $join;
+        }
+        $this->queryBuilder->join($fromAlias, $join, $joinAlias, $condition);
+        return $this;
+    }
+
+    /**
+     * @param string $join
+     * @param string $condition
+     * @param string|null $joinAlias
+     * @param string|null $fromAlias
+     * @return $this
+     */
+    public function leftJoin(string $join, string $condition, ?string $joinAlias = null, ?string $fromAlias = null): self
+    {
+        $join = $this->config->tablePrefix . $join;
+        if ($fromAlias) {
+            $this->alias($fromAlias);
+        } else {
+            if ($this->aliasName) {
+                $fromAlias = $this->aliasName;
+            } else {
+                $fromAlias = $this->getTableName();
+            }
+        }
+        if (!$joinAlias) {
+            $joinAlias = $join;
+        }
+        $this->queryBuilder->leftJoin($fromAlias, $join, $joinAlias, $condition);
+        return $this;
+    }
+
+    /**
+     * @param string $join
+     * @param string $condition
+     * @param string|null $joinAlias
+     * @param string|null $fromAlias
+     * @return $this
+     */
+    public function rightJoin(string $join, string $condition, ?string $joinAlias = null, ?string $fromAlias = null):
+    self
+    {
+        $join = $this->config->tablePrefix . $join;
+        if ($fromAlias) {
+            $this->alias($fromAlias);
+        } else {
+            if ($this->aliasName) {
+                $fromAlias = $this->aliasName;
+            } else {
+                $fromAlias = $this->getTableName();
+            }
+        }
+        if (!$joinAlias) {
+            $joinAlias = $join;
+        }
+        $this->queryBuilder->rightJoin($fromAlias, $join, $joinAlias, $condition);
+        return $this;
+    }
+
+    /**
      * @param string $table
      * @param string|null $alias
      * @return DB
      */
     public function from(string $table, string $alias = null): self
     {
-        $this->queryBuilder->from($this->config->tablePrefix . $table, $alias);
+        $this->table = $table;
+        $this->aliasName = $alias;
+        $this->queryBuilder->add('from', [[
+            'table' => $this->config->tablePrefix . $table,
+            'alias' => $alias,
+        ]], false);
+        return $this;
+    }
+
+    /**
+     * @param string $table
+     * @param string|null $alias
+     * @return DB
+     */
+    public function addFrom(string $table, string $alias = null): self
+    {
+        $this->table = $table;
+        $this->aliasName = $alias;
+        $this->queryBuilder->add('from', [
+            'table' => $this->config->tablePrefix . $table,
+            'alias' => $alias,
+        ], true);
         return $this;
     }
 
@@ -575,7 +709,7 @@ class DB
      */
     final public function delete(?string $delete = null, ?string $alias = null): int
     {
-        return $this->queryBuilder->delete($delete?:$this->getTableName(), $alias)->executeStatement();
+        return $this->queryBuilder->delete($delete ?: $this->getTableName(), $alias)->executeStatement();
     }
 
     /**

@@ -9,7 +9,7 @@ use QApi\Model;
 /**
  * UUID
  * Trait UUID
- * @mixin Model
+ * @mixin Model|\QApi\ORM\Model
  * @package QApi\Model\Traits
  */
 trait UUID

@@ -3,10 +3,14 @@
 namespace QApi\Model\Traits;
 
 use QApi\Logger;
+use QApi\Model;
 use QApi\Model\filesModel;
 
 /**
- * 字段验证
+ * Validate
+ * Trait Validate
+ * @mixin Model|\QApi\ORM\Model
+ * @package QApi\Model\Traits
  */
 trait Validate
 {

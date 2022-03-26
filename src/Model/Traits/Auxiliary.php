@@ -12,7 +12,7 @@ use QApi\Response;
 /**
  * 模型辅助包
  * Trait AutoSave
- * @mixin Model
+ * @mixin Model|\QApi\ORM\Model
  * @package QApi\Model\Traits
  */
 trait Auxiliary
