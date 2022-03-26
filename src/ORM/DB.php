@@ -5,22 +5,19 @@ namespace QApi\ORM;
 
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\Events;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Types\Type;
-use ErrorException;
 use QApi\Config;
 use QApi\Config\Database\MysqliDatabase;
 use QApi\Config\Database\PdoMysqlDatabase;
 use QApi\Config\Database\PdoSqliteDatabase;
 use QApi\Config\Database\SqlServDatabase;
 use QApi\Data;
-use QApi\Database\DBase;
 use QApi\Exception\SqlErrorException;
-use QApi\Logger;
 
 /**
  * Class DB
