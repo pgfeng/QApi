@@ -35,7 +35,6 @@ class RunSwooleCommand extends CommandHandler
     {
         parent::__construct($command, $argv);
         $this->apps = Config::apps();
-        $this->showLogger();
     }
 
     public function getApp($http_host): ?Application
@@ -54,6 +53,7 @@ class RunSwooleCommand extends CommandHandler
 
     public function handler(array $argv): mixed
     {
+        $this->showLogger();
         $appDomain = $this->choseApp();
         @cli_set_process_title('QApiServer-' . $appDomain['port']);
         $http = new Server("0.0.0.0", $appDomain['port']);

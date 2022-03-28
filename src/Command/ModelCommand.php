@@ -20,15 +20,9 @@ class ModelCommand extends CommandHandler
 
     public string $name = 'build:model';
 
-    public function __construct(Command $command, $argv = [])
-    {
-        parent::__construct($command, $argv);
-        $this->hideLogger();
-    }
-
-
     public function handler(array $argv): mixed
     {
+        $this->hideLogger();
         if (!isset($argv[0])) {
             return $this->handler([$this->choseDatabase()]);
         }
