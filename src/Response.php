@@ -8,7 +8,7 @@ class Response
 {
 
     /** @var array Response code */
-    private static $phrases = array(
+    private static array $phrases = array(
         100 => 'Continue',
         101 => 'Switching Protocols',
         102 => 'Processing',
@@ -220,7 +220,7 @@ class Response
      * @param bool $merge
      * @return Response
      */
-    public function setExtra(array $extra, $merge = true): Response
+    public function setExtra(array $extra, bool $merge = true): Response
     {
         if ($merge) {
             $this->extra = array_merge($this->extra, $extra);
@@ -292,7 +292,7 @@ class Response
      * @param false $status
      * @return Response
      */
-    public function setRaw($status = true): Response
+    public function setRaw(bool $status = true): Response
     {
         $this->raw = $status;
         return $this;
