@@ -163,7 +163,7 @@ class Router
                     . str_replace('.', '', $version->versionName) . DIRECTORY_SEPARATOR;
                 mkPathDir($base_path . 'builder.php');
                 $data = glob($base_path . '*.php');
-                while (!in_array($base_path . 'builder.php', $data)) {
+                while (App::$app->getRunMode() === QApi\Enumeration\RunMode::DEVELOPMENT && !in_array($base_path . 'builder.php', $data)) {
                     $data = glob($base_path . '*.php');
                 }
                 foreach ($data as $file) {
@@ -195,14 +195,15 @@ class Router
                 rename($builder_file_path, (PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
                     DIRECTORY_SEPARATOR
                     . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builderTmp.php'));
+            } catch (\Exception) {
             }
-            catch (\Exception){}
             self::build(scandir($base_path), $base_path, $nameSpace, $base_path);
             try {
                 unlink(PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
                     DIRECTORY_SEPARATOR
                     . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builderTmp.php');
-            }catch (\Exception){}
+            } catch (\Exception) {
+            }
         } catch (ReflectionException $e) {
             $message = $e->getMessage();
             $file = $e->getFile();
@@ -255,7 +256,7 @@ class Router
         }
         $save_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
             . Config::version()->versionDir . DIRECTORY_SEPARATOR . 'builder.php';
-        if (!file_exists($save_path)){
+        if (!file_exists($save_path)) {
             mkPathDir($save_path);
             @file_put_contents($save_path, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Route/buildTemplate.php'));
         }
