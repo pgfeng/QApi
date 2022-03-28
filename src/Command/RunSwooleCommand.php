@@ -37,7 +37,7 @@ class RunSwooleCommand extends CommandHandler
         $this->apps = Config::apps();
     }
 
-    public function getApp($http_host): ?Application
+    public function getApp($http_host)
     {
         $appConfig = Config::apps();
         $appConfig = array_reverse($appConfig);
@@ -53,7 +53,6 @@ class RunSwooleCommand extends CommandHandler
 
     public function handler(array $argv): mixed
     {
-        $this->showLogger();
         $appDomain = $this->choseApp();
         @cli_set_process_title('QApiServer-' . $appDomain['port']);
         $http = new Server("0.0.0.0", $appDomain['port']);
@@ -79,11 +78,6 @@ class RunSwooleCommand extends CommandHandler
                  * @var Application $app
                  */
                 $app = $this->getApp($request->header['host']);
-                if (in_array('*', $app->allowOrigin, true)) {
-                    $response->header('Access-Control-Allow-Origin', $appDomain['allowOrigin']);
-                } else if (in_array($request->header['host'], $app->allowOrigin, true)) {
-                    $response->header('Access-Control-Allow-Origin', $request->header['host']);
-                }
                 $response->header('Access-Control-Allow-Headers', implode(',', $app->allowHeaders));
                 $response->header('X-Powered-By', 'QApi');
                 $argv = [];
@@ -139,6 +133,10 @@ class RunSwooleCommand extends CommandHandler
                 $res = \QApi\App::run(apiPassword: $appDomain['app']->docPassword, request: $req);
                 $response->header('Server', 'QApiServer');
                 $response->status($res->getStatusCode(), $res->getReason());
+
+                if (in_array('*', $app->allowOrigin, true)) {
+                    $response->header('Access-Control-Allow-Origin', $request->header['referer']);
+                }
                 if ($res instanceof Response) {
                     $headers = $res->getHeaders();
                     foreach ($headers as $name => $header) {
@@ -157,7 +155,7 @@ class RunSwooleCommand extends CommandHandler
                 }
             } catch (RuntimeException $e) {
                 throw new ErrorException($e->getMessage(), 0, 1,
-                    $e->getFile(), $e->getLine());
+                    $e->getFile(),$e->getLine());
                 $response->end((new \QApi\Response())->setCode(500)->setMsg($e->getMessage())->fail());
                 return;
             }
