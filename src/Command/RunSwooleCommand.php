@@ -38,7 +38,7 @@ class RunSwooleCommand extends CommandHandler
         $this->showLogger();
     }
 
-    public function getApp($http_host)
+    public function getApp($http_host): ?Application
     {
         $appConfig = Config::apps();
         $appConfig = array_reverse($appConfig);
@@ -157,7 +157,7 @@ class RunSwooleCommand extends CommandHandler
                 }
             } catch (RuntimeException $e) {
                 throw new ErrorException($e->getMessage(), 0, 1,
-                    $e->getFile(),$e->getLine());
+                    $e->getFile(), $e->getLine());
                 $response->end((new \QApi\Response())->setCode(500)->setMsg($e->getMessage())->fail());
                 return;
             }
