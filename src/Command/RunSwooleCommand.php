@@ -134,7 +134,7 @@ class RunSwooleCommand extends CommandHandler
                 $response->header('Server', 'QApiServer');
                 $response->status($res->getStatusCode(), $res->getReason());
 
-                if (in_array('*', $app->allowOrigin, true)) {
+                if (in_array('*', $app->allowOrigin, true) && isset($request->header['referer'])) {
                     $response->header('Access-Control-Allow-Origin', $request->header['referer']);
                 }
                 if ($res instanceof Response) {
@@ -155,7 +155,7 @@ class RunSwooleCommand extends CommandHandler
                 }
             } catch (RuntimeException $e) {
                 throw new ErrorException($e->getMessage(), 0, 1,
-                    $e->getFile(),$e->getLine());
+                    $e->getFile(), $e->getLine());
                 $response->end((new \QApi\Response())->setCode(500)->setMsg($e->getMessage())->fail());
                 return;
             }
