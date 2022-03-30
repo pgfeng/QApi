@@ -164,6 +164,7 @@ class Router
                 mkPathDir($base_path . 'builder.php');
                 $data = glob($base_path . '*.php');
                 while (App::$app->getRunMode() === QApi\Enumeration\RunMode::DEVELOPMENT && !in_array($base_path . 'builder.php', $data)) {
+                    usleep(10);
                     $data = glob($base_path . '*.php');
                 }
                 foreach ($data as $file) {
