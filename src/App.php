@@ -63,48 +63,31 @@ class App
      * @param string $apiPassword
      * @param Request|null $request
      * @return Response|string
-     * @throws CompileErrorException
-     * @throws CoreErrorException
-     * @throws CoreWarningException
-     * @throws DeprecatedException
-     * @throws ErrorException
-     * @throws NoticeException
-     * @throws ParseException
-     * @throws RecoverableErrorException
-     * @throws StrictException
-     * @throws UserDeprecatedException
-     * @throws UserErrorException
-     * @throws UserNoticeException
-     * @throws UserWarningException
-     * @throws WarningException
      */
     public static function run(?string $timezone = 'Asia/Shanghai', string $routeDir = 'routes', string $configDir = 'config', string $runtimeDir =
     'runtime', string                  $uploadDir = 'Upload', ?\Closure $getVersionFunction = null, array $allowMethods = [
         Methods::GET, Methods::POST, Methods::DELETE, Methods::HEAD, Methods::PUT
     ], array                           $allowHeaders = ['*'], string $apiPassword = '', Request $request = null): Response|string
     {
-        set_error_handler(callback: static function ($err_severity, $err_msg, $err_file, $err_line) {
-            if (0 === error_reporting()) {
-                return false;
-            }
-            match ($err_severity) {
-                E_ERROR => throw new ErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_WARNING => throw new WarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_PARSE => throw new ParseException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_NOTICE => throw new NoticeException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_CORE_ERROR => throw new CoreErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_CORE_WARNING, E_COMPILE_WARNING => throw new CoreWarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_COMPILE_ERROR => throw new CompileErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_USER_ERROR => throw new UserErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_USER_WARNING => throw new UserWarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_USER_NOTICE => throw new UserNoticeException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_STRICT => throw new StrictException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_RECOVERABLE_ERROR => throw new RecoverableErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_DEPRECATED => throw new DeprecatedException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_USER_DEPRECATED => throw new UserDeprecatedException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-            };
-        }, error_levels: E_ALL);
         try {
+            set_error_handler(callback: static function ($err_severity, $err_msg, $err_file, $err_line) {
+                match ($err_severity) {
+                    E_ERROR => throw new ErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_WARNING => throw new WarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_PARSE => throw new ParseException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_NOTICE => throw new NoticeException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_CORE_ERROR => throw new CoreErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_CORE_WARNING, E_COMPILE_WARNING => throw new CoreWarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_COMPILE_ERROR => throw new CompileErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_USER_ERROR => throw new UserErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_USER_WARNING => throw new UserWarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_USER_NOTICE => throw new UserNoticeException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_STRICT => throw new StrictException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_RECOVERABLE_ERROR => throw new RecoverableErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_DEPRECATED => throw new DeprecatedException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_USER_DEPRECATED => throw new UserDeprecatedException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                };
+            }, error_levels: E_ALL);
             if (!defined('PROJECT_PATH')) {
                 define('PROJECT_PATH', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR);
             }
