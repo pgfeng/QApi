@@ -242,25 +242,16 @@ class DB
         return $this;
     }
 
-    /**
-     * @return bool
-     */
     final public function beginTransaction(): bool
     {
         return $this->connection->beginTransaction();
     }
 
-    /**
-     * @return bool
-     */
     final public function commit(): bool
     {
         return $this->connection->commit();
     }
 
-    /**
-     * @return bool
-     */
     final public function rollBack(): bool
     {
         return $this->connection->rollBack();
@@ -574,7 +565,7 @@ class DB
      */
     public function bothLike(string $field, $value): self
     {
-        $this->queryBuilder->where($this->expr()->like($field, '%' . $this->quote($value) . '%'));
+        $this->queryBuilder->where($this->expr()->like($field, $this->quote('%' . $value . '%')));
         return $this;
     }
 
