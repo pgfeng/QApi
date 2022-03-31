@@ -482,7 +482,7 @@ class DB
         } else {
             $where = $this->expr()->like($field, $this->quote($value));
         }
-        $this->queryBuilder->where($where);
+        $this->where($where);
         return $this;
     }
 
