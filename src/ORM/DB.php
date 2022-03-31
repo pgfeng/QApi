@@ -467,13 +467,22 @@ class DB
     }
 
     /**
-     * @param string $field
+     * @param string|array $field
      * @param $value
      * @return $this
      */
-    public function like(string $field, $value): self
+    public function like(string|array $field, $value): self
     {
-        $this->queryBuilder->where($this->expr()->like($field, $value));
+        if (is_array($field)) {
+            $expr = [];
+            foreach ($field as $f) {
+                $expr[] = $this->expr()->like($f, $this->quote($value));
+            }
+            $where = $this->queryBuilder->expr()->or(...$expr);
+        } else {
+            $where = $this->expr()->like($field, $this->quote($value));
+        }
+        $this->queryBuilder->where($where);
         return $this;
     }
 
@@ -537,36 +546,33 @@ class DB
     }
 
     /**
-     * @param string $field
+     * @param string|array $field
      * @param $value
      * @return $this
      */
-    public function leftLike(string $field, $value): self
+    public function leftLike(string|array $field, $value): self
     {
-        $this->queryBuilder->where($this->expr()->like($field, '%' . $this->quote($value)));
-        return $this;
+        return $this->like($field, '%' . $value);
     }
 
     /**
-     * @param string $field
+     * @param string|array $field
      * @param $value
      * @return $this
      */
-    public function rightLike(string $field, $value): self
+    public function rightLike(string|array $field, $value): self
     {
-        $this->queryBuilder->where($this->expr()->like($field, $this->quote($value) . '%'));
-        return $this;
+        return $this->like($field, $value . '%');
     }
 
     /**
-     * @param string $field
+     * @param string|array $field
      * @param $value
      * @return $this
      */
-    public function bothLike(string $field, $value): self
+    public function bothLike(string|array $field, $value): self
     {
-        $this->queryBuilder->where($this->expr()->like($field, $this->quote('%' . $value . '%')));
-        return $this;
+        return $this->like($field, '%' . $value . '%');
     }
 
     /**
