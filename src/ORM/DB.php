@@ -3,6 +3,7 @@
 
 namespace QApi\ORM;
 
+use Closure;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Events;
@@ -17,7 +18,9 @@ use QApi\Config\Database\PdoMysqlDatabase;
 use QApi\Config\Database\PdoSqliteDatabase;
 use QApi\Config\Database\SqlServDatabase;
 use QApi\Data;
+use QApi\Enumeration\CliColor;
 use QApi\Exception\SqlErrorException;
+use QApi\Logger;
 
 /**
  * Class DB
@@ -239,6 +242,55 @@ class DB
         return $this;
     }
 
+    /**
+     * @return bool
+     */
+    final public function beginTransaction(): bool
+    {
+        return $this->connection->beginTransaction();
+    }
+
+    /**
+     * @return bool
+     */
+    final public function commit(): bool
+    {
+        return $this->connection->commit();
+    }
+
+    /**
+     * @return bool
+     */
+    final public function rollBack(): bool
+    {
+        return $this->connection->rollBack();
+    }
+
+    /**
+     * 闭包执行事务，返回事务执行的状态
+     * @param Closure $callback
+     * @return bool
+     */
+    final public function transaction(Closure $callback): bool
+    {
+        try {
+            $this->beginTransaction();
+            if ($callback($this) !== false) {
+                return $this->commit();
+            }
+            $this->rollBack();
+            return false;
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            $file = $e->getFile();
+            $line = $e->getLine();
+            $errorType = get_class($e);
+            Logger::error("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
+                $line);
+            $this->rollBack();
+            return false;
+        }
+    }
 
     /**
      * @param ExpressionBuilder|string|array $predicates
