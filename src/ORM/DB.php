@@ -603,10 +603,11 @@ class DB
      * @param array $params
      * @param array $types
      * @param QueryCacheProfile|null $qcp
-     * @return array[]
+     * @return Data|bool
+     * @throws \Doctrine\DBAL\Exception
      */
     public function query(string $sql = null, array $params = [], array $types = [], ?QueryCacheProfile $qcp =
-    null): array
+    null): Data|bool
     {
         if ($sql) {
             $data = $this->queryBuilder->getConnection()->executeQuery($sql, $params, $types, $qcp)
@@ -615,7 +616,7 @@ class DB
             $data = $this->queryBuilder->executeQuery()->fetchAllAssociative();
         }
         $this->hasWhere = false;
-        return $data;
+        return new Data($data);
     }
 
     /**
