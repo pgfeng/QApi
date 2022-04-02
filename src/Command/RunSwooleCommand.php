@@ -73,8 +73,9 @@ class RunSwooleCommand extends CommandHandler
             $this->command->cli->blue(sprintf('QApi Server Startup On <http://%s:%s/> Server-PID：%s', $appDomain['host'],
                 $appDomain['port'], $server->master_pid . '-' . $server->manager_pid));
         });
-        $cache = new SwooleTableAdapter(new Config\Cache\SwooleTable(1, 11));
+        $cache = new SwooleTableAdapter(new Config\Cache\SwooleTable(2, 11));
         $http->on("request", function ($request, $response) use ($http, $appDomain, $cache) {
+            $cache->set('runNumber', $cache->get('runNumber', 0) + 1);
             try {
                 /**
                  * @var Application $app
@@ -160,15 +161,14 @@ class RunSwooleCommand extends CommandHandler
                     $response->end($res);
                 }
             } catch (RuntimeException $e) {
-                throw new ErrorException($e->getMessage(), 0, 1,
-                    $e->getFile(), $e->getLine());
-                $response->end((new \QApi\Response())->setCode(500)->setMsg($e->getMessage())->fail());
-                return;
+                $response->end((new \QApi\Response())->setCode(500)->fail($e->getMessage()));
             }
+            $cache->set('runNumber', $cache->get('runNumber') - 1);
             if ($appDomain['runMode'] === RunMode::DEVELOPMENT && $cache->get('reloadTime', 0) < time() - 5) {
                 while (true) {
                     $time = explode('.', microtime(true));
-                    if ((count($time) === 2) && ($request->fd === (ceil($time[1] / 10)) % 100)) {
+                    if ((count($time) === 2) && ($request->fd === (ceil($time[1] / 10)) % 100) &&
+                        $cache->get('runNumber') === 0) {
                         $cache->set('reloadTime', time());
                         $http->reload();
                         break;
