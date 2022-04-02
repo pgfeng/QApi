@@ -140,6 +140,7 @@ class RunSwooleCommand extends CommandHandler
                         $response->header('Access-Control-Allow-Origin', '*');
                     }
                 }
+                $res->withHeader('Access-Control-Allow-Headers',$app->allowHeaders);
                 if ($res instanceof Response) {
                     $headers = $res->getHeaders();
                     foreach ($headers as $name => $header) {
