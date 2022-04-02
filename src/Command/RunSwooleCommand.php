@@ -165,7 +165,7 @@ class RunSwooleCommand extends CommandHandler
                 $response->end((new \QApi\Response())->setCode(500)->setMsg($e->getMessage())->fail());
                 return;
             }
-            if ($appDomain['runMode'] === RunMode::DEVELOPMENT && $cache->get('reloadTime', 0) < time() - 1) {
+            if ($appDomain['runMode'] === RunMode::DEVELOPMENT && $cache->get('reloadTime', 0) < time() - 5) {
                 while (true) {
                     $time = explode('.', microtime(true));
                     if ((count($time) === 2) && ($request->fd === (ceil($time[1] / 10)) % 100)) {
@@ -178,6 +178,7 @@ class RunSwooleCommand extends CommandHandler
             }
         });
         $http->start();
+        $cache->set('reloadTime', time());
         return null;
     }
 
