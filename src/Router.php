@@ -48,6 +48,7 @@ class Router
 
     public static ?Request $request = null;
 
+    public static bool $buildRouter = false;
     /**
      * 存储路由
      * 如果当前请求类型不存在会自动向ALL中查找
@@ -183,6 +184,10 @@ class Router
      */
     #[NoReturn] public static function BuildRoute(string $nameSpace): void
     {
+        if (self::$buildRouter){
+            return;
+        }
+        self::$buildRouter = true;
         $builder_file_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
             DIRECTORY_SEPARATOR
             . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builder.php';

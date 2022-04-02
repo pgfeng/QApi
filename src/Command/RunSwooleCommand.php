@@ -8,6 +8,7 @@ use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use QApi\App;
 use QApi\Cache\Cache;
+use QApi\Cache\SwooleTableAdapter;
 use QApi\Command;
 use QApi\Config;
 use QApi\Config\Application;
@@ -72,7 +73,8 @@ class RunSwooleCommand extends CommandHandler
             $this->command->cli->blue(sprintf('QApi Server Startup On <http://%s:%s/> Server-PID：%s', $appDomain['host'],
                 $appDomain['port'], $server->master_pid . '-' . $server->manager_pid));
         });
-        $http->on("request", function ($request, $response) use ($http, $appDomain) {
+        $cache = new SwooleTableAdapter(new Config\Cache\SwooleTable(1, 11));
+        $http->on("request", function ($request, $response) use ($http, $appDomain, $cache) {
             try {
                 /**
                  * @var Application $app
@@ -140,7 +142,7 @@ class RunSwooleCommand extends CommandHandler
                         $response->header('Access-Control-Allow-Origin', '*');
                     }
                 }
-                $res->withHeader('Access-Control-Allow-Headers',$app->allowHeaders);
+                $res->withHeader('Access-Control-Allow-Headers', $app->allowHeaders);
                 if ($res instanceof Response) {
                     $headers = $res->getHeaders();
                     foreach ($headers as $name => $header) {
@@ -163,10 +165,11 @@ class RunSwooleCommand extends CommandHandler
                 $response->end((new \QApi\Response())->setCode(500)->setMsg($e->getMessage())->fail());
                 return;
             }
-            if ($appDomain['runMode'] === RunMode::DEVELOPMENT) {
+            if ($appDomain['runMode'] === RunMode::DEVELOPMENT && $cache->get('reloadTime', 0) < time() - 1) {
                 while (true) {
                     $time = explode('.', microtime(true));
                     if ((count($time) === 2) && ($request->fd === (ceil($time[1] / 10)) % 100)) {
+                        $cache->set('reloadTime', time());
                         $http->reload();
                         break;
                     }
