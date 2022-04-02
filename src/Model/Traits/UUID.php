@@ -15,6 +15,7 @@ use QApi\Model;
 trait UUID
 {
     protected ?string $uuidPrefix = null;
+    protected ?string $lastInsertUUID = null;
 
     /**
      * @param Data|array $data
@@ -28,7 +29,8 @@ trait UUID
             $primary_key = $this->primary_key;
         }
         if (!isset($data[$primary_key]) || !$data[$primary_key]) {
-            $data[$primary_key] = buildID($this->uuidPrefix ?: str_replace('_', '-', $this->getTableName()) . '-');
+            $uuid = buildID($this->uuidPrefix ?: str_replace('_', '-', $this->getTableName()) . '-');
+            $data[$primary_key] = $this->lastInsertUUID = $uuid;
             return $this->insert($data);
         }
         return self::model()->where($primary_key, $data[$primary_key])->update($data);
