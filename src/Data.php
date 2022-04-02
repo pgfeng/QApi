@@ -142,7 +142,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function has($key): bool
     {
-        return isset($this->data[$key]);
+        return isset($this[$key]);
     }
 
     /**
