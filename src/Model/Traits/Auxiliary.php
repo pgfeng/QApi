@@ -125,7 +125,7 @@ trait Auxiliary
 
         if ($this->save($data, $primary_key)) {
             if (isset($this->lastInsertUUID)) {
-                $response->setExtra(['UUID', $this->lastInsertUUID]);
+                $response->setExtra(['UUID'=> $this->lastInsertUUID]);
             }
             return $response->ok()->setMsg($this->modelName . $handle . $this->successString);
         }
