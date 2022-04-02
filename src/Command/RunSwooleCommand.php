@@ -177,6 +177,9 @@ class RunSwooleCommand extends CommandHandler
                 }
             }
         });
+        $http->on('Close',function ($server, $fd){
+            $server->close();
+        });
         $http->start();
         $cache->set('reloadTime', time());
         return null;
