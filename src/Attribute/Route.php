@@ -34,9 +34,6 @@ use QApi\Http\MiddlewareInterface;
      */
     protected function writeFile(string $filename, string $content): bool
     {
-        if(!flock(fopen($filename))){
-            return;
-        }
         $filepath = pathinfo($filename, PATHINFO_DIRNAME);
 
         if (!$this->createPathIfNeeded($filepath)) {
