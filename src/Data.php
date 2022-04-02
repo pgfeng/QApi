@@ -117,6 +117,11 @@ class Data extends ArrayObject implements JsonSerializableAlias
     }
 
 
+    public function __get(string $name)
+    {
+        return $this[$name] ?? null;
+    }
+
     /**
      * @param $key
      * @param $value
