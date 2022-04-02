@@ -615,6 +615,9 @@ class DB
         } else {
             $data = $this->queryBuilder->executeQuery()->fetchAllAssociative();
         }
+        foreach ($data as $key => $item) {
+            $data[$key] = new Data($item);
+        }
         $this->hasWhere = false;
         return new Data($data);
     }

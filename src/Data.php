@@ -10,13 +10,7 @@ use JsonSerializable as JsonSerializableAlias;
 
 class Data extends ArrayObject implements JsonSerializableAlias
 {
-    /**
-     * @param $data
-     */
-    public function __construct(protected array &$data)
-    {
-        parent::__construct($data);
-    }
+
 
     /**
      * 将数据转为primary_key为键名并返回
@@ -43,9 +37,9 @@ class Data extends ArrayObject implements JsonSerializableAlias
      * @param string|null $index_key
      * @return array
      */
-    #[Pure] public function column(string $column_key, string|null $index_key = null): array
+    public function column(string $column_key, string|null $index_key = null): array
     {
-        return array_column($this->data, $column_key, $index_key);
+        return array_column($this->toArray(), $column_key, $index_key);
     }
 
     /**
@@ -53,9 +47,9 @@ class Data extends ArrayObject implements JsonSerializableAlias
      * @param array $data
      * @return array
      */
-    #[Pure] public function merge(array $data): array
+    public function merge(array $data): array
     {
-        return array_merge($this->data, $data);
+        return array_merge($this->toArray(), $data);
     }
 
     /**
@@ -71,11 +65,13 @@ class Data extends ArrayObject implements JsonSerializableAlias
     /**
      * 在开头插入元素
      * @param mixed $data
-     * @return void
+     * @return Data
      */
-    public function unshift(mixed $data): void
+    public function unshift(mixed ...$data): Data
     {
-        array_unshift($this->data, $data);
+        $array = $this->getArrayCopy();
+        array_unshift($array, $data);
+        return new Data($array);
     }
 
     /**
@@ -84,7 +80,8 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function shift(): mixed
     {
-        return array_shift($this->data);
+        $array = $this->getArrayCopy();
+        return array_shift($array);
     }
 
     /**
@@ -93,21 +90,22 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function pop(): mixed
     {
-        return array_pop($this->data);
+        $array = $this->getArrayCopy();
+        return array_pop($array);
     }
 
     /**
      * 获取数据
-     * @param $key
+     * @param string|bool|null $key
      * @param null $default_value
      * @return null|string|array
      */
-    public function get($key = false, $default_value = null): null|string|array
+    public function get(string|bool|null $key = false, $default_value = null): null|string|array
     {
         if (!$key) {
-            return $this->data;
+            return $this;
         }
-        return $this->data[$key] ?? $default_value;
+        return $this[$key] ?? $default_value;
     }
 
 
@@ -118,7 +116,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function set($key, $value): mixed
     {
-        return $this->data[$key] = $value;
+        return $this[$key] = $value;
     }
 
     /**
@@ -144,69 +142,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function jsonSerialize(): array
     {
-        return $this->data;
-    }
-
-    /**
-     * @param $key
-     *
-     * @return bool
-     */
-    public function offsetExists($key): bool
-    {
-        return isset($this->data[$key]);
-    }
-
-    /**
-     * @param $key
-     *
-     * @return mixed
-     */
-    public function offsetGet($key): mixed
-    {
-        return $this->data[$key] ?? NULL;
-    }
-
-    public function offsetSet($key, $value): void
-    {
-        $this->data[$key] = $value;
-    }
-
-    /**
-     * @param mixed $key
-     * @return void
-     */
-    public function offsetUnset(mixed $key): void
-    {
-        unset($this->data[$key]);
-    }
-
-    /**
-     * @param $name
-     * @return array|string
-     */
-    public function __get(string $name): string|array
-    {
-        return $this->data[$name];
-    }
-
-    /**
-     * @param $key
-     * @param $value
-     */
-    public function __set(string $key, $value)
-    {
-        $this->data[$key] = $value;
-    }
-
-    /**
-     * @param $key
-     *
-     * @return bool
-     */
-    public function __isset(string $key): bool
-    {
-        return isset($this->data[$key]);
+        return $this->toArray();
     }
 
     /**
@@ -217,66 +153,13 @@ class Data extends ArrayObject implements JsonSerializableAlias
         return $this->toJson();
     }
 
-    /**
-     * @param $name
-     */
-    public function __unset($name)
-    {
-        unset($this->data[$name]);
-    }
-
-    /**
-     * @return mixed
-     */
-    #[Pure] public function count(): int
-    {
-        return count($this->data);
-    }
-
-
-    /**
-     * @return Data|null
-     */
-    public function current(): ?Data
-    {
-        $data = current($this->data);
-        if (!empty($data)) {
-            return new Data($data);
-        }
-
-        return NULL;
-    }
-
-    /**
-     * @return string
-     */
-    #[Pure] public function key(): string
-    {
-        return key($this->data);
-    }
-
-    /**
-     * @return mixed
-     */
-    public function next(): mixed
-    {
-        return next($this->data);
-    }
-
-    /**
-     * @return bool
-     */
-    public function valid(): bool
-    {
-        return $this->current() !== NULL;
-    }
 
     /**
      * @return array
      */
     public function toArray(): array
     {
-        return $this->data;
+        return $this->getArrayCopy();
     }
 
     /**
@@ -288,13 +171,5 @@ class Data extends ArrayObject implements JsonSerializableAlias
         return json_encode($this, JSON_THROW_ON_ERROR | JSON_ERROR_NONE | JSON_OBJECT_AS_ARRAY | JSON_UNESCAPED_UNICODE);
     }
 
-
-    /**
-     * @return ArrayIterator
-     */
-    public function getIterator(): ArrayIterator
-    {
-        return (new ArrayObject($this->data))->getIterator();
-    }
 
 }
