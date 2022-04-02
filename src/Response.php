@@ -97,6 +97,7 @@ class Response
             }
             $this->withHeader('Access-Control-Allow-Headers', implode(',', $app->allowHeaders));
         }
+        $this->withHeader('Access-Control-Allow-Headers','_QApi');
         $this->withHeader('X-Powered-By', 'QApi');
         $this->withHeader('Content-Type', 'application/json;charset=utf-8');
 

@@ -133,9 +133,12 @@ class RunSwooleCommand extends CommandHandler
                 $res = \QApi\App::run(apiPassword: $appDomain['app']->docPassword, request: $req);
                 $response->header('Server', 'QApiServer');
                 $response->status($res->getStatusCode(), $res->getReason());
-
-                if (in_array('*', $app->allowOrigin, true) && isset($request->header['referer'])) {
-                    $response->header('Access-Control-Allow-Origin', $request->header['referer']);
+                if (in_array('*', $app->allowOrigin, true)) {
+                    if (isset($request->header['referer'])) {
+                        $response->header('Access-Control-Allow-Origin', $request->header['referer']);
+                    } else {
+                        $response->header('Access-Control-Allow-Origin', '*');
+                    }
                 }
                 if ($res instanceof Response) {
                     $headers = $res->getHeaders();
