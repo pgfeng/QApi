@@ -161,7 +161,7 @@ class RunSwooleCommand extends CommandHandler
                     $response->end($res);
                 }
             } catch (RuntimeException $e) {
-                $response->end((new \QApi\Response())->setCode(500)->fail($e->getMessage()));
+                $response->end((new Response())->setCode(500)->fail($e->getMessage()));
             }
             $cache->set('runNumber', $cache->get('runNumber') - 1);
             if ($appDomain['runMode'] === RunMode::DEVELOPMENT && $cache->get('reloadTime', 0) < time() - 5) {
