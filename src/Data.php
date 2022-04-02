@@ -67,7 +67,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function push(mixed $data): void
     {
-        $this->data[] = $data;
+        $this[] = $data;
     }
 
     /**
