@@ -88,19 +88,18 @@ class Response
      */
     public function __construct(private ?string $version = '1.1')
     {
-        $app = Config::$app;
-        if ($app && Router::$request) {
+        $app = Config::app();
+        if ($app) {
             if (in_array('*', $app->allowOrigin, true)) {
                 $this->withHeader('Access-Control-Allow-Origin', $app->allowOrigin);
             } else if (in_array(Router::$request->getHost(), $app->allowOrigin, true)) {
                 $this->withHeader('Access-Control-Allow-Origin', Router::$request->getHost());
             }
-            $this->withHeader('Access-Control-Allow-Headers', implode(',', $app->allowHeaders));
+            $this->withAddedHeader('Access-Control-Allow-Headers', implode(',', $app->allowHeaders));
         }
-        $this->withHeader('Access-Control-Allow-Headers','_QApi');
+        $this->withAddedHeader('Access-Control-Allow-Headers','_QApi');
         $this->withHeader('X-Powered-By', 'QApi');
         $this->withHeader('Content-Type', 'application/json;charset=utf-8');
-
     }
 
     /**
@@ -146,7 +145,27 @@ class Response
      */
     public function withHeader(string $name, string|array $value): Response
     {
+        if (is_string($value)){
+            $value = [$value];
+        }
         $this->headers[$name] = $value;
+        return $this;
+    }
+
+    public function withAddedHeader(string $name,string|array $value):Response
+    {
+        if (isset($this->headers[$name])){
+            if (is_array($value)){
+                $this->headers = array_merge($this->headers[$name],$value);
+            }else{
+                $this->headers[$name][] = $value;
+            }
+        }else{
+            if (is_string($value)){
+                $value = [$value];
+            }
+            $this->headers[$name] = $value;
+        }
         return $this;
     }
 
@@ -175,6 +194,11 @@ class Response
     {
         unset($this->headers[$name]);
         return $this;
+    }
+
+    public function withoutHeader(string $name):Response
+    {
+        return $this->removeHeader($name);
     }
 
     /**

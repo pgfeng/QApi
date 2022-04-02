@@ -212,40 +212,7 @@ class Request
     private
     function prepareRequestUri()
     {
-        $requestUri = '';
-
-        if ('1' === $this->server->get('IIS_WasUrlRewritten') && '' !== $this->server->get('UNENCODED_URL')) {
-            $requestUri = $this->server->get('UNENCODED_URL');
-            $this->server->remove('UNENCODED_URL');
-            $this->server->remove('IIS_WasUrlRewritten');
-        } elseif ($this->server->has('REQUEST_URI')) {
-            $requestUri = $this->server->get('REQUEST_URI');
-            if ('' !== $requestUri && str_starts_with($requestUri, '/')) {
-                if (false !== $pos = strpos($requestUri, '#')) {
-                    $requestUri = substr($requestUri, 0, $pos);
-                }
-            } else {
-                $uriComponents = parse_url($requestUri);
-                if (isset($uriComponents['path'])) {
-                    $requestUri = $uriComponents['path'];
-                }
-                if (isset($uriComponents['query'])) {
-                    $requestUri .= '?' . $uriComponents['query'];
-                }
-            }
-        } elseif ($this->server->has('ORIG_PATH_INFO')) {
-            $requestUri = $this->server->get('ORIG_PATH_INFO');
-            if ('' !== $this->server->get('QUERY_STRING')) {
-                $requestUri .= '?' . $this->server->get('QUERY_STRING');
-            }
-            $this->server->remove('ORIG_PATH_INFO');
-        }
-        if (strpos($requestUri, '?') === false && $this->get->count()) {
-            $requestUri .= '?' . $this->server->get('QUERY_STRING');
-        }
-        $this->server->set('REQUEST_URI', $requestUri);
-
-        return $requestUri;
+        return $this->server->get('REQUEST_URI');
     }
 
 
