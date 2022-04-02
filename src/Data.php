@@ -39,7 +39,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function column(string $column_key, string|null $index_key = null): array
     {
-        return array_column($this->toArray(), $column_key, $index_key);
+        return array_column($this->getArrayCopy(), $column_key, $index_key);
     }
 
     /**
@@ -49,7 +49,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function merge(array $data): array
     {
-        return array_merge($this->toArray(), $data);
+        return array_merge($this->getArrayCopy(), $data);
     }
 
     /**
