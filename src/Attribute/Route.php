@@ -34,8 +34,10 @@ use QApi\Http\MiddlewareInterface;
      */
     protected function writeFile(string $filename, string $content): bool
     {
+        if ($this->lock()) {
+            return false;
+        }
         $filepath = pathinfo($filename, PATHINFO_DIRNAME);
-
         if (!$this->createPathIfNeeded($filepath)) {
             return false;
         }
@@ -48,13 +50,25 @@ use QApi\Http\MiddlewareInterface;
         mkPathDir($tmpFile);
         if (file_put_contents($tmpFile, $content) !== false) {
             if (@rename($tmpFile, $filename)) {
+                $this->unlock($filename);
                 return true;
             }
-
             @unlink($tmpFile);
         }
-
         return false;
+    }
+
+    public function lock($filename): bool
+    {
+        $fp = fopen($filename, 'w+');
+        return flock($fp, LOCK_EX | LOCK_NB);
+    }
+
+    public function unlock($filename): bool
+    {
+
+        $fp = fopen($filename, 'w+');
+        return !flock($fp, LOCK_UN);
     }
 
     /**
@@ -68,7 +82,6 @@ use QApi\Http\MiddlewareInterface;
     public function builder(\ReflectionClass $class, string $controllerName, string $methodName, bool $attr = true):
     mixed
     {
-
         $tmpControllerName = trim(str_replace(App::$app->getNameSpace(), '', $controllerName), '\\');
         $versionDir = substr($tmpControllerName, 0, stripos($tmpControllerName, '\\'));
         if (count(glob(PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
@@ -78,6 +91,7 @@ use QApi\Http\MiddlewareInterface;
         }
         $save_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
             . $versionDir . DIRECTORY_SEPARATOR . 'builder.php';
+
         if (!file_exists($save_path)) {
             mkPathDir($save_path);
             $write_data = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . '../Route/buildTemplate.php');
