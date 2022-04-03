@@ -52,7 +52,10 @@ class RunSwooleCommand extends CommandHandler
             $cache->set('runNumber', 0);
             Timer::after(1, function () use ($request, $cache, $http, $appDomain) {
                 $time = explode('.', microtime(true));
-                if ($cache->get('reloadTime', 0) < time() - 2 && ($request->fd === (ceil($time[1] / 1000)) % 32)) {
+                if (count($time) === 2 && $cache->get('reloadTime', 0) < time() - 2 && ($request->fd === (ceil($time[1] /
+                            1000)
+                        ) %
+                        32)) {
                     $cache->set('reloadTime', time());
                     $http->reload();
                 } else {
