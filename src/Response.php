@@ -95,7 +95,7 @@ class Response
             } else if (in_array(Router::$request->getHost(), $app->allowOrigin, true)) {
                 $this->withHeader('Access-Control-Allow-Origin', Router::$request->getHost());
             }
-            $this->withAddedHeader('Access-Control-Allow-Headers', implode(',', $app->allowHeaders));
+            $this->withAddedHeader('Access-Control-Allow-Headers', $app->allowHeaders);
         }
         $this->withAddedHeader('Access-Control-Allow-Headers','_QApi');
         $this->withHeader('X-Powered-By', 'QApi');
@@ -154,16 +154,12 @@ class Response
 
     public function withAddedHeader(string $name,string|array $value):Response
     {
+        if (is_string($value)){
+            $value = explode(',',$value);
+        }
         if (isset($this->headers[$name])){
-            if (is_array($value)){
-                $this->headers = array_merge($this->headers[$name],$value);
-            }else{
-                $this->headers[$name][] = $value;
-            }
+            $this->headers[$name] = array_merge($this->headers[$name],$value);
         }else{
-            if (is_string($value)){
-                $value = [$value];
-            }
             $this->headers[$name] = $value;
         }
         return $this;

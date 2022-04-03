@@ -102,11 +102,11 @@ class RunSwooleCommand extends CommandHandler
         });
         $cache = new SwooleTableAdapter(new Config\Cache\SwooleTable(2, 11));
         $http->on("request", function ($request, $response) use ($http, $appDomain, $cache) {
+            App::$app = Config::$app = $app = $this->getApp($request->header['host']);
             try {
                 /**
                  * @var Application $app
                  */
-                $app = $this->getApp($request->header['host']);
                 $response->header('Access-Control-Allow-Headers', implode(',', $app->allowHeaders));
                 $response->header('X-Powered-By', 'QApi');
                 $argv = [];
@@ -124,67 +124,59 @@ class RunSwooleCommand extends CommandHandler
                     ]));
                     throw new ErrorException('host ' . $request->header['host'] . ' not bind app!', 0, 1,
                         $configPath);
-                    return;
-                }
-                $cache->set('runNumber', $cache->get('runNumber', 0) + 1);
-                $defaultHandle = new StreamHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . App::$runtimeDir . DIRECTORY_SEPARATOR . 'CliLog' .
-                    DIRECTORY_SEPARATOR
-                    . date('Y-m-d')
-                    . DIRECTORY_SEPARATOR . (date('H') . '-' . ceil(((int)date('i')) / 10)) . '.log',
-                    \Monolog\Logger::API,
-                    true, null, true);
-                $formatter = new LineFormatter("%datetime% %channel%.%level_name% > %message%\n", '[Y-m-d H:i:s]');
-                $defaultHandle->setFormatter($formatter);
-                $app->logHandler = [
-                    $defaultHandle
-                ];
-                Config::$command['logHandler'] = $defaultHandle;
-                Logger::init('QApiServer-' . $appDomain['port'] . '[' . $this->pid . ']', true);
-                $input = $request->rawContent();
-                $headers = [];
-                foreach ($request->header as $name => $header) {
-                    $name = explode('-', $name);
-                    foreach ($name as &$n) {
-                        $n = ucfirst($n);
-                    }
-                    $name = implode('-', $name);
-                    $headers[$name] = $header;
-                }
-                $req = new Request(
-                    new Data($argv),
-                    $request->get, $request->post,
-                    array_merge($request->get ?? [], $request->post ?? []),
-                    $input, $request->files ?? [], $request->cookie,
-                    null,
-                    $request->server, $headers);
-                /**
-                 * @var Response
-                 */
-                $res = \QApi\App::run(apiPassword: $appDomain['app']->docPassword, request: $req);
-                $response->header('Server', 'QApiServer');
-                $response->status($res->getStatusCode(), $res->getReason());
-                if (in_array('*', $app->allowOrigin, true)) {
-                    if (isset($request->header['referer'])) {
-                        $response->header('Access-Control-Allow-Origin', $request->header['referer']);
-                    } else {
-                        $response->header('Access-Control-Allow-Origin', '*');
-                    }
-                }
-                $res->withHeader('Access-Control-Allow-Headers', $app->allowHeaders);
-                if ($res instanceof Response) {
-                    $headers = $res->getHeaders();
-                    foreach ($headers as $name => $header) {
-                        if (strtoupper($name) === 'LOCATION') {
-                            $response->redirect($header, 301);
+                } else {
+                    $cache->set('runNumber', $cache->get('runNumber', 0) + 1);
+                    $defaultHandle = new StreamHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . App::$runtimeDir . DIRECTORY_SEPARATOR . 'CliLog' .
+                        DIRECTORY_SEPARATOR
+                        . date('Y-m-d')
+                        . DIRECTORY_SEPARATOR . (date('H') . '-' . ceil(((int)date('i')) / 10)) . '.log',
+                        \Monolog\Logger::API,
+                        true, null, true);
+                    $formatter = new LineFormatter("%datetime% %channel%.%level_name% > %message%\n", '[Y-m-d H:i:s]');
+                    $defaultHandle->setFormatter($formatter);
+                    $app->logHandler = [
+                        $defaultHandle
+                    ];
+                    Config::$command['logHandler'] = $defaultHandle;
+                    Logger::init('QApiServer-' . $appDomain['port'] . '[' . $this->pid . ']', true);
+                    $input = $request->rawContent();
+                    $headers = [];
+                    foreach ($request->header as $name => $header) {
+                        $name = explode('-', $name);
+                        foreach ($name as &$n) {
+                            $n = ucfirst($n);
                         }
-                        if (is_array($header)) {
-                            $response->header($name, implode(',', $header));
-                        } else {
-                            $response->header($name, $header);
+                        $name = implode('-', $name);
+                        $headers[$name] = $header;
+                    }
+                    $req = new Request(
+                        new Data($argv),
+                        $request->get, $request->post,
+                        array_merge($request->get ?? [], $request->post ?? []),
+                        $input, $request->files ?? [], $request->cookie,
+                        null,
+                        $request->server, $headers);
+                    /**
+                     * @var Response
+                     */
+                    $res = \QApi\App::run(apiPassword: $appDomain['app']->docPassword, request: $req);
+                    $response->header('Server', 'QApiServer');
+                    $response->status($res->getStatusCode(), $res->getReason());
+                    if ($res instanceof Response) {
+                        $headers = $res->getHeaders();
+                        foreach ($headers as $name => $header) {
+                            if (strtoupper($name) === 'LOCATION') {
+                                $response->redirect($header, 301);
+                            }
+                            if (is_array($header)) {
+                                $response->header($name, implode(',', $header));
+                            } else {
+                                $response->header($name, $header);
+                            }
                         }
                     }
+                    $response->end($res);
                 }
-                $response->end($res);
             } catch (RuntimeException $e) {
                 $response->end((new Response())->setCode(500)->fail($e->getMessage()));
             }
