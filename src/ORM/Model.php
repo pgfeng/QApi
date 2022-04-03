@@ -67,6 +67,7 @@ class Model extends DB
             $primary_key = $this->primary_key;
         }
         if (isset($data[$primary_key])) {
+            unset($data[$primary_key]);
             return self::model()->where($primary_key, $data[$primary_key])->update($data);
         }
 
