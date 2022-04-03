@@ -165,7 +165,6 @@ class Router
                 $data = glob($base_path . '*.php');
                 while ((App::$app->getRunMode() === QApi\Enumeration\RunMode::DEVELOPMENT && !file_exists($base_path .
                             'route.lock')) || !in_array($base_path . 'builder.php', $data)) {
-                    usleep(10);
                     $data = glob($base_path . '*.php');
                 }
                 foreach ($data as $file) {
