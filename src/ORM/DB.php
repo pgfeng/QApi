@@ -7,6 +7,7 @@ use Closure;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Events;
+use Doctrine\DBAL\LockMode;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
 use Doctrine\DBAL\Query\QueryBuilder;
@@ -60,8 +61,18 @@ class DB
         $config;
     private bool $hasWhere = false;
     protected Connection $connection;
+    /**
+     * @var AbstractSchemaManager|null
+     */
     private ?AbstractSchemaManager $schemaManager = null;
+    /**
+     * @var string|null
+     */
     protected ?string $aliasName = null;
+    /**
+     * @var int
+     */
+    protected ?int $lockMode = null;
 
     /**
      * DB constructor.
@@ -78,6 +89,16 @@ class DB
             $this->table = $table;
             $this->from($table);
         }
+    }
+
+    /**
+     * @param int $lockMode One of the Doctrine\DBAL\LockMode::* constants
+     */
+    public function lock(int $lockMode): self
+    {
+        $this->lockMode = $lockMode;
+        $this->from($this->connection->getDatabasePlatform()->appendLockHint($this->table, $lockMode), $this->aliasName);
+        return $this;
     }
 
     public function getSchemaManager(): AbstractSchemaManager
@@ -524,7 +545,7 @@ class DB
         if (count($Between) !== 2) {
             throw new SqlErrorException('Too few params to function Between($field, $Between), Must two params;');
         }
-        $Between = $this->addslashes($Between);
+        $Between = $this->quote($Between);
         $pBetween = $Between[0] . ' AND ' . $Between[1];
         return $this->where("{$field} BETWEEN {$pBetween}");
     }
@@ -540,7 +561,7 @@ class DB
         if (count($Between) !== 2) {
             throw new SqlErrorException('Too few params to function Between($field, $Between), Must two params;');
         }
-        $Between = $this->addslashes($Between);
+        $Between = $this->quote($Between);
         $pBetween = $Between[0] . ' AND ' . $Between[1];
         return $this->where("{$field} NOT BETWEEN {$pBetween}");
     }
@@ -604,7 +625,6 @@ class DB
      * @param array $types
      * @param QueryCacheProfile|null $qcp
      * @return Data|bool
-     * @throws \Doctrine\DBAL\Exception
      */
     public function query(string $sql = null, array $params = [], array $types = [], ?QueryCacheProfile $qcp =
     null): Data|bool
@@ -613,7 +633,12 @@ class DB
             $data = $this->queryBuilder->getConnection()->executeQuery($sql, $params, $types, $qcp)
                 ->fetchAllAssociative();
         } else {
-            $data = $this->queryBuilder->executeQuery()->fetchAllAssociative();
+            $sql = $this->queryBuilder->getSQL();
+            if ($this->lockMode !== null) {
+                $sql .= ' ' . $this->connection->getDatabasePlatform()->getWriteLockSQL();
+                $this->lockMode = null;
+            }
+            $data = $this->connection->executeQuery($sql, $params, $types, $qcp)->fetchAllAssociative();
         }
         foreach ($data as $key => $item) {
             $data[$key] = new Data($item);
@@ -688,7 +713,8 @@ class DB
     public function find(): ?Data
     {
         $this->hasWhere = false;
-        $data = $this->queryBuilder->setMaxResults(1)->executeQuery()->fetchAllAssociative();
+
+        $data = $this->limit(0, 1)->query();
         if (count($data)) {
             return new Data($data[0]);
         }
