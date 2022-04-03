@@ -6,7 +6,6 @@ namespace QApi\ORM;
 use Closure;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Events;
 use Doctrine\DBAL\LockMode;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
@@ -94,7 +93,7 @@ class DB
     /**
      * @param int $lockMode One of the Doctrine\DBAL\LockMode::* constants
      */
-    public function lock(int $lockMode): self
+    public function lock(int $lockMode = LockMode::NONE): self
     {
         $this->lockMode = $lockMode;
         $this->from($this->connection->getDatabasePlatform()->appendLockHint($this->table, $lockMode), $this->aliasName);
