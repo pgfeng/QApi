@@ -48,8 +48,6 @@ class Router
 
     public static ?Request $request = null;
 
-    public static bool $buildRouter = false;
-
     /**
      * 存储路由
      * 如果当前请求类型不存在会自动向ALL中查找
@@ -74,7 +72,7 @@ class Router
     {
         if (!$request) {
             $arguments = [];
-            self::$request = new Request(new Data($arguments));
+            self::$request = $request = new Request(new Data($arguments));
         } else {
             self::$request = $request;
         }
@@ -146,7 +144,7 @@ class Router
         if (Config::app()->getRunMode() === QApi\Enumeration\RunMode::DEVELOPMENT) {
             self::BuildRoute(Config::$app->getNameSpace());
         }
-        $uri = preg_replace('#(/+)#', '/', '/' . $_SERVER["REQUEST_URI"]);
+        $uri = preg_replace('#(/+)#', '/', '/' . $request->server['REQUEST_URI']);
         $uri = parse_url($uri, PHP_URL_PATH);
         if (!$uri) {
             $uri = '/';
@@ -165,7 +163,8 @@ class Router
                     . str_replace('.', '', $version->versionName) . DIRECTORY_SEPARATOR;
                 mkPathDir($base_path . 'builder.php');
                 $data = glob($base_path . '*.php');
-                while (App::$app->getRunMode() === QApi\Enumeration\RunMode::DEVELOPMENT && !in_array($base_path . 'builder.php', $data)) {
+                while ((App::$app->getRunMode() === QApi\Enumeration\RunMode::DEVELOPMENT && !file_exists($base_path .
+                            'route.lock')) || !in_array($base_path . 'builder.php', $data)) {
                     usleep(10);
                     $data = glob($base_path . '*.php');
                 }
@@ -185,10 +184,22 @@ class Router
      */
     #[NoReturn] public static function BuildRoute(string $nameSpace): void
     {
-        if (self::$buildRouter){
+        $lockFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
+            DIRECTORY_SEPARATOR
+            . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'runBuildRoute.lock';
+        $runtimeFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
+            DIRECTORY_SEPARATOR
+            . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'route.lock';
+        if (file_exists($runtimeFile)) {
+            try {
+                unlink($runtimeFile);
+            } catch (\Exception $e) {
+            }
+        }
+        if (file_exists($lockFile)) {
             return;
         }
-        self::$buildRouter = true;
+        touch($lockFile);
         $builder_file_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
             DIRECTORY_SEPARATOR
             . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builder.php';
@@ -219,6 +230,11 @@ class Router
             error_log("\x1b[31;1m {$errorType}：" . $message . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
                 $line, 0);
         }
+        try {
+            unlink($lockFile);
+        } catch (\Exception $e) {
+        }
+        touch($runtimeFile);
     }
 
     /**

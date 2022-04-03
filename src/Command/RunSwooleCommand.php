@@ -7,18 +7,18 @@ use ErrorException;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use QApi\App;
-use QApi\Cache\Cache;
 use QApi\Cache\SwooleTableAdapter;
 use QApi\Command;
 use QApi\Config;
 use QApi\Config\Application;
-use QApi\Database\DB;
+use QApi\Data;
 use QApi\Enumeration\RunMode;
 use QApi\Logger;
+use QApi\Request;
 use QApi\Response;
 use RuntimeException;
 use Swoole\Http\Server;
-use Swoole\Table;
+use Swoole\Timer;
 
 class RunSwooleCommand extends CommandHandler
 {
@@ -38,7 +38,34 @@ class RunSwooleCommand extends CommandHandler
         $this->apps = Config::apps();
     }
 
-    public function getApp($http_host)
+    /**
+     * 热重启服务
+     * @param $request
+     * @param $cache
+     * @param $http
+     * @param $appDomain
+     */
+    function reload($request, $cache, $http, $appDomain)
+    {
+        if ($appDomain['runMode'] === RunMode::DEVELOPMENT &&
+            $cache->get('runNumber') === 0) {
+            Timer::after(1, function () use ($request, $cache, $http, $appDomain) {
+                $time = explode('.', microtime(true));
+                if ($cache->get('reloadTime', 0) < time() - 2 && ($request->fd === (ceil($time[1] / 1000)) % 32)) {
+                    $cache->set('reloadTime', time());
+                    $http->reload();
+                } else {
+                    $this->reload($request, $cache, $http, $appDomain);
+                }
+            });
+        }
+    }
+
+    /**
+     * @param $http_host
+     * @return Application|null
+     */
+    public function getApp($http_host): Application|null
     {
         $appConfig = Config::apps();
         $appConfig = array_reverse($appConfig);
@@ -75,7 +102,6 @@ class RunSwooleCommand extends CommandHandler
         });
         $cache = new SwooleTableAdapter(new Config\Cache\SwooleTable(2, 11));
         $http->on("request", function ($request, $response) use ($http, $appDomain, $cache) {
-            $cache->set('runNumber', $cache->get('runNumber', 0) + 1);
             try {
                 /**
                  * @var Application $app
@@ -100,6 +126,7 @@ class RunSwooleCommand extends CommandHandler
                         $configPath);
                     return;
                 }
+                $cache->set('runNumber', $cache->get('runNumber', 0) + 1);
                 $defaultHandle = new StreamHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . App::$runtimeDir . DIRECTORY_SEPARATOR . 'CliLog' .
                     DIRECTORY_SEPARATOR
                     . date('Y-m-d')
@@ -123,8 +150,8 @@ class RunSwooleCommand extends CommandHandler
                     $name = implode('-', $name);
                     $headers[$name] = $header;
                 }
-                $req = new \QApi\Request(
-                    new \QApi\Data($argv),
+                $req = new Request(
+                    new Data($argv),
                     $request->get, $request->post,
                     array_merge($request->get ?? [], $request->post ?? []),
                     $input, $request->files ?? [], $request->cookie,
@@ -156,29 +183,19 @@ class RunSwooleCommand extends CommandHandler
                             $response->header($name, $header);
                         }
                     }
-                    $response->end($res);
-                } else {
-                    $response->end($res);
                 }
+                $response->end($res);
             } catch (RuntimeException $e) {
                 $response->end((new Response())->setCode(500)->fail($e->getMessage()));
             }
             $cache->set('runNumber', $cache->get('runNumber') - 1);
-            if ($appDomain['runMode'] === RunMode::DEVELOPMENT && $cache->get('reloadTime', 0) < time() - 5) {
-                while (true) {
-                    $time = explode('.', microtime(true));
-                    if ((count($time) === 2) && ($request->fd === (ceil($time[1] / 10)) % 100) &&
-                        $cache->get('runNumber') === 0) {
-                        $cache->set('reloadTime', time());
-                        $http->reload();
-                        break;
-                    }
-                    usleep(10);
-                }
-            }
+
+            $this->reload($request, $cache, $http, $appDomain);
+
         });
-        $http->on('Close',function ($server, $fd){
-            $server->close($fd,true);
+        $http->on('Close', function ($server, $fd) use ($cache) {
+            //            $cache->set('runNumber', $cache->get('runNumber') - 1);
+            $server->close($fd, true);
         });
         $http->start();
         $cache->set('reloadTime', time());
