@@ -184,7 +184,7 @@ class RunSwooleCommand extends CommandHandler
 
         });
         $http->on('Close', function ($server, $fd) use ($cache) {
-            //            $cache->set('runNumber', $cache->get('runNumber') - 1);
+            $cache->set('runNumber', $cache->get('runNumber') - 1);
             $server->close($fd, true);
         });
         $http->start();
