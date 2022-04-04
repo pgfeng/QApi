@@ -292,10 +292,13 @@ use QApi\Http\MiddlewareInterface;
         public array|string|null $middleware = null,
         public string|null       $summary = null,
         public string|null       $description = null,
-        public string|null       $tag = '',
+        public string|null|array $tag = '',
         public bool              $checkParams = false,
     )
     {
+        if ($this->tag && is_string($this->tag)) {
+            $this->tag = explode($this->tag);
+        }
     }
 
     /**

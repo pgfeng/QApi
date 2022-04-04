@@ -23,12 +23,9 @@ class Utils
     public static array $columns = [];
 
     /**
-     * Rebuild
-     * @return mixed
-     * @throws \ErrorException
-     * @throws \QApi\Exception\CacheErrorException
+     * @return array
      */
-    public static function rebuild(): mixed
+    public static function loadDocument():array
     {
         /**
          * @var Config\Application[]
@@ -66,7 +63,7 @@ class Utils
                                             $path = $v->path;
                                         }
                                         if (!$tag && $v->tag) {
-                                            $tag = $v->tag;
+                                            $tag = implode('-', $v->tag);
                                         }
                                         if ($v->summary) {
                                             $summary = $v->summary;
@@ -131,6 +128,18 @@ class Utils
                 'doc' => $apis,
             ];
         }
+        return self::$docApp;
+    }
+    
+    /**
+     * Rebuild
+     * @return mixed
+     * @throws \ErrorException
+     * @throws \QApi\Exception\CacheErrorException
+     */
+    public static function rebuild(): mixed
+    {
+        self::loadDocument();
         $cache = Cache::initialization('__document');
         $cache->set('__apiDocument', self::$docApp);
         return null;
