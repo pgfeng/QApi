@@ -297,7 +297,7 @@ use QApi\Http\MiddlewareInterface;
     )
     {
         if ($this->tag && is_string($this->tag)) {
-            $this->tag = explode($this->tag);
+            $this->tag = explode('-', $this->tag);
         }
     }
 
