@@ -6,6 +6,7 @@ namespace QApi\ORM;
 use Closure;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception\ServerException;
 use Doctrine\DBAL\LockMode;
 use Doctrine\DBAL\ParameterType;
 use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
@@ -628,16 +629,22 @@ class DB
     public function query(string $sql = null, array $params = [], array $types = [], ?QueryCacheProfile $qcp =
     null): Data|bool
     {
-        if ($sql) {
-            $data = $this->queryBuilder->getConnection()->executeQuery($sql, $params, $types, $qcp)
-                ->fetchAllAssociative();
-        } else {
-            $sql = $this->queryBuilder->getSQL();
-            if ($this->lockMode !== null) {
-                $sql .= ' ' . $this->connection->getDatabasePlatform()->getWriteLockSQL();
-                $this->lockMode = null;
+        try {
+
+            if ($sql) {
+                $data = $this->queryBuilder->getConnection()->executeQuery($sql, $params, $types, $qcp)
+                    ->fetchAllAssociative();
+            } else {
+                $sql = $this->queryBuilder->getSQL();
+                if ($this->lockMode !== null) {
+                    $sql .= ' ' . $this->connection->getDatabasePlatform()->getWriteLockSQL();
+                    $this->lockMode = null;
+                }
+                $data = $this->connection->executeQuery($sql, $params, $types, $qcp)->fetchAllAssociative();
             }
-            $data = $this->connection->executeQuery($sql, $params, $types, $qcp)->fetchAllAssociative();
+        }catch (ServerException $e){
+            $exception = $e->getTrace()[4];
+            throw new SqlErrorException($e->getMessage(),$e->getCode(),0,$exception['file'],$exception['line'],$e);
         }
         foreach ($data as $key => $item) {
             $data[$key] = new Data($item);

@@ -4,7 +4,7 @@
 namespace QApi\Exception;
 
 
-class SqlErrorException extends \Exception
+class SqlErrorException extends \ErrorException
 {
 
 }

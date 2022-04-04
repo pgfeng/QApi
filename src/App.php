@@ -103,29 +103,28 @@ class App
                     self::$app = Config::app();
                 }
             } catch (\ErrorException $e) {
-                return json_encode([
-                    'status' => false,
-                    'code' => 500,
-                    'msg' => get_class($e) . '：' . $e->getMessage(),
-                    'data' => null,
-                ], JSON_THROW_ON_ERROR);
+                return (new Response())->setExtra(
+                    [
+                        'status' => false,
+                        'msg' => $e->getSeverity() . '：' . $e->getMessage(),
+                        'error_msg' => $e->getSeverity() . '：' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' .
+                            $e->getLine(),
+                        'data' => null,
+                    ]
+                );
             }
             self::$app->init();
             self::$getVersionFunction = $getVersionFunction;
             Router::init($request);
-            return \QApi\Router::run();
-        } catch (\Exception $e) {
+            return Router::run();
+        }  catch (\Exception $e) {
             $msg = $e->getMessage();
             $file = $e->getFile();
             $line = $e->getLine();
             $errorType = str_replace('QApi\\Exception\\', '', get_class($e));
             Logger::error("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
                 $line);
-            try {
-                $response = new Response();
-            } catch (\ErrorException $e) {
-                $response = new Response();
-            }
+            $response = new Response();
             $response->setCode(500)->setExtra([
                 'status' => false,
                 'msg' => $errorType . '：' . $msg,
@@ -134,17 +133,14 @@ class App
             ]);
             return $response;
         } catch (\Error $e) {
+            self::clearDevBuildRouteLock();
             $msg = $e->getMessage();
             $file = $e->getFile();
             $line = $e->getLine();
             $errorType = str_replace('QApi\\Exception\\', '', get_class($e));
             Logger::error("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
                 $line);
-            try {
-                $response = new Response();
-            } catch (\ErrorException $e) {
-                $response = new Response();
-            }
+            $response = new Response();
             $response->setCode(500)->setExtra([
                 'status' => false,
                 'msg' => $errorType . '：' . $msg,
@@ -153,5 +149,15 @@ class App
             ]);
             return $response;
         }
+    }
+
+    public static function clearDevBuildRouteLock()
+    {
+        try {
+            $lockFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
+                DIRECTORY_SEPARATOR
+                . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'runBuildRoute.lock';
+            unlink($lockFile);
+        } catch (\Exception) {}
     }
 }

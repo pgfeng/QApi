@@ -1282,7 +1282,12 @@ abstract class DBase
         $this->lastSql = $sql;
         $this->parseTablePre($sql);
         Logger::sql($sql);
-        $data = $this->_query($sql);
+        try {
+            $data = $this->_query($sql);
+        }catch (\Exception $e){
+            $exception = $e->getTrace()[4];
+            throw new SqlErrorException($e->getMessage(),$e->getCode(),0,$exception['file'],$exception['line'],$e);
+        }
         if ($data === FALSE) {
             new Exception($this->getError());
         }
@@ -1409,5 +1414,3 @@ abstract class DBase
 
     abstract public function rollBack(): bool;           //回滚事务
 }
-
-//====================    END DB.class.php      ========================//
