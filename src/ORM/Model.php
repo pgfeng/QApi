@@ -91,6 +91,6 @@ class Model extends DB
         if (!$primary_key) {
             $primary_key = $this->primary_key;
         }
-        return $this->where($primary_key, $primary_value)->find();
+        return $this->findByKey($primary_value, $primary_key);
     }
 }
