@@ -108,8 +108,8 @@ class Request
      */
     public function __construct(public Data|null $arguments = null, array $get = null, array $post = null, array $request =
     null,
-                                string $input = null, array $files = null,
-                                array $cookie = null, array $session = null, array $server = null, array $header = null)
+                                string           $input = null, array $files = null,
+                                array            $cookie = null, array $session = null, array $server = null, array $header = null)
     {
         if (!$this->arguments) {
             $params = [];
@@ -212,7 +212,11 @@ class Request
     private
     function prepareRequestUri()
     {
-        return $this->server->get('REQUEST_URI');
+        if (stripos($this->server->get('REQUEST_URI'),'?') !== false) {
+            return $this->server->get('REQUEST_URI');
+        } else {
+            return $this->server->get('REQUEST_URI') . ($this->server->get('QUERY_STRING') ? '?' . $this->server['QUERY_STRING'] : '');
+        }
     }
 
 
