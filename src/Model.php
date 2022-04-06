@@ -423,7 +423,7 @@ class Model
      * @return int
      * @throws \Exception
      */
-    public function save(Data|array $data, ?string $primary_key = null): int
+    public function save(Data|array $data, ?string $primary_key = null, array $types = []): int
     {
         if (!$primary_key) {
             $primary_key = $this->primary_key;
