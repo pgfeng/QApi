@@ -41,7 +41,7 @@ class Model extends DB
      */
     protected function initialization(string $table = null, string $configName = 'default')
     {
-
+        $table = $table ?? '';
         if (!$table) {
             $tb_name = substr(get_class($this), 6);
             $class = substr($tb_name, (($start = strrpos($tb_name, '\\')) > 0 ? $start + 1 : 0));
@@ -61,7 +61,7 @@ class Model extends DB
      * @param string|null $primary_key
      * @return int
      */
-    public function save(Data|array $data, ?string $primary_key = null): int
+    public function save(Data|array $data, ?string $primary_key = null, $types = []): int
     {
         if (!$primary_key) {
             $primary_key = $this->primary_key;
@@ -69,10 +69,10 @@ class Model extends DB
         if (isset($data[$primary_key])) {
             $primary_value = $data[$primary_key];
             unset($data[$primary_key]);
-            return self::model()->where($primary_key, $primary_value)->update($data);
+            return $this->where($primary_key, $primary_value)->update($data, $types);
         }
 
-        return self::model()->insert($data);
+        return $this->insert($data, $types);
     }
 
     public static function model(): static
