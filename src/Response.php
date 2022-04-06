@@ -88,7 +88,9 @@ class Response
      */
     public function __construct(private ?string $version = '1.1')
     {
-        $app = Config::app();
+        try {
+            $app = Config::$app??Config::$app;
+        }catch (\Exception){}
         if ($app) {
             if (in_array('*', $app->allowOrigin, true)) {
                 $this->withHeader('Access-Control-Allow-Origin', $app->allowOrigin);
