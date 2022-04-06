@@ -461,7 +461,7 @@ class DB
         $update = $this->queryBuilder->update($this->config->tablePrefix . $table);
         foreach ($data as $key => $value) {
             if (isset($types[$key])) {
-                $update->set($key, $value);
+                $update->set($key, $this->quote($value,$types[$key]));
             } else {
                 $update->set($key, $this->quote($value));
             }
@@ -483,8 +483,11 @@ class DB
             }
             return $value;
         }
-
-        return $this->getConnection()->quote($value, $type);
+        if (is_null($value)){
+            return 'null';
+        }else{
+            return $this->getConnection()->quote($value, $type);
+        }
     }
 
     /**
@@ -642,9 +645,9 @@ class DB
                 }
                 $data = $this->connection->executeQuery($sql, $params, $types, $qcp)->fetchAllAssociative();
             }
-        }catch (ServerException $e){
+        } catch (ServerException $e) {
             $exception = $e->getTrace()[4];
-            throw new SqlErrorException($e->getMessage(),$e->getCode(),0,$exception['file'],$exception['line'],$e);
+            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
         }
         foreach ($data as $key => $item) {
             $data[$key] = new Data($item);
