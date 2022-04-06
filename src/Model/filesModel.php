@@ -212,9 +212,9 @@ class filesModel extends Model
                             return $result;
                         }
                         $path = App::$uploadDir . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
-                        if(Router::$request){
-                            $full_path = Router::$request->server->get('DOCUMENT_ROOT').$path;
-                        }else{
+                        if (Router::$request) {
+                            $full_path = Router::$request->server->get('DOCUMENT_ROOT') . DIRECTORY_SEPARATOR . $path;
+                        } else {
                             $full_path = $path;
                         }
                         mkPathDir($full_path);
@@ -269,7 +269,11 @@ class filesModel extends Model
                 return $result;
             }
             $path = App::$uploadDir . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
-            $full_path = $path;
+            if (Router::$request) {
+                $full_path = Router::$request->server->get('DOCUMENT_ROOT') . DIRECTORY_SEPARATOR . $path;
+            } else {
+                $full_path = $path;
+            }
             mkPathDir($full_path);
             if (@move_uploaded_file($file['tmp_name'], $full_path)) {
                 $this->Insert([
