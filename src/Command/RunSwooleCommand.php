@@ -106,6 +106,7 @@ class RunSwooleCommand extends CommandHandler
         });
         $cache = new SwooleTableAdapter(new Config\Cache\SwooleTable(2, 11));
         $http->on("request", function ($request, $response) use ($http, $appDomain, $cache) {
+            $request->server['DOCUMENT_ROOT'] = Config::command('ServerRunDir');
             App::$app = Config::$app = $app = $this->getApp($request->header['host']);
             try {
                 /**

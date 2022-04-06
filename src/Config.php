@@ -12,7 +12,6 @@ use QApi\Config\Database\MysqliDatabase;
 use QApi\Config\Database\PdoMysqlDatabase;
 use QApi\Config\Database\PdoSqliteDatabase;
 use QApi\Config\Database\PdoSqlServDatabase;
-use QApi\Config\Database\PdoSqlServDBLIBDatabase;
 use QApi\Config\Database\SqlServDatabase;
 use QApi\Config\Version;
 use QApi\Enumeration\RunMode;
@@ -125,12 +124,12 @@ class Config
 
     /**
      * @param $name
-     * @return array|string|null
+     * @return mixed
      */
-    public static function command($name): string|array|null
+    public static function command($name): mixed
     {
         if (self::$command) {
-            return self::$command;
+            return self::$command[$name] ?? null;
         }
 
         $configPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'command.php';
@@ -140,10 +139,10 @@ class Config
                 . DIRECTORY_SEPARATOR . 'template' . DIRECTORY_SEPARATOR . 'command.php'), LOCK_EX);
         }
         $commandConfig = include PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'command.php';
+        self::$command = $commandConfig;
         if ($name) {
             return $commandConfig[$name] ?? null;
         }
-        self::$command = $commandConfig;
         return self::$command;
     }
 
