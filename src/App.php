@@ -72,7 +72,10 @@ class App
     {
         set_error_handler(callback: static function ($err_severity, $err_msg, $err_file, $err_line) {
             match ($err_severity) {
-                E_ERROR => throw new ErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                E_ERROR => function() use ($err_severity, $err_msg, $err_file, $err_line){
+                    Router::removeLockFile();
+                    throw new ErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line);
+                },
                 E_WARNING => throw new WarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
                 E_PARSE => throw new ParseException  ($err_msg, 0, $err_severity, $err_file, $err_line),
                 E_NOTICE => throw new NoticeException  ($err_msg, 0, $err_severity, $err_file, $err_line),
