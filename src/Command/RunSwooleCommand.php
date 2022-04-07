@@ -16,6 +16,7 @@ use QApi\Enumeration\RunMode;
 use QApi\Logger;
 use QApi\Request;
 use QApi\Response;
+use QApi\Router;
 use RuntimeException;
 use Swoole\Http\Server;
 use Swoole\Timer;
@@ -180,7 +181,10 @@ class RunSwooleCommand extends CommandHandler
                     }
                     $response->end($res);
                 }
-            } catch (\Exception|\ParseError $e) {
+            } catch (\Exception $e) {
+                $response->end((new Response())->setCode(500)->fail($e->getMessage()));
+            } catch (\ParseError $e) {
+                Router::removeLockFile();
                 $response->end((new Response())->setCode(500)->fail($e->getMessage()));
             }
             $cache->set('runNumber', $cache->get('runNumber') - 1);

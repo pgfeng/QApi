@@ -178,6 +178,17 @@ class Router
         }
     }
 
+    public static function removeLockFile(): void
+    {
+        $lockFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
+            DIRECTORY_SEPARATOR
+            . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'runBuildRoute.lock';
+        try {
+            unlink($lockFile);
+        } catch (\Exception) {
+        }
+    }
+
     /**
      * @param string $nameSpace
      */
