@@ -100,7 +100,7 @@ abstract class Partition extends Model
      * @return int
      * @throws SqlErrorException
      */
-    final public function save(array|Data $data, $primary_key = ''): int
+    final public function save(Data|array $data, ?string $primary_key = null, array $types = []): int
     {
         if (!is_array($data)) {
             return FALSE;
