@@ -242,9 +242,9 @@ class Router
         }
         try {
             unlink($lockFile);
+            touch($runtimeFile);
         } catch (\Exception $e) {
         }
-        touch($runtimeFile);
     }
 
     /**

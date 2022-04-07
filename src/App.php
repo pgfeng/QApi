@@ -70,54 +70,72 @@ class App
         Methods::GET, Methods::POST, Methods::DELETE, Methods::HEAD, Methods::PUT
     ], array                           $allowHeaders = ['*'], string $apiPassword = '', Request $request = null): Response|string
     {
-        set_error_handler(callback: static function ($err_severity, $err_msg, $err_file, $err_line) {
-            self::clearDevBuildRouteLock();
-            match ($err_severity) {
-                E_ERROR => throw new ErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_WARNING => throw new WarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_PARSE => throw new ParseException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_NOTICE => throw new NoticeException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_CORE_ERROR => throw new CoreErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_CORE_WARNING, E_COMPILE_WARNING => throw new CoreWarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_COMPILE_ERROR => throw new CompileErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_USER_ERROR => throw new UserErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_USER_WARNING => throw new UserWarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_USER_NOTICE => throw new UserNoticeException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_STRICT => throw new StrictException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_RECOVERABLE_ERROR => throw new RecoverableErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_DEPRECATED => throw new DeprecatedException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-                E_USER_DEPRECATED => throw new UserDeprecatedException  ($err_msg, 0, $err_severity, $err_file, $err_line),
-            };
-        }, error_levels: E_ALL);
-        if (!defined('PROJECT_PATH')) {
-            define('PROJECT_PATH', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR);
-        }
-        self::$timezone = new \DateTimeZone($timezone);
-        date_default_timezone_set($timezone);
-        self::$apiPassword = trim($apiPassword);
-        self::$routeDir = trim($routeDir, '/');
-        self::$runtimeDir = trim($runtimeDir, '/');
-        self::$configDir = trim($configDir, '/');
-        self::$uploadDir = trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
         try {
-            if (!self::$app) {
-                self::$app = Config::app();
+            set_error_handler(callback: static function ($err_severity, $err_msg, $err_file, $err_line) {
+                match ($err_severity) {
+                    E_ERROR => throw new ErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_WARNING => throw new WarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_PARSE => throw new ParseException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_NOTICE => throw new NoticeException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_CORE_ERROR => throw new CoreErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_CORE_WARNING, E_COMPILE_WARNING => throw new CoreWarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_COMPILE_ERROR => throw new CompileErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_USER_ERROR => throw new UserErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_USER_WARNING => throw new UserWarningException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_USER_NOTICE => throw new UserNoticeException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_STRICT => throw new StrictException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_RECOVERABLE_ERROR => throw new RecoverableErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_DEPRECATED => throw new DeprecatedException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                    E_USER_DEPRECATED => throw new UserDeprecatedException  ($err_msg, 0, $err_severity, $err_file, $err_line),
+                };
+            }, error_levels: E_ALL);
+            if (!defined('PROJECT_PATH')) {
+                define('PROJECT_PATH', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR);
             }
-        } catch (\ErrorException $e) {
-            return (new Response())->setExtra(
-                [
-                    'status' => false,
-                    'msg' => $e->getSeverity() . '：' . $e->getMessage(),
-                    'error_msg' => $e->getSeverity() . '：' . $e->getMessage() . ' in ' . $e->getFile() . ' on line ' .
-                        $e->getLine(),
-                    'data' => null,
-                ]
-            );
+            self::$timezone = new \DateTimeZone($timezone);
+            date_default_timezone_set($timezone);
+            self::$apiPassword = trim($apiPassword);
+            self::$routeDir = trim($routeDir, '/');
+            self::$runtimeDir = trim($runtimeDir, '/');
+            self::$configDir = trim($configDir, '/');
+            self::$uploadDir = trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
+            self::$app = Config::app();
+            self::$app->init();
+            self::$getVersionFunction = $getVersionFunction;
+            Router::init($request);
+            return Router::run();
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
+            $file = $e->getFile();
+            $line = $e->getLine();
+            $errorType = str_replace('QApi\\Exception\\', '', get_class($e));
+            Logger::error("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
+                $line);
+            $response = new Response();
+            $response->setCode(500)->setExtra([
+                'status' => false,
+                'msg' => $errorType . '：' . $msg,
+                'error_msg' => $errorType . '：' . $msg . ' in ' . $file . ' on line ' . $line,
+                'data' => null,
+            ]);
+            return $response;
+        } catch (\Error $e) {
+            $msg = $e->getMessage();
+            $file = $e->getFile();
+            $line = $e->getLine();
+            $errorType = str_replace('QApi\\Exception\\', '', get_class($e));
+            Logger::error("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
+                $line);
+            $response = new Response();
+            $response->setCode(500)->setExtra([
+                'status' => false,
+                'msg' => $errorType . '：' . $msg,
+                'error_msg' => $errorType . '：' . $msg . ' in ' . $file . ' on line ' . $line,
+                'data' => null,
+            ]);
+            self::clearDevBuildRouteLock();
+            return $response;
         }
-        self::$app->init();
-        self::$getVersionFunction = $getVersionFunction;
-        Router::init($request);
-        return Router::run();
     }
 
     public static function clearDevBuildRouteLock()
@@ -126,7 +144,9 @@ class App
             $lockFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
                 DIRECTORY_SEPARATOR
                 . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'runBuildRoute.lock';
-            @unlink($lockFile);
+            if (file_exists($lockFile)) {
+                @unlink($lockFile);
+            }
         } catch (\Exception) {
         }
     }

@@ -48,21 +48,21 @@ class RunSwooleCommand extends CommandHandler
      */
     function reload($request, $cache, $http, $appDomain)
     {
-        if ($appDomain['runMode'] === RunMode::DEVELOPMENT &&
-            $cache->get('runNumber') <= 0) {
-            $cache->set('runNumber', 0);
-            Timer::after(1, function () use ($request, $cache, $http, $appDomain) {
-                $time = explode('.', microtime(true));
-                if (count($time) === 2 && $cache->get('reloadTime', 0) < time() - 2 && ($request->fd === (ceil($time[1] /
-                            1000)
-                        ) %
-                        32)) {
-                    $cache->set('reloadTime', time());
-                    $http->reload();
-                } else {
-                    $this->reload($request, $cache, $http, $appDomain);
-                }
-            });
+        if ($appDomain['runMode'] == RunMode::DEVELOPMENT) {
+            $cache->set('runNumber', $cache->get('runNumber') - 1);
+            if ($cache->get('runNumber') <= 0) {
+                $cache->set('runNumber', 0);
+                Timer::after(1, function () use ($request, $cache, $http, $appDomain) {
+                    $time = explode('.', microtime(true));
+                    if (count($time) === 2 && $cache->get('reloadTime', 0) < time() - 5 && ($request->fd === (ceil
+                            ($time[1])) % 100)) {
+                        $cache->set('reloadTime', time());
+                        $http->reload();
+                    } else {
+                        $this->reload($request, $cache, $http, $appDomain);
+                    }
+                });
+            }
         }
     }
 
@@ -129,7 +129,16 @@ class RunSwooleCommand extends CommandHandler
                     throw new ErrorException('host ' . $request->header['host'] . ' not bind app!', 0, 1,
                         $configPath);
                 } else {
-                    $cache->set('runNumber', $cache->get('runNumber', 0) + 1);
+                    if ($app->isDev()) {
+                        $time = explode('.', microtime(true));
+                        while (count($time) === 2 && ($request->fd !== (ceil($time[1])
+                                ) %
+                                100)) {
+                            $time = explode('.', microtime(true));
+                            usleep(1);
+                        }
+                        $cache->set('runNumber', $cache->get('runNumber', 0) + 1);
+                    }
                     $defaultHandle = new StreamHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . App::$runtimeDir . DIRECTORY_SEPARATOR . 'CliLog' .
                         DIRECTORY_SEPARATOR
                         . date('Y-m-d')
@@ -164,31 +173,35 @@ class RunSwooleCommand extends CommandHandler
                      * @var Response
                      */
                     $res = \QApi\App::run(apiPassword: $appDomain['app']->docPassword, request: $req);
-                    $response->header('Server', 'QApiServer');
-                    $response->status($res->getStatusCode(), $res->getReason());
-                    if ($res instanceof Response) {
-                        $headers = $res->getHeaders();
-                        foreach ($headers as $name => $header) {
-                            if (strtoupper($name) === 'LOCATION') {
-                                $response->redirect($header, 301);
-                            }
-                            if (is_array($header)) {
-                                $response->header($name, implode(',', $header));
-                            } else {
-                                $response->header($name, $header);
-                            }
-                        }
-                    }
-                    $response->end($res);
+
                 }
-            } catch (\Exception $e) {
-                $response->end((new Response())->setCode(500)->withAddedHeader('Access-Control-Allow-Headers', '_QApi')->withHeader('X-Powered-By', 'QApi')->withHeader('Content-Type', 'application/json;charset=utf-8')->fail($e->getMessage()));
             } catch (\Error $e) {
                 App::clearDevBuildRouteLock();
-                $response->end((new Response())->setCode(500)->withAddedHeader('Access-Control-Allow-Headers', '_QApi')->withHeader('X-Powered-By', 'QApi')->withHeader('Content-Type', 'application/json;charset=utf-8')->fail($e->getMessage()));
+                $res = (new Response())->setCode(500)->withAddedHeader('Access-Control-Allow-Headers', '_QApi')
+                    ->withHeader('X-Powered-By', 'QApi')->withHeader('Content-Type', 'application/json;charset=utf-8')
+                    ->setExtra([
+                        'msg' => get_class($e) . '：' . $e->getMessage(),
+                        'error_msg' => get_class($e) . '：' . $e->getMessage() . ' in ' . $e->getFile()
+                            . ' on line ' .
+                            $e->getLine(),
+                    ]);
             }
-            $cache->set('runNumber', $cache->get('runNumber') - 1);
-
+            $response->header('Server', 'QApiServer');
+            $response->status($res->getStatusCode(), $res->getReason());
+            if ($res instanceof Response) {
+                $headers = $res->getHeaders();
+                foreach ($headers as $name => $header) {
+                    if (strtoupper($name) === 'LOCATION') {
+                        $response->redirect($header, 301);
+                    }
+                    if (is_array($header)) {
+                        $response->header($name, implode(',', $header));
+                    } else {
+                        $response->header($name, $header);
+                    }
+                }
+            }
+            $response->end($res);
             $this->reload($request, $cache, $http, $appDomain);
 
         });
