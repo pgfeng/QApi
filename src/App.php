@@ -127,7 +127,7 @@ class App
                 DIRECTORY_SEPARATOR
                 . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'runBuildRoute.lock';
             unlink($lockFile);
-        } catch (\Exception) {
+        } catch (\Throwable) {
         }
     }
 }
