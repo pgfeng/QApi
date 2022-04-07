@@ -184,6 +184,7 @@ class RunSwooleCommand extends CommandHandler
             } catch (\Exception $e) {
                 $response->end((new Response())->setCode(500)->fail($e->getMessage()));
             } catch (\Error $e) {
+                App::clearDevBuildRouteLock();
                 $response->end((new Response())->setCode(500)->fail($e->getMessage()));
             }
             $cache->set('runNumber', $cache->get('runNumber') - 1);
