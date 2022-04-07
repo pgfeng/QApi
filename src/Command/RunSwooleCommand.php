@@ -183,7 +183,7 @@ class RunSwooleCommand extends CommandHandler
                 }
             } catch (\Exception $e) {
                 $response->end((new Response())->setCode(500)->fail($e->getMessage()));
-            } catch (\ParseError $e) {
+            } catch (\Error $e) {
                 Router::removeLockFile();
                 $response->end((new Response())->setCode(500)->fail($e->getMessage()));
             }
