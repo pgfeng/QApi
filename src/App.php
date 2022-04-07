@@ -126,8 +126,8 @@ class App
             $lockFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
                 DIRECTORY_SEPARATOR
                 . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'runBuildRoute.lock';
-            unlink($lockFile);
-        } catch (\Throwable) {
+            @unlink($lockFile);
+        } catch (\Exception) {
         }
     }
 }
