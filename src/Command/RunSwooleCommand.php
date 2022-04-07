@@ -180,7 +180,7 @@ class RunSwooleCommand extends CommandHandler
                     }
                     $response->end($res);
                 }
-            } catch (\Exception $e) {
+            } catch (\Exception|\ParseError $e) {
                 $response->end((new Response())->setCode(500)->fail($e->getMessage()));
             }
             $cache->set('runNumber', $cache->get('runNumber') - 1);
