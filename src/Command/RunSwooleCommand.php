@@ -182,10 +182,10 @@ class RunSwooleCommand extends CommandHandler
                     $response->end($res);
                 }
             } catch (\Exception $e) {
-                $response->end((new Response())->setCode(500)->fail($e->getMessage()));
+                $response->end((new Response())->setCode(500)->withAddedHeader('Access-Control-Allow-Headers', '_QApi')->withHeader('X-Powered-By', 'QApi')->withHeader('Content-Type', 'application/json;charset=utf-8')->fail($e->getMessage()));
             } catch (\Error $e) {
                 App::clearDevBuildRouteLock();
-                $response->end((new Response())->setCode(500)->fail($e->getMessage()));
+                $response->end((new Response())->setCode(500)->withAddedHeader('Access-Control-Allow-Headers', '_QApi')->withHeader('X-Powered-By', 'QApi')->withHeader('Content-Type', 'application/json;charset=utf-8')->fail($e->getMessage()));
             }
             $cache->set('runNumber', $cache->get('runNumber') - 1);
 
