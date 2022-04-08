@@ -448,7 +448,6 @@ class DB
      * @param array $types
      * @param string|null $table
      * @return int
-     * @throws \Doctrine\DBAL\Exception
      */
     public function update(array|Data $data, array $types = [], ?string $table = null): int
     {
@@ -461,13 +460,18 @@ class DB
         $update = $this->queryBuilder->update($this->config->tablePrefix . $table);
         foreach ($data as $key => $value) {
             if (isset($types[$key])) {
-                $update->set($key, $this->quote($value,$types[$key]));
+                $update->set($key, $this->quote($value, $types[$key]));
             } else {
                 $update->set($key, $this->quote($value));
             }
         }
         $this->hasWhere = false;
-        return $update->executeStatement();
+        try {
+            return $update->executeStatement();
+        } catch (ServerException $e) {
+            $exception = $e->getTrace()[5];
+            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+        }
     }
 
     /**
@@ -483,9 +487,9 @@ class DB
             }
             return $value;
         }
-        if (is_null($value)){
+        if (is_null($value)) {
             return 'null';
-        }else{
+        } else {
             return $this->getConnection()->quote($value, $type);
         }
     }
@@ -663,7 +667,12 @@ class DB
     public function count(string $field = '*'): int
     {
         $this->hasWhere = false;
-        return (int)$this->queryBuilder->select('COUNT(' . $field . ')')->executeQuery()->fetchOne();
+        try {
+            return (int)$this->queryBuilder->select('COUNT(' . $field . ')')->executeQuery()->fetchOne();
+        } catch (ServerException $e) {
+            $exception = $e->getTrace()[4];
+            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+        }
     }
 
     /**
@@ -673,7 +682,12 @@ class DB
     public function max(string $field): int
     {
         $this->hasWhere = false;
-        return (int)$this->queryBuilder->select('MAX(' . $field . ')')->executeQuery()->fetchOne();
+        try {
+            return (int)$this->queryBuilder->select('MAX(' . $field . ')')->executeQuery()->fetchOne();
+        } catch (ServerException $e) {
+            $exception = $e->getTrace()[4];
+            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+        }
     }
 
     /**
@@ -683,7 +697,12 @@ class DB
     public function min(string $field): int
     {
         $this->hasWhere = false;
-        return (int)$this->queryBuilder->select('MIN(' . $field . ')')->executeQuery()->fetchOne();
+        try {
+            return (int)$this->queryBuilder->select('MIN(' . $field . ')')->executeQuery()->fetchOne();
+        } catch (ServerException $e) {
+            $exception = $e->getTrace()[4];
+            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+        }
     }
 
     /**
@@ -693,7 +712,12 @@ class DB
     public function sum(string $field): int
     {
         $this->hasWhere = false;
-        return (int)$this->queryBuilder->select('SUM(' . $field . ')')->executeQuery()->fetchOne();
+        try {
+            return (int)$this->queryBuilder->select('SUM(' . $field . ')')->executeQuery()->fetchOne();
+        } catch (ServerException $e) {
+            $exception = $e->getTrace()[4];
+            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+        }
     }
 
     /**
@@ -703,7 +727,12 @@ class DB
     public function avg(string $field): int
     {
         $this->hasWhere = false;
-        return (int)$this->queryBuilder->select('AVG(' . $field . ')')->executeQuery()->fetchOne();
+        try {
+            return (int)$this->queryBuilder->select('AVG(' . $field . ')')->executeQuery()->fetchOne();
+        } catch (ServerException $e) {
+            $exception = $e->getTrace()[4];
+            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+        }
     }
 
     /**
@@ -713,7 +742,12 @@ class DB
     public function length(string $field): int
     {
         $this->hasWhere = false;
-        return (int)$this->queryBuilder->select('LENGTH(' . $field . ')')->executeQuery()->fetchOne();
+        try {
+            return (int)$this->queryBuilder->select('LENGTH(' . $field . ')')->executeQuery()->fetchOne();
+        } catch (ServerException $e) {
+            $exception = $e->getTrace()[4];
+            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+        }
     }
 
     /**
@@ -768,7 +802,12 @@ class DB
     {
         $this->hasWhere = false;
         $field_name = $this->_Field($field_name);
-        return $this->queryBuilder->select($field_name)->setMaxResults(1)->executeQuery()->fetchOne();
+        try {
+            return $this->queryBuilder->select($field_name)->setMaxResults(1)->executeQuery()->fetchOne();
+        } catch (ServerException $e) {
+            $exception = $e->getTrace()[4];
+            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+        }
     }
 
     /**
@@ -794,7 +833,12 @@ class DB
      */
     final public function delete(?string $delete = null, ?string $alias = null): int
     {
-        return $this->queryBuilder->delete($delete ?: $this->getTableName(), $alias)->executeStatement();
+        try {
+            return $this->queryBuilder->delete($delete ?: $this->getTableName(), $alias)->executeStatement();
+        } catch (ServerException $e) {
+            $exception = $e->getTrace()[5];
+            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+        }
     }
 
     /**
@@ -835,8 +879,8 @@ class DB
     final public function paginate(int $number = 10, int $page = 1): Data|array
     {
         $page = $page > 0 ? $page : 1;
-        $min = ((int)$page - 1) * $number;
-        return $this->limit($min, (int)$number)->query();
+        $min = ($page - 1) * $number;
+        return $this->limit($min, $number)->query();
     }
 
 
