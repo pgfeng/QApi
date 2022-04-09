@@ -17,19 +17,19 @@ trait SoftDelete
      * 删除字段
      * @var string
      */
-    protected string $softDeleteField = 'is_delete';
+    public string $softDeleteField = 'is_delete';
 
     /**
      * 已删除状态
      * @var int
      */
-    protected int $deleted = 1;
+    public int $deleted = 1;
 
     /**
      * 未删除状态
      * @var int
      */
-    protected int $notDeleted = 0;
+    public int $notDeleted = 0;
 
     /**
      * 删除数据 传入 false 为真删除
