@@ -677,13 +677,13 @@ class DB
 
     /**
      * @param string $field
-     * @return int
+     * @return false|mixed
      */
-    public function max(string $field): int
+    public function max(string $field)
     {
         $this->hasWhere = false;
         try {
-            return (int)$this->queryBuilder->select('MAX(' . $field . ')')->executeQuery()->fetchOne();
+            return $this->queryBuilder->select('MAX(' . $field . ')')->executeQuery()->fetchOne();
         } catch (ServerException $e) {
             $exception = $e->getTrace()[4];
             throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
@@ -692,43 +692,45 @@ class DB
 
     /**
      * @param string $field
-     * @return int
+     * @return false|mixed
      */
-    public function min(string $field): int
+    public function min(string $field)
     {
         $this->hasWhere = false;
         try {
-            return (int)$this->queryBuilder->select('MIN(' . $field . ')')->executeQuery()->fetchOne();
+            return $this->queryBuilder->select('MIN(' . $field . ')')->executeQuery()->fetchOne();
         } catch (ServerException $e) {
             $exception = $e->getTrace()[4];
             throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
         }
     }
 
+
     /**
      * @param string $field
-     * @return int
+     * @return false|mixed
      */
-    public function sum(string $field): int
+    public function sum(string $field)
     {
         $this->hasWhere = false;
         try {
-            return (int)$this->queryBuilder->select('SUM(' . $field . ')')->executeQuery()->fetchOne();
+            return $this->queryBuilder->select('SUM(' . $field . ')')->executeQuery()->fetchOne();
         } catch (ServerException $e) {
             $exception = $e->getTrace()[4];
             throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
         }
     }
 
+
     /**
      * @param string $field
-     * @return int
+     * @return false|mixed
      */
-    public function avg(string $field): int
+    public function avg(string $field)
     {
         $this->hasWhere = false;
         try {
-            return (int)$this->queryBuilder->select('AVG(' . $field . ')')->executeQuery()->fetchOne();
+            return $this->queryBuilder->select('AVG(' . $field . ')')->executeQuery()->fetchOne();
         } catch (ServerException $e) {
             $exception = $e->getTrace()[4];
             throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
