@@ -474,6 +474,7 @@ class DB
         }
     }
 
+
     /**
      * @param $value
      * @param int $type
@@ -543,32 +544,34 @@ class DB
 
     /**
      * @param $field
-     * @param $Between
+     * @param array $Between
+     * @param int|string|Type|null $type
      * @return $this
      */
-    final public function between($field, array $Between): self
+    final public function between($field, array $Between, Type|int|string|null $type = ParameterType::STRING): self
     {
         $field = $this->_Field($field);
         if (count($Between) !== 2) {
             throw new SqlErrorException('Too few params to function Between($field, $Between), Must two params;');
         }
-        $Between = $this->quote($Between);
+        $Between = $this->quote($Between, $type);
         $pBetween = $Between[0] . ' AND ' . $Between[1];
         return $this->where("{$field} BETWEEN {$pBetween}");
     }
 
     /**
      * @param $field
-     * @param $Between
+     * @param array $Between
+     * @param int|string|Type|null $type
      * @return $this
      */
-    final public function notBetween($field, array $Between): self
+    final public function notBetween($field, array $Between, Type|int|string|null $type = ParameterType::STRING): self
     {
         $field = $this->_Field($field);
         if (count($Between) !== 2) {
             throw new SqlErrorException('Too few params to function Between($field, $Between), Must two params;');
         }
-        $Between = $this->quote($Between);
+        $Between = $this->quote($Between, $type);
         $pBetween = $Between[0] . ' AND ' . $Between[1];
         return $this->where("{$field} NOT BETWEEN {$pBetween}");
     }
