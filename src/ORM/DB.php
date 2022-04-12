@@ -32,7 +32,7 @@ use QApi\Logger;
  * @method int getType(),
  * @method Connection getConnection(),
  * @method int getState(),
- * @method $this select($select = null)
+ * @method $this select(string ...$selects = null)
  * @method $this setParameter(int|string $key, mixed $value, int|string|Type|null $type = null)
  * @method $this setParameters(array $params, array $type = [])
  * @method array getParameters(array $params, array $type = [])
@@ -823,15 +823,15 @@ class DB
      *
      * @param $field_name
      * @param $field_value
-     * @param int $type
+     * @param bool $format
      * @return int
      */
-    final public function setField($field_name, $field_value, int $type = ParameterType::STRING): int
+    final public function setField($field_name, $field_value, $format = true): int
     {
         $field_name = $this->_Field($field_name);
         return $this->update([
             $field_name => $field_value,
-        ], [$field_name => $type]);
+        ], !$format ? [$field_name => true] : []);
     }
 
     /**
