@@ -45,7 +45,7 @@ use QApi\Logger;
  * @method $this distinct()
  * @method $this groupBy(string|array $groupBy)
  * @method $this addGroupBy(string|array $groupBy)
- * @method $this executeStatement($sql, array $params = [], array $types = [])
+ * @method int executeStatement($sql, array $params = [], array $types = [])
  * @method $this having($having)
  * @method $this andHaving($having)
  * @method mixed getQueryPart(string $queryPartName)
