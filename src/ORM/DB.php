@@ -45,6 +45,7 @@ use QApi\Logger;
  * @method $this distinct()
  * @method $this groupBy(string|array $groupBy)
  * @method $this addGroupBy(string|array $groupBy)
+ * @method $this executeStatement($sql, array $params = [], array $types = [])
  * @method $this having($having)
  * @method $this andHaving($having)
  * @method mixed getQueryPart(string $queryPartName)
@@ -650,7 +651,9 @@ class DB
                     $sql .= ' ' . $this->connection->getDatabasePlatform()->getWriteLockSQL();
                     $this->lockMode = null;
                 }
-                $data = $this->connection->executeQuery($sql, $params, $types, $qcp)->fetchAllAssociative();
+                $data = $this->connection->executeQuery($sql, $this->queryBuilder->getParameters(),
+                    $this->queryBuilder->getParameterTypes(), $qcp)
+                    ->fetchAllAssociative();
             }
         } catch (ServerException $e) {
             $exception = $e->getTrace()[4];
