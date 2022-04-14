@@ -5,6 +5,7 @@ namespace QApi;
 use ArrayIterator;
 use ArrayObject;
 use Iterator;
+use JetBrains\PhpStorm\Internal\LanguageLevelTypeAware;
 use JetBrains\PhpStorm\Pure;
 use JsonSerializable as JsonSerializableAlias;
 
@@ -29,6 +30,19 @@ class Data extends ArrayObject implements JsonSerializableAlias
             }
         }
         return new Data($newData);
+    }
+
+    /**
+     * @param mixed $key
+     * @return mixed
+     */
+    public function offsetGet(mixed $key): mixed
+    {
+        try {
+            return parent::offsetGet($key);
+        }catch (\Exception $e){
+            return null;
+        }
     }
 
     /**
