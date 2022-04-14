@@ -14,6 +14,7 @@ use QApi\Data;
 use QApi\Enumeration\CliColor;
 use QApi\Exception\SqlErrorException;
 use QApi\Logger;
+use QApi\ORM\Model;
 
 
 /**
@@ -1294,6 +1295,18 @@ abstract class DBase
         $data = $this->stripslashes($data);
         if ($data === NULL) {
             $data = [];
+        }
+        if ($this instanceof \QApi\Model) {
+            $setModel = true;
+        } else {
+            $setModel = false;
+        }
+        foreach ($data as $key => $item) {
+            $dataObject = new Data($item);
+            if ($setModel) {
+                $dataObject->setModel($this);
+            }
+            $data[$key] = $dataObject;
         }
         $result = new Data($data);
         return $result;

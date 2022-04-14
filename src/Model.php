@@ -72,6 +72,7 @@ use QApi\Model\filesModel;
  * @method $this notNull(string $field)
  * @method $this isNull(string $field)
  * @method $this lock(bool $share_mode = false)
+ * @deprecated
  */
 class Model
 {

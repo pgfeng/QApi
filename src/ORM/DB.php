@@ -659,8 +659,17 @@ class DB
             $exception = $e->getTrace()[4];
             throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
         }
+        if ($this instanceof Model) {
+            $setModel = true;
+        } else {
+            $setModel = false;
+        }
         foreach ($data as $key => $item) {
-            $data[$key] = new Data($item);
+            $dataObject = new Data($item);
+            if ($setModel) {
+                $dataObject->setModel($this);
+            }
+            $data[$key] = $dataObject;
         }
         $this->hasWhere = false;
         return new Data($data);
@@ -767,7 +776,7 @@ class DB
 
         $data = $this->limit(0, 1)->query();
         if (count($data)) {
-            return new Data($data[0]);
+            return $data[0];
         }
         return null;
     }

@@ -8,10 +8,13 @@ use Iterator;
 use JetBrains\PhpStorm\Internal\LanguageLevelTypeAware;
 use JetBrains\PhpStorm\Pure;
 use JsonSerializable as JsonSerializableAlias;
+use QApi\Exception\UserErrorException;
 
 class Data extends ArrayObject implements JsonSerializableAlias
 {
+    private Model|ORM\Model|null $model = null;
 
+    private array $modifyKeys = [];
 
     /**
      * 将数据转为primary_key为键名并返回
@@ -32,6 +35,14 @@ class Data extends ArrayObject implements JsonSerializableAlias
         return new Data($newData);
     }
 
+    public function offsetSet(mixed $key, mixed $value): void
+    {
+        if (!in_array($key, $this->modifyKeys)) {
+            $this->modifyKeys[] = $key;
+        }
+        parent::offsetSet($key, $value);
+    }
+
     /**
      * @param mixed $key
      * @return mixed
@@ -40,7 +51,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
     {
         try {
             return parent::offsetGet($key);
-        }catch (\Exception){
+        } catch (\Exception) {
             return null;
         }
     }
@@ -199,5 +210,48 @@ class Data extends ArrayObject implements JsonSerializableAlias
         return json_encode($this, JSON_THROW_ON_ERROR | JSON_ERROR_NONE | JSON_OBJECT_AS_ARRAY | JSON_UNESCAPED_UNICODE);
     }
 
+    /**
+     * @return Model|ORM\Model
+     */
+    public function getModel(): ORM\Model|Model
+    {
+        return $this->model;
+    }
 
+    /**
+     * @param Model|ORM\Model $model
+     */
+    public function setModel(ORM\Model|Model &$model): void
+    {
+        $this->model = $model;
+    }
+
+    /**
+     * @param Data|array $data
+     * @return int
+     */
+    public function save(Data|array $data = [], ?string $primary_key = null, array $types = []): int
+    {
+        if (!$this->model) {
+            throw new UserErrorException('The model object needs to be set,Data->setModel().');
+        }
+        if (!$primary_key) {
+            if (!$this->model->primary_key) {
+                throw new UserErrorException('The model object has no primary key set.');
+            }
+            $primary_key = $this->model->primary_key;
+        }
+        if (!count($data)) {
+            if (!count($this->modifyKeys)) {
+                return 1;
+            }
+            $data = [
+                $primary_key => $this->get($primary_key),
+            ];
+            foreach ($this->modifyKeys as $key) {
+                $data[$key] = $this[$key];
+            }
+        }
+        return $this->model->save($data, $primary_key, $types);
+    }
 }
