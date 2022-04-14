@@ -40,7 +40,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
     {
         try {
             return parent::offsetGet($key);
-        }catch (\Exception $e){
+        }catch (\Exception){
             return null;
         }
     }
