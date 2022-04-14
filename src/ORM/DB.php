@@ -111,9 +111,16 @@ class DB
         }
     }
 
-    public function getTableName(): string
+    /**
+     * @param bool $tablePrefix
+     * @return string
+     */
+    public function getTableName(bool $tablePrefix = true): string
     {
-        return $this->table ? $this->config->tablePrefix . $this->table : '';
+        if ($tablePrefix) {
+            return $this->table ? $this->config->tablePrefix . $this->table : '';
+        }
+        return $this->table;
     }
 
     /**

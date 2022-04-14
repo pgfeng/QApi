@@ -245,9 +245,10 @@ class Data extends ArrayObject implements JsonSerializableAlias
             if (!count($this->modifyKeys)) {
                 return 1;
             }
-            $data = [
-                $primary_key => $this->get($primary_key),
-            ];
+            $data = [];
+            if ($this->has($primary_key)){
+                $data[$primary_key] = $this->get($primary_key);
+            }
             foreach ($this->modifyKeys as $key) {
                 $data[$key] = $this[$key];
             }

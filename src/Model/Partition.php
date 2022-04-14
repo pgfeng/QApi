@@ -18,6 +18,7 @@ use QApi\Model;
  * 分表模型 自动分表处理 水平分表解决方案
  * Class Model
  * @package Model
+ * @deprecated
  */
 abstract class Partition extends Model
 {
