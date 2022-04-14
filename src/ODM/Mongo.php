@@ -26,26 +26,27 @@ class Mongo
      * @param array $where
      * @return array|null
      */
-    public function find(string $collection, array $where = []): array|null
+    public function find(string $collection, array $where = []): Data|null
     {
-        $data = $this->manager->executeQuery($this->config->dbName . '.' . $collection, new Query($where, [
+        $data = $this->query($this->config->dbName . '.' . $collection, $where, [
             'limit' => 1,
-        ]))->toArray();
+        ]);
         if (count($data)) {
-            return json_decode(json_encode($data[0]), true);
+            return $data[0];
         } else {
             return null;
         }
     }
 
-    public function query(string $collection, array $where = [], $options = []): array
+    public function query(string $collection, array $where = [], $options = []): Data
     {
         $data = $this->manager->executeQuery($this->config->dbName . '.' . $collection, new Query($where, $options))
             ->toArray();
-        foreach ($data as &$item) {
+        foreach ($data as $key => $item) {
             $item = json_decode(json_encode($item), true);
+            $data[$key] = new Data($item);
         }
-        return $data;
+        return new Data($data);
     }
 
     /**
