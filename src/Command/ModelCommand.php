@@ -9,6 +9,7 @@ use QApi\Command;
 use QApi\Config;
 use QApi\Logger;
 use QApi\Model\Traits\Auxiliary;
+use QApi\Model\Traits\Partition;
 use QApi\Model\Traits\SoftDelete;
 use QApi\Model\Traits\UUID;
 use QApi\Model\Traits\Validate;
@@ -269,6 +270,7 @@ ModelFileContent;
             SoftDelete::class,
             UUID::class,
             Validate::class,
+            Partition::class,
         ]);
         $input = $this->command->cli->checkboxes('Please select the trait you want to use:', $choseData);
         $traits = $input->prompt();
