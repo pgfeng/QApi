@@ -12,7 +12,7 @@ class Mongo
 {
     public Manager $manager;
 
-    public function __construct(protected MongoDatabase $config)
+    public function __construct(public MongoDatabase $config)
     {
         $this->manager = new Manager('mongodb://' . ($config->user ? $config->user . ':' . $config->password . '@' : '') .
             $config->host . ':' .
@@ -61,6 +61,24 @@ class Mongo
         }
         $bulk = new BulkWrite();
         $bulk->insert($data);
+        return $this->manager->executeBulkWrite($this->config->dbName . '.' . $collection, $bulk)->getInsertedCount();
+    }
+
+    /**
+     * @return BulkWrite
+     */
+    public function newBulkWrite():BulkWrite
+    {
+        return new BulkWrite();
+    }
+
+    /**
+     * @param string $collection
+     * @param BulkWrite $bulk
+     * @return int
+     */
+    public function executeBulkWrite(string $collection,BulkWrite $bulk):int
+    {
         return $this->manager->executeBulkWrite($this->config->dbName . '.' . $collection, $bulk)->getInsertedCount();
     }
 
