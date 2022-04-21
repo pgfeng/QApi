@@ -313,6 +313,19 @@ class DB
     }
 
     /**
+     * @param string $field
+     * @param array $values
+     * @return $this
+     */
+    public function in(string $field,array $values):self
+    {
+        $this->queryBuilder
+            ->andWhere(
+                $this->expr()->in($field, $this->quote($values))
+            );
+        return $this;
+    }
+    /**
      * @param ExpressionBuilder|string|array $predicates
      * @param mixed|null $op
      * @param mixed|null $value
