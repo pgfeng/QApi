@@ -317,7 +317,7 @@ class DB
      * @param array $values
      * @return $this
      */
-    public function in(string $field,array $values):self
+    public function in(string $field, array $values): self
     {
         $this->queryBuilder
             ->andWhere(
@@ -325,6 +325,21 @@ class DB
             );
         return $this;
     }
+
+    /**
+     * @param string $field
+     * @param array $values
+     * @return $this
+     */
+    public function notIn(string $field, array $values): self
+    {
+        $this->queryBuilder
+            ->andWhere(
+                $this->expr()->notIn($field, $this->quote($values))
+            );
+        return $this;
+    }
+
     /**
      * @param ExpressionBuilder|string|array $predicates
      * @param mixed|null $op
