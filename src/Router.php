@@ -394,14 +394,14 @@ class Router
                 $methodData = [];
                 foreach ($routeMethodData as $path => $route) {
                     $params = [];
-                    if (preg_match_all('/{(\w+)}/', $path, $match)) {
+                    if (preg_match_all('/{([a-zA-Z_][a-zA-Z0-9_]+)}/', $path, $match)) {
                         foreach ($match[1] as $k => $p) {
                             if (isset($route['pattern'][$p])) {
                                 $path = str_replace($match[0][$k], '(' . $route['pattern'][$p] . ')', $path);
                             }
                             $params[$k + 1] = $p;
                         }
-                        $path = preg_replace('/{(\w+)}/', '(\w+)', $path);
+                        $path = preg_replace('/{([a-zA-Z_][a-zA-Z0-9_]+)}/', '(\w+)', $path);
                     }
                     $methodData[$path] = [
                         'callback' => $route['callback'],
@@ -421,7 +421,7 @@ class Router
             } else {
                 $routers = array_keys($compileList[$method]);
                 foreach ($routers as $routerKey => $router) {
-                    if (preg_match('#^' . $router . '$#', $uri, $params)) {
+                    if (preg_match('#^' . $router . '$#', preg_quote($uri,'#'), $params)) {
                         $callback = $compileList[$method][$router];
                         array_shift($params);
                         break;
@@ -430,7 +430,7 @@ class Router
                 if (!$callback) {
                     $routers = array_keys($compileList['ALL']);
                     foreach ($routers as $routerKey => $router) {
-                        if (preg_match('#^' . $router . '$#', $uri, $params)) {
+                        if (preg_match('#^' . $router . '$#', preg_quote($uri,'#'), $params)) {
                             $callback = $compileList['ALL'][$router];
                             array_shift($params);
                             break;
