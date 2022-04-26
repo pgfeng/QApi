@@ -110,7 +110,7 @@ class ApcuAdapter implements CacheInterface
      */
     public function delete(string $key): bool
     {
-        return apc_delete($this->config->namespace . $key);
+        return apcu_delete($this->config->namespace . $key);
     }
 
     /**
