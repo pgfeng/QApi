@@ -37,9 +37,9 @@ class ColumnCommand extends CommandHandler
     /**
      * @return mixed
      */
-    function help(): mixed
+    function help(): void
     {
-        return null;
+//        return null;
     }
 
     /**

@@ -70,11 +70,7 @@ abstract class CommandHandler
      * @return mixed
      */
     abstract public function handler(array $argv): mixed;
-
-    /**
-     * @return mixed
-     */
-    abstract public function help(): mixed;
+    
 
     /**
      * select a database configuration

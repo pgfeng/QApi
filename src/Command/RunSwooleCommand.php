@@ -239,8 +239,7 @@ class RunSwooleCommand extends CommandHandler
         return $data;
     }
 
-    public function help(): mixed
+    public function help(): void
     {
-        return null;
     }
 }
