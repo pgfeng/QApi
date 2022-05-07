@@ -46,9 +46,6 @@ class Command
  '----------------'   '----------------'   '----------------'   '----------------' 
  = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
  ";
-    protected $stdout;
-    protected $stdin;
-    protected $stderr;
     protected $argv;
     /**
      * @var CLImate
@@ -74,9 +71,6 @@ class Command
         App::$routeDir = trim($routeDir, '/');
         App::$runtimeDir = trim($runtimeDir, '/');
         App::$configDir = trim($configDir, '/');
-        $this->stdout = fopen('php://stdout', 'wb');
-        $this->stdin = fopen('php://stdin', 'rb');
-        $this->stderr = fopen('php://stderr', 'wb');
         $this->cli = new CLImate();
         array_shift($_SERVER['argv']);
         $this->argv = $_SERVER['argv'];
@@ -141,16 +135,6 @@ class Command
     }
 
     /**
-     * 输出一行
-     * @param string $message 输出的消息
-     */
-    public function writeln($message)
-    {
-        $this->write($message . "\r\n");
-    }
-
-
-    /**
      * @param $message
      */
     public function info($message): void
@@ -172,30 +156,15 @@ class Command
     }
 
     /**
-     * 输出内容
-     * @param string $message 输出的消息
-     */
-    public function write(string $message): void
-    {
-        if (!is_string($message)) {
-            $message = var_export($message, true);
-        }
-        //        if (strtoupper(substr(PHP_OS,0,3))==='WIN') {
-        //            if (mb_detect_encoding($message, 'UTF-8', true))
-        //                $message = mb_convert_encoding($message, "GBK", "UTF-8");
-        //        }
-        fwrite($this->stdout, $message);
-    }
-
-    /**
      * 读取一行内容
      * @param string $notice
      * @return array
      */
-    public function getStdin($notice = ''): array
+    public function getStdin(string $notice = ''): array
     {
-        $this->write($notice);
-        return explode(' ', str_replace(["\r\n", "\n"], '', fgets($this->stdin)));
+        $input = $this->cli->input($notice);
+        $data = $input->prompt();
+        return explode(' ', str_replace(["\r\n", "\n"], '', $data));
     }
 
 }

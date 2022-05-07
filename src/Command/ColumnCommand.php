@@ -19,6 +19,8 @@ class ColumnCommand extends CommandHandler
      */
     public string $name = 'build:column';
 
+    public string $description = 'Generate database fields.';
+
     /**
      * 判断表是否存在
      * @param string $table
@@ -27,7 +29,7 @@ class ColumnCommand extends CommandHandler
     private function tableExists(string $table): bool
     {
         if (!DB::table('')->query('show tables like \'' . $table . '\'')) {
-            $this->command->writeln("数据表{$table}不存在!");
+            $this->command->cli->error("数据表{$table}不存在!");
             return false;
         }
 
@@ -39,7 +41,7 @@ class ColumnCommand extends CommandHandler
      */
     function help(): void
     {
-//        return null;
+        //        return null;
     }
 
     /**
@@ -191,18 +193,18 @@ class ColumnCommand extends CommandHandler
             $const .= '
             
     /**
-     * @var string ' . addslashes($columns_comment[$column['Field']]['column_comment']??'') . '
+     * @var string ' . addslashes($columns_comment[$column['Field']]['column_comment'] ?? '') . '
      * ';
             $const .= $column;
             $const .= '
      */
-    #[Field(name: \'' . $column['Field'] . '\', comment: \'' . addslashes($columns_comment[$column['Field']]['column_comment']??'') . '\', type: \'' . $column['Type'] . '\')]
+    #[Field(name: \'' . $column['Field'] . '\', comment: \'' . addslashes($columns_comment[$column['Field']]['column_comment'] ?? '') . '\', type: \'' . $column['Type'] . '\')]
     public const ' . strtoupper($column['Field']) . ' = \'' . $column['Field'] . '\';' . "\r\n";
         }
         $date = date('Y-m-d H:i:s');
         $tableComment = DB::table('', $config)->query("SELECT TABLE_COMMENT FROM INFORMATION_SCHEMA.TABLES  WHERE TABLE_NAME = '" . Config::database($config)->tablePrefix . $table . "' AND TABLE_SCHEMA = '" . Config::database($config)->dbName . "'");
         if ($tableComment) {
-            $tableComment = addslashes($tableComment[0]['TABLE_COMMENT']??'');
+            $tableComment = addslashes($tableComment[0]['TABLE_COMMENT'] ?? '');
         } else {
             $tableComment = '';
         }
@@ -232,7 +234,7 @@ $const
 Column;
         mkPathDir($columnPath);
         file_put_contents($columnPath, $ColumnContent);
-        $this->command->info('['.$nameSpace . '\\' . $table . 'Column] Generation complete!');
+        $this->command->info('[' . $nameSpace . '\\' . $table . 'Column] Generation complete!');
 
     }
 

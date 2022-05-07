@@ -24,6 +24,12 @@ abstract class CommandHandler
 {
     protected Command $command;
     protected array $argv = [];
+    /**
+     * Handler名称
+     * @var string
+     */
+    public string $name = '';
+    public string $description = 'cli description';
     protected int $pid;
 
     /**
@@ -37,12 +43,12 @@ abstract class CommandHandler
         $this->command = $command;
     }
 
-    public function hideLogger():void
+    public function hideLogger(): void
     {
         Command::$showLogger = false;
     }
 
-    public function showLogger():void
+    public function showLogger(): void
     {
         Command::$showLogger = true;
     }
@@ -59,18 +65,13 @@ abstract class CommandHandler
         return $index === 0;
     }
 
-    /**
-     * Handler名称
-     * @var string
-     */
-    public string $name = '';
 
     /**
-     * @param $argv
+     * @param array $argv
      * @return mixed
      */
     abstract public function handler(array $argv): mixed;
-    
+
 
     /**
      * select a database configuration
