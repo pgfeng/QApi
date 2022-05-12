@@ -50,14 +50,25 @@ class Data extends ArrayObject implements JsonSerializableAlias
      * @param mixed $parent
      * @return array
      */
-    public function toTree(string $keyField, string $parentField, string $childField = 'children', mixed $parent = false):
+    public function &toTree(string $keyField, string $parentField, string $childField = 'children', mixed $parent =
+    false, array|false             &$copyData = false):
     array
     {
-        $copyData = $this->toArray();
+        if ($copyData === false) {
+            $copyData = $this->toArray();
+        }
         $data = [];
-        foreach ($copyData as $item) {
+        foreach ($copyData as $index => $item) {
             if ($parent === false || $item[$parentField] == $parent) {
-                $item[$childField] = $this->toTree($keyField, $parentField, $childField, $item[$keyField]);
+                if ((string)$item[$keyField] === (string)$item[$parentField]) {
+                    $data[] = $item;
+                    continue;
+                }
+                array_splice($copyData, $index, 1);
+                $item[$childField] = $this->toTree($keyField, $parentField, $childField, $item[$keyField], $copyData);
+                if (!$item[$childField]) {
+                    unset($item[$childField]);
+                }
                 if ($parent === false) {
                     if (!$item[$parentField]) {
                         $data[] = $item;
