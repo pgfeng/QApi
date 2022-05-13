@@ -2,17 +2,13 @@
 
 namespace QApi;
 
-use ArrayIterator;
 use ArrayObject;
-use Iterator;
-use JetBrains\PhpStorm\Internal\LanguageLevelTypeAware;
-use JetBrains\PhpStorm\Pure;
 use JsonSerializable as JsonSerializableAlias;
 use QApi\Exception\UserErrorException;
 
 class Data extends ArrayObject implements JsonSerializableAlias
 {
-    private Model|ORM\Model|null $model = null;
+    private Model|ORM\Model|null|string $model = null;
 
     private array $modifyKeys = [];
 
@@ -212,6 +208,29 @@ class Data extends ArrayObject implements JsonSerializableAlias
     public function has($key): bool
     {
         return isset($this[$key]);
+    }
+
+    /**
+     * @param array $data
+     * @return void
+     */
+    public function __unserialize(array $data):void
+    {
+        parent::__unserialize($data);
+        if (is_string($this->model)){
+            $this->model = new $this->model;
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function __serialize():array
+    {
+        if ($this->model) {
+            $this->model = get_class($this->model);
+        }
+        return parent::__serialize();
     }
 
     /**
