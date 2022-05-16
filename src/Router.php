@@ -202,9 +202,10 @@ class Router
                 array_splice($tags, $index, 1);
             }
             $cache->set($request->get->get('type') . '/' . $request->get->get('path') . '#___TAGS', $tags);
-            return $response->setData(
-                $cache->delete($request->get->get('type') . '/' . $request->get->get('path') . '#---' . $tagName)
-            )
+            try {
+                $cache->delete($request->get->get('type') . '/' . $request->get->get('path') . '#---' . $tagName);
+            }catch (\Exception){}
+            return $response->setData(true)
                 ->setMsg('Deleting interface document example succeeded!');
         });
         self::post(path: '/__apis.json', callback: function (Request $request, Response $response) {
