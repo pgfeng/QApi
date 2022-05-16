@@ -198,13 +198,15 @@ class Router
             if (!$tags) {
                 $tags = [];
             }
-            if ($index = array_search($tagName,$tags)) {
+            $index = array_search($tagName, $tags);
+            if ($index!==false) {
                 array_splice($tags, $index, 1);
             }
             $cache->set($request->get->get('type') . '/' . $request->get->get('path') . '#___TAGS', $tags);
             try {
                 $cache->delete($request->get->get('type') . '/' . $request->get->get('path') . '#---' . $tagName);
-            }catch (\Exception){}
+            } catch (\Exception) {
+            }
             return $response->setData(true)
                 ->setMsg('Deleting interface document example succeeded!');
         });

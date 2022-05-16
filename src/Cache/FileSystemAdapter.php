@@ -244,8 +244,7 @@ class FileSystemAdapter implements CacheInterface
     public function delete(string $key): bool
     {
         $filename = $this->getFilename($key);
-
-        return @unlink($filename) || !file_exists($filename);
+        return !file_exists($filename) || @unlink($filename);
     }
 
     /**
