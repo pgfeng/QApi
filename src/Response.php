@@ -88,9 +88,7 @@ class Response
      */
     public function __construct(private ?string $version = '1.1')
     {
-        try {
-            $app = Config::$app??Config::$app;
-        }catch (\Exception){}
+        $app = Config::$app;
         if ($app) {
             if (in_array('*', $app->allowOrigin, true)) {
                 $this->withHeader('Access-Control-Allow-Origin', $app->allowOrigin);
@@ -98,6 +96,7 @@ class Response
                 $this->withHeader('Access-Control-Allow-Origin', Router::$request->getHost());
             }
             $this->withAddedHeader('Access-Control-Allow-Headers', $app->allowHeaders);
+            $this->withAddedHeader('Access-Control-Allow-Methods',$app->allowMethods);
         }
         $this->withAddedHeader('Access-Control-Allow-Headers','_QApi');
         $this->withHeader('X-Powered-By', 'QApi');

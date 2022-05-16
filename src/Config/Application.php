@@ -11,6 +11,7 @@ use QApi\App;
 use QApi\Enumeration\RunMode;
 use QApi\Logger;
 use QApi\Response;
+use QApi\Route\Methods;
 
 /**
  * Class Application
@@ -38,6 +39,9 @@ class Application
                                 public ?array $logHandler = null,
                                 public string|bool $nameSpace = false, public array $allowOrigin = ['*'],
                                 public array $allowHeaders = ['Request-Sign', 'Request-Time','Content-Type','Authorization'],
+                                public array $allowMethods = [
+                                    Methods::GET, Methods::POST, Methods::DELETE, Methods::HEAD, Methods::PUT
+                                ],
                                 public string $applicationName = '', public string $scheme = 'http', public string $docPassword = '')
     {
         $this->appDir = trim($this->appDir, '/');

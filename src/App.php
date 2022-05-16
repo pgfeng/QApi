@@ -66,9 +66,7 @@ class App
      * @throws ErrorException|\JsonException
      */
     public static function run(?string $timezone = 'Asia/Shanghai', string $routeDir = 'routes', string $configDir = 'config', string $runtimeDir =
-    'runtime', string                  $uploadDir = 'Upload', ?\Closure $getVersionFunction = null, array $allowMethods = [
-        Methods::GET, Methods::POST, Methods::DELETE, Methods::HEAD, Methods::PUT
-    ], array                           $allowHeaders = ['*'], string $apiPassword = '', Request $request = null): Response|string
+    'runtime', string                  $uploadDir = 'Upload', ?\Closure $getVersionFunction = null, array                           $allowHeaders = ['*'], string $apiPassword = '', Request $request = null): Response|string
     {
         try {
             set_error_handler(callback: static function ($err_severity, $err_msg, $err_file, $err_line) {
