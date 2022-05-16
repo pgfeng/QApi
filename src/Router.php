@@ -189,7 +189,7 @@ class Router
             if (Config::app()->getRunMode() !== QApi\Enumeration\RunMode::DEVELOPMENT) {
                 return $response->setMsg('Please delete the instance in the development environment!')->fail();
             }
-            $tagName = trim($request->post->get('tagName'));
+            $tagName = trim($request->get->get('tagName'));
             if (!$tagName) {
                 return $response->fail('The [tagName] field must be passed in!');
             }
