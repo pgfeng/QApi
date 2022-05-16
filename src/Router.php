@@ -179,6 +179,34 @@ class Router
             )
                 ->setMsg('Saving interface document example succeeded!');
         });
+        self::delete(path: '/__apiResponses.json', callback: function (Request $request, Response $response) {
+            if (App::$apiPassword) {
+                $password = md5(trim($request->get->get('token')));
+                if ($password !== md5(md5(App::$apiPassword))) {
+                    return $response->setMsg('The current request requires login！')->setCode(403)->fail();
+                }
+            }
+            if (Config::app()->getRunMode() !== QApi\Enumeration\RunMode::DEVELOPMENT) {
+                return $response->setMsg('Please delete the instance in the development environment!')->fail();
+            }
+            $tagName = trim($request->post->get('tagName'));
+            if (!$tagName) {
+                return $response->fail('The [tagName] field must be passed in!');
+            }
+            $cache = Cache::initialization('__document');
+            $tags = $cache->get($request->get->get('type') . '/' . $request->get->get('path') . '#___TAGS');
+            if (!$tags) {
+                $tags = [];
+            }
+            if ($index = array_search($tagName)) {
+                array_splice($tags, $index, 1);
+            }
+            $cache->set($request->get->get('type') . '/' . $request->get->get('path') . '#___TAGS', $tags);
+            return $response->setData(
+                $cache->delete($request->get->get('type') . '/' . $request->get->get('path') . '#---' . $tagName)
+            )
+                ->setMsg('Deleting interface document example succeeded!');
+        });
         self::post(path: '/__apis.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
                 $password = md5(trim($request->get->get('token')));
