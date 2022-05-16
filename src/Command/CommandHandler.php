@@ -39,7 +39,9 @@ abstract class CommandHandler
      */
     public function __construct(Command $command, array $argv = [])
     {
-        $this->pid = posix_getpid();
+        if (!$this->isWin()){
+            $this->pid = posix_getpid();
+        }
         $this->command = $command;
     }
 

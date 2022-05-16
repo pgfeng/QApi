@@ -127,6 +127,58 @@ class Router
             ))
                 ->setMsg('Saving interface document example succeeded!');
         });
+        self::get(path: '/__apiResponses.json', callback: function (Request $request, Response $response) {
+            if (App::$apiPassword) {
+                $password = md5(trim($request->get->get('token')));
+                if ($password !== md5(md5(App::$apiPassword))) {
+                    return $response->setMsg('The current request requires login！')->setCode(403)->fail();
+                }
+            }
+            $cache = Cache::initialization('__document');
+            $default = $cache->get($request->get->get('type') . '/' . $request->get->get('path'));
+            $data = [];
+            if ($default) {
+                $data['SUCCESS'] = $default;
+            }
+            unset($default);
+            $tags = $cache->get($request->get->get('type') . '/' . $request->get->get('path') . '#___TAGS');
+            if (!$tags) {
+                $tags = [];
+            }
+            foreach ($tags as $tag) {
+                $data[$tag] = $cache->get($request->get->get('type') . '/' . $request->get->get('path') . '#---' . $tag);
+            }
+            return $response->setData($data)
+                ->setMsg('Get interface return example succeeded!');
+        });
+        self::post(path: '/__apiResponses.json', callback: function (Request $request, Response $response) {
+            if (App::$apiPassword) {
+                $password = md5(trim($request->get->get('token')));
+                if ($password !== md5(md5(App::$apiPassword))) {
+                    return $response->setMsg('The current request requires login！')->setCode(403)->fail();
+                }
+            }
+            if (Config::app()->getRunMode() !== QApi\Enumeration\RunMode::DEVELOPMENT) {
+                return $response->setMsg('Please save the instance in the development environment!')->fail();
+            }
+            $tagName = trim($request->post->get('tagName'));
+            if (!$tagName) {
+                return $response->fail('The [tagName] field must be passed in!');
+            }
+            $cache = Cache::initialization('__document');
+            $tags = $cache->get($request->get->get('type') . '/' . $request->get->get('path') . '#___TAGS');
+            if (!$tags) {
+                $tags = [];
+            }
+            if (!in_array($tagName, $tags)) {
+                $tags[] = $tagName;
+            }
+
+            return $response->setData(
+                $cache->set($request->get->get('type') . '/' . $request->get->get('path') . '#---' . $tagName, $request->post->get('response'))
+            )
+                ->setMsg('Saving interface document example succeeded!');
+        });
         self::post(path: '/__apis.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
                 $password = md5(trim($request->get->get('token')));
