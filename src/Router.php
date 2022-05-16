@@ -173,7 +173,7 @@ class Router
             if (!in_array($tagName, $tags)) {
                 $tags[] = $tagName;
             }
-
+            $cache->set($request->get->get('type') . '/' . $request->get->get('path') . '#___TAGS', $tags);
             return $response->setData(
                 $cache->set($request->get->get('type') . '/' . $request->get->get('path') . '#---' . $tagName, $request->post->get('response'))
             )
