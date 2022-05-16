@@ -198,7 +198,7 @@ class Router
             if (!$tags) {
                 $tags = [];
             }
-            if ($index = array_search($tagName)) {
+            if ($index = array_search($tagName,$tags)) {
                 array_splice($tags, $index, 1);
             }
             $cache->set($request->get->get('type') . '/' . $request->get->get('path') . '#___TAGS', $tags);
