@@ -58,9 +58,9 @@ class Data extends ArrayObject implements JsonSerializableAlias
             if ($parent === false || $item[$parentField] == $parent) {
                 if ((string)$item[$keyField] === (string)$item[$parentField]) {
                     $data[] = $item;
+                    array_splice($copyData, $index, 1);
                     continue;
                 }
-                array_splice($copyData, $index, 1);
                 $item[$childField] = $this->toTree($keyField, $parentField, $childField, $item[$keyField], $copyData);
                 if (!$item[$childField]) {
                     unset($item[$childField]);
@@ -214,10 +214,10 @@ class Data extends ArrayObject implements JsonSerializableAlias
      * @param array $data
      * @return void
      */
-    public function __unserialize(array $data):void
+    public function __unserialize(array $data): void
     {
         parent::__unserialize($data);
-        if (is_string($this->model)){
+        if (is_string($this->model)) {
             $this->model = new $this->model;
         }
     }
@@ -225,7 +225,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
     /**
      * @return array
      */
-    public function __serialize():array
+    public function __serialize(): array
     {
         if ($this->model) {
             $this->model = get_class($this->model);
