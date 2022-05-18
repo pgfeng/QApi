@@ -20,7 +20,7 @@
     "doctrine/dbal": "^3.3.2"
   },
   "bin": [
-    "src/bin/QConsole.php"
+    "src/bin/QConsole"
   ],
   "suggest": {
     "ext-json": "*",
