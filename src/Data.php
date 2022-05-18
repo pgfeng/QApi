@@ -47,7 +47,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
      * @return array
      */
     public function &toTree(string $keyField, string $parentField, string $childField = 'children', mixed $parent =
-    false, array|false             &$copyData = false):
+    false, array|false             &$copyData = false, $treeLevel = 1):
     array
     {
         if ($copyData === false) {
@@ -57,11 +57,13 @@ class Data extends ArrayObject implements JsonSerializableAlias
         foreach ($copyData as $index => $item) {
             if ($parent === false || $item[$parentField] == $parent) {
                 if ((string)$item[$keyField] === (string)$item[$parentField]) {
+                    $item['tree_level'] = $treeLevel;
                     $data[] = $item;
                     array_splice($copyData, $index, 1);
                     continue;
                 }
-                $item[$childField] = $this->toTree($keyField, $parentField, $childField, $item[$keyField], $copyData);
+                $item['tree_level'] = $treeLevel;
+                $item[$childField] = $this->toTree($keyField, $parentField, $childField, $item[$keyField], $copyData,$treeLevel+1);
                 if (!$item[$childField]) {
                     unset($item[$childField]);
                 }
