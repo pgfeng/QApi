@@ -44,14 +44,14 @@ class ClosureStream
         return false;
     }
 
-    public function stream_stat():int
+    public function stream_stat():array
     {
         $stat = stat(__FILE__);
         $stat[7] = $stat['size'] = $this->length;
         return $stat;
     }
 
-    public function url_stat($path, $flags):int
+    public function url_stat($path, $flags):array
     {
         $stat = stat(__FILE__);
         $stat[7] = $stat['size'] = $this->length;
