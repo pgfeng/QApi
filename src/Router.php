@@ -505,7 +505,7 @@ class Router
             } else {
                 $routers = array_keys($compileList[$method]);
                 foreach ($routers as $routerKey => $router) {
-                    if (preg_match('#^' . $router . '$#', $uri, $params)) {
+                    if ($uri === $router || preg_match('#^' . $router . '$#', $uri, $params)) {
                         $callback = $compileList[$method][$router];
                         array_shift($params);
                         break;
@@ -514,7 +514,7 @@ class Router
                 if (!$callback) {
                     $routers = array_keys($compileList['ALL']);
                     foreach ($routers as $routerKey => $router) {
-                        if (preg_match('#^' . $router . '$#', $uri, $params)) {
+                        if ($uri === $router || preg_match('#^' . $router . '$#', $uri, $params)) {
                             $callback = $compileList['ALL'][$router];
                             array_shift($params);
                             break;

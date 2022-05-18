@@ -117,6 +117,7 @@ class App
                 'error_msg' => $errorType . '：' . $msg . ' in ' . $file . ' on line ' . $line,
                 'data' => null,
             ]);
+            self::clearDevBuildRouteLock();
             return $response;
         } catch (\Error $e) {
             $msg = $e->getMessage();
