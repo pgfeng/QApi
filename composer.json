@@ -17,9 +17,11 @@
     "symfony/mime": "^5.2",
     "league/climate": "^3.7.0",
     "predis/predis": "^1.1",
-    "doctrine/dbal": "^3.3.2",
-    "opis/closure": "^3.6.3"
+    "doctrine/dbal": "^3.3.2"
   },
+  "bin": [
+    "src/bin/QConsole.php"
+  ],
   "suggest": {
     "ext-json": "*",
     "ext-mbstring": "*",

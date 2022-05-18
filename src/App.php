@@ -109,6 +109,7 @@ class App
             $errorType = str_replace('QApi\\Exception\\', '', get_class($e));
             Logger::error("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
                 $line);
+            Logger::error($e->getTraceAsString());
             $response = new Response();
             $response->setCode(500)->setExtra([
                 'status' => false,
@@ -124,6 +125,7 @@ class App
             $errorType = str_replace('QApi\\Exception\\', '', get_class($e));
             Logger::error("\x1b[" . CliColor::ERROR . ";1m " . $errorType . "：" . $msg . "\e[0m\n\t\t" . " in " . $file . ' on line ' .
                 $line);
+            Logger::error($e->getTraceAsString());
             $response = new Response();
             $response->setCode(500)->setExtra([
                 'status' => false,

@@ -15,6 +15,31 @@ function buildID($prefix = 'QApi-'): string
 }
 
 /**
+ * @param $func
+ * @return string
+ */
+function closureToStr($func): string
+{
+    $refl = new \ReflectionFunction($func); // get reflection object
+    $path = $refl->getFileName();  // absolute path of php file
+    $begn = $refl->getStartLine(); // have to `-1` for array index
+    $endn = $refl->getEndLine();
+    $dlim = "\n"; // or PHP_EOL
+    $list = explode($dlim, file_get_contents($path));         // lines of php-file source
+    $list = array_slice($list, ($begn - 1), ($endn - ($begn - 1))); // lines of closure definition
+    $last = (count($list) - 1); // last line number
+
+    if ((substr_count($list[0], 'function') > 1) || (substr_count($list[0], '{') > 1) || (substr_count($list[$last], '}') > 1)) {
+        throw new \Exception("Too complex context definition in: `$path`. Check lines: $begn & $endn.");
+    }
+
+    $list[0] = ('function' . explode('function', $list[0])[1]);
+    $list[$last] = (explode('}', $list[$last])[0] . '}');
+
+    return implode($dlim, $list);
+}
+
+/**
  * 解析正确路径
  *
  * @return string

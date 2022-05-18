@@ -199,7 +199,7 @@ class Router
                 $tags = [];
             }
             $index = array_search($tagName, $tags);
-            if ($index!==false) {
+            if ($index !== false) {
                 array_splice($tags, $index, 1);
             }
             $cache->set($request->get->get('type') . '/' . $request->get->get('path') . '#___TAGS', $tags);
@@ -566,10 +566,11 @@ class Router
                     $data,
                     self::$config['cacheTTL']);
             } else if (self::$config['cacheClosure']) {
-                $data['callback']['callback'] = new SerializableClosure($data['callback']['callback']);
+                $data['callback']['callback'] = new QApi\serializeClosure\Closure($data['callback']['callback']);
                 self::$cache?->set(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . ':' . self::$METHOD . ':' . self::$URI, $data, self::$config['cacheTTL']);
             }
         } else {
+            Logger::info('RouteHitCache');
             $middleware = self::$cache->get(':' . Config::app()->getNameSpace() . ':' . Config::app()
                     ->getDefaultVersion() . '&__middleware__&');
             self::$classMiddlewareList = $middleware['classMiddlewareList'];
@@ -589,8 +590,11 @@ class Router
      * @throws ErrorException|JsonException
      */
     public
-    static function runCallBack(string|callable|array $callback, array $params, array $middleware = []): mixed
+    static function runCallBack(string|callable|array|QApi\serializeClosure\Closure $callback, array $params, array $middleware = []): mixed
     {
+        if ($callback instanceof QApi\serializeClosure\Closure) {
+            $callback = $callback->getClosure();
+        }
         self::$router = [
             'callback' => $callback,
             'params' => $params,

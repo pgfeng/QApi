@@ -216,8 +216,6 @@ class FileSystemAdapter implements CacheInterface
         $lifeTime = 0;
         if (is_int($ttl)) {
             $lifeTime = time() + $ttl;
-        } else if ($ttl === null) {
-            $lifeTime = 0;
         } else if ($ttl instanceof \DateInterval) {
             $lifeTime = (new DateTime())->add($ttl)->getTimestamp();
         }
