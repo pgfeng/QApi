@@ -5,11 +5,19 @@ require_once $GLOBALS['_composer_autoload_path'];
 use QApi\Command;
 use QApi\Enumeration\RunMode;
 
+$opt = getopt('m:', ['mode:']);
 if (!defined('PROJECT_PATH')) {
     define('PROJECT_PATH', $GLOBALS['_composer_bin_dir']);
 }
 if (!defined('RUN_MODE')) {
-    define('RUN_MODE', RunMode::DEVELOPMENT);
+    $m = $opt['m'] ?? $opt['mode'] ?? 'dev';
+    $mode = match ($m) {
+        'debug' => RunMode::DEBUG,
+        'prod' => RunMode::PRODUCTION,
+        'test' => RunMode::TEST,
+        default => RunMode::DEVELOPMENT,
+    };
+    define('RUN_MODE', $mode);
 }
 $Command = new Command();
 $Command->execute();
