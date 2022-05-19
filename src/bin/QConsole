@@ -7,7 +7,7 @@ use QApi\Enumeration\RunMode;
 
 $opt = getopt('m:', ['mode:']);
 if (!defined('PROJECT_PATH')) {
-    define('PROJECT_PATH', dirname($GLOBALS['_composer_bin_dir'], 2) . DIRECTORY_SEPARATOR);
+    define('PROJECT_PATH', getcwd() . DIRECTORY_SEPARATOR);
 }
 if (!defined('RUN_MODE')) {
     $m = $opt['m'] ?? $opt['mode'] ?? 'dev';
