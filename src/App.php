@@ -92,12 +92,12 @@ class App
             }
             self::$timezone = new \DateTimeZone($timezone);
             date_default_timezone_set($timezone);
-            self::$apiPassword = trim($apiPassword);
             self::$routeDir = trim($routeDir, '/');
             self::$runtimeDir = trim($runtimeDir, '/');
             self::$configDir = trim($configDir, '/');
             self::$uploadDir = trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
             self::$app = Config::app();
+            self::$apiPassword = trim(self::$app->docPassword?:$apiPassword);
             self::$app->init();
             self::$getVersionFunction = $getVersionFunction;
             Router::init($request);
