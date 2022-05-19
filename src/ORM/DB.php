@@ -319,6 +319,7 @@ class DB
      */
     public function in(string $field, array $values): self
     {
+        $this->hasWhere = true;
         $this->queryBuilder
             ->andWhere(
                 $this->expr()->in($field, $this->quote($values))
