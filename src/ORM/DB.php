@@ -92,8 +92,12 @@ class DB
         }
     }
 
+
     /**
-     * @param int $lockMode One of the Doctrine\DBAL\LockMode::* constants
+     * @param int $lockMode
+     * @return $this
+     * @throws \Doctrine\DBAL\Exception
+     * @throws \Doctrine\DBAL\Exception\InvalidLockMode
      */
     public function lock(int $lockMode = LockMode::NONE): self
     {
@@ -319,13 +323,23 @@ class DB
      */
     public function in(string $field, array $values): self
     {
-        $this->hasWhere = true;
-        $this->queryBuilder
-            ->andWhere(
-                $this->expr()->in($field, $this->quote($values))
-            );
+
+        $expr = $this->expr()->in($field, $this->quote($values));
+        if ($this->hasWhere) {
+            $this->queryBuilder
+                ->andWhere(
+                    $expr
+                );
+        } else {
+            $this->queryBuilder
+                ->where(
+                    $expr
+                );
+            $this->hasWhere = true;
+        }
         return $this;
     }
+
 
     /**
      * @param string $field
@@ -334,10 +348,19 @@ class DB
      */
     public function notIn(string $field, array $values): self
     {
-        $this->queryBuilder
-            ->andWhere(
-                $this->expr()->notIn($field, $this->quote($values))
-            );
+        $expr = $this->expr()->notIn($field, $this->quote($values));
+        if ($this->hasWhere) {
+            $this->queryBuilder
+                ->andWhere(
+                    $expr
+                );
+        } else {
+            $this->queryBuilder
+                ->where(
+                    $expr
+                );
+            $this->hasWhere = true;
+        }
         return $this;
     }
 
@@ -396,6 +419,38 @@ class DB
             }
         }
         $this->hasWhere = true;
+        return $this;
+    }
+
+    /**
+     * @param string $field
+     * @return $this
+     */
+    public function isNull(string $field): self
+    {
+        $expr = $this->expr()->isNull($field);
+        if ($this->hasWhere) {
+            $this->queryBuilder->andWhere($expr);
+        } else {
+            $this->queryBuilder->where($expr);
+            $this->hasWhere = true;
+        }
+        return $this;
+    }
+
+    /**
+     * @param string $field
+     * @return $this
+     */
+    public function isNotNull(string $field): self
+    {
+        $expr = $this->expr()->isNotNull($field);
+        if ($this->hasWhere) {
+            $this->queryBuilder->andWhere($expr);
+        } else {
+            $this->queryBuilder->where($expr);
+            $this->hasWhere = true;
+        }
         return $this;
     }
 
