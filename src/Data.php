@@ -83,16 +83,12 @@ class Data extends ArrayObject implements JsonSerializableAlias
      * @param mixed $key
      * @return mixed
      */
-    public function offsetGet(mixed $key = null): mixed
+    public function offsetGet(mixed $key): mixed
     {
-        if ($key === null) {
-            return $this->getArrayCopy();
-        } else {
-            try {
-                return parent::offsetGet($key);
-            } catch (\Exception) {
-                return null;
-            }
+        try {
+            return parent::offsetGet($key);
+        } catch (\Exception) {
+            return null;
         }
     }
 
@@ -175,8 +171,8 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function get(string|bool|null $key = false, $default_value = null): null|string|array
     {
-        if (!$key) {
-            return $this;
+        if ($key === null || $key === false) {
+            return $this->getArrayCopy();
         }
         return $this[$key] ?? $default_value;
     }
