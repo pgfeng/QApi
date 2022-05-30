@@ -63,7 +63,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
                     continue;
                 }
                 $item['tree_level'] = $treeLevel;
-                $item[$childField] = $this->toTree($keyField, $parentField, $childField, $item[$keyField], $copyData,$treeLevel+1);
+                $item[$childField] = $this->toTree($keyField, $parentField, $childField, $item[$keyField], $copyData, $treeLevel + 1);
                 if (!$item[$childField]) {
                     unset($item[$childField]);
                 }
@@ -83,12 +83,16 @@ class Data extends ArrayObject implements JsonSerializableAlias
      * @param mixed $key
      * @return mixed
      */
-    public function offsetGet(mixed $key): mixed
+    public function offsetGet(mixed $key = null): mixed
     {
-        try {
-            return parent::offsetGet($key);
-        } catch (\Exception) {
-            return null;
+        if ($key === null) {
+            return $this->getArrayCopy();
+        } else {
+            try {
+                return parent::offsetGet($key);
+            } catch (\Exception) {
+                return null;
+            }
         }
     }
 
