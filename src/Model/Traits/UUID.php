@@ -5,6 +5,7 @@ namespace QApi\Model\Traits;
 
 use QApi\Data;
 use QApi\Model;
+use Symfony\Component\Uid\Ulid;
 
 /**
  * UUID
@@ -29,7 +30,7 @@ trait UUID
             $primary_key = $this->primary_key;
         }
         if (!isset($data[$primary_key]) || !$data[$primary_key]) {
-            $uuid = buildID($this->uuidPrefix ?: str_replace('_', '-', $this->getTableName()) . '-');
+            $uuid = Ulid::generate();
             $data[$primary_key] = $this->lastInsertUUID = $uuid;
             return $this->insert($data);
         }

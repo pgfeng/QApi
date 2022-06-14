@@ -13,7 +13,7 @@ use QApi\Attribute\Parameter\PostParam;
 use QApi\Exception\WarningException;
 use QApi\Http\MiddlewareInterface;
 
-#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)] class Route
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE|Attribute::TARGET_FUNCTION)] class Route
 {
 
     /**

@@ -6,12 +6,11 @@ use JetBrains\PhpStorm\Pure;
 
 /**
  * 获取一个全局唯一键值
- * @param string $prefix
  * @return string
  */
-function buildID($prefix = 'QApi-'): string
+function buildID(): string
 {
-    return md5(uniqid(session_create_id($prefix), true), false);
+    return \Symfony\Component\Uid\Ulid::generate();
 }
 
 /**
@@ -82,7 +81,7 @@ function parseDir(): string
  *
  * @return string
  */
-function str_cut($string, $length, $dot = '...'): string
+function str_cut($string, $length, string $dot = '...'): string
 {
     $length = (int)$length;
     //--将html标签剔除
@@ -146,12 +145,12 @@ function mkPathDir($path, $mode = 0777): bool
 /**
  * 人性化的时间显示
  *
- * @param String $time Unix时间戳，默认为当前时间
+ * @param String|null $time Unix时间戳，默认为当前时间
  * @param string $date_format 默认时间显示格式
  *
  * @return String
  */
-function toTime($time = NULL, $date_format = 'Y/m/d H:i:s'): string
+function toTime(string $time = NULL, string $date_format = 'Y/m/d H:i:s'): string
 {
     $time ??= time();
     $now = time();
@@ -269,7 +268,7 @@ function closure_dump($closure): string
  *
  * @return null|bool|string
  */
-function dump($var, $echo = TRUE, $label = NULL, $strict = TRUE): null|bool|string
+function dump($var, bool $echo = TRUE, $label = NULL, bool $strict = TRUE): null|bool|string
 {
     $label = ($label === NULL) ? '' : rtrim($label) . ' ';
     if (!$strict) {
@@ -297,61 +296,6 @@ function dump($var, $echo = TRUE, $label = NULL, $strict = TRUE): null|bool|stri
     return $output;
 }
 
-/**
- * 网址跳转
- *
- * @param $url
- * @param $time
- */
-#[Deprecated(reason: 'Compatible with swoole', replacement: '$response->withLocation(\'Location\',\'url\')')]
-function redirect($url, $time = 0)
-{
-    if ($time > 0) {
-        header('Refresh:' . $time . ';url=' . $url);
-    } else {
-        header('Location:' . $url);
-        exit;
-    }
-}
-
-/**
- * 将string转换成可以在正则中使用的正则
- *
- * @param $str
- *
- * @return string
- */
-#[Pure] function srtToRE($str): string
-{
-    $res = '';
-    $regs = [
-        '.', '+', '-', '$', '[', ']', '{', '}', '(', ')', '\\', '^', '|', '?', '*', '/', '_',
-    ];
-    $str = str_split($str, 1);
-    foreach ($str as $s) {
-        if (in_array($s, $regs, true)) {
-            $res .= '\\' . $s;
-        } else {
-            $res .= $s;
-        }
-    }
-
-    return $res;
-}
-
-/**
- * 输出JSON信息
- *
- * @param $data
- * @return false|string
- * @throws JsonException
- */
-function response_json($data): bool|string
-{
-    header("Content-Type:application/Json; charset=UTF-8");
-    return json_encode($data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
-}
-
 
 /**
  * 产生随机字符串
@@ -361,7 +305,7 @@ function response_json($data): bool|string
  *
  * @return   string     字符串
  */
-function random($length, $chars = '0123456789'): string
+function random(int $length, string $chars = '0123456789'): string
 {
     $hash = '';
     $max = strlen($chars) - 1;
@@ -372,25 +316,6 @@ function random($length, $chars = '0123456789'): string
     return $hash;
 }
 
-/**
- * 解析正确的URI
- * @param $uri
- * @return string
- */
-#[Pure] function parse_uri($uri): string
-{
-    $NM = strpos($uri, '#');
-    if ($NM === 0)          //没有填写 MODULE_NAME
-    {
-        $uri = MODULE_NAME . '/' . substr($uri, 1);
-    } else {
-        $NC = strpos($uri, '@');
-        if ($NC === 0) {    //没有填写 MODULE_NAME 和 CONTROLLER_NAME
-            $uri = MODULE_NAME . '/' . CONTROLLER_NAME . '/' . substr($uri, 1);
-        }
-    }
-    return $uri;
-}
 
 /**
  * XML编码
@@ -404,7 +329,7 @@ function random($length, $chars = '0123456789'): string
  *
  * @return string
  */
-function xml_encode(mixed $data, $root = 'root', $item = 'item', $attr = '', $id = 'id', $encoding = 'utf-8'): string
+function xml_encode(mixed $data, string $root = 'root', string $item = 'item', string $attr = '', string $id = 'id', string $encoding = 'utf-8'): string
 {
     if (is_array($attr)) {
         $_attr = [];
@@ -432,7 +357,7 @@ function xml_encode(mixed $data, $root = 'root', $item = 'item', $attr = '', $id
  *
  * @return string
  */
-function data_to_xml(array $data, $item = 'item', $id = 'id'): string
+function data_to_xml(array $data, string $item = 'item', string $id = 'id'): string
 {
     $xml = $attr = '';
     foreach ($data as $key => $val) {
