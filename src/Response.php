@@ -69,7 +69,7 @@ class Response
     );
     private bool $status = true;
     private int $statusCode = 200;
-    private mixed $data = [];
+    private mixed $data = null;
     private string $msg = 'Ok';
     private array $extra = [];
     /**
