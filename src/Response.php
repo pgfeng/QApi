@@ -72,6 +72,7 @@ class Response
     private mixed $data = null;
     private string $msg = 'Ok';
     private array $extra = [];
+
     /**
      * custom HTTP response phrase
      * @var string|null
