@@ -58,6 +58,7 @@ trait Validate
             'rule' => '/^\d{6}$/',
             'msg' => '请输入正确的%ColumnName%',
         ],
+
         #整数
         'integer' => [
             'rule' => '/^[-\+]?\d+$/',
