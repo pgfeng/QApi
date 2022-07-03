@@ -15,7 +15,7 @@ use QApi\Model\filesModel;
 trait Validate
 {
 
-    protected array $Column = [];
+    public array $Column = [];
 
     /**
      * 验证规则
