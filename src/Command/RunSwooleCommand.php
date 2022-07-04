@@ -7,10 +7,14 @@ use ErrorException;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
 use QApi\App;
+use QApi\Cache\Cache;
+use QApi\Cache\CacheInterface;
+use QApi\Cache\FileSystemAdapter;
 use QApi\Cache\SwooleTableAdapter;
 use QApi\Command;
 use QApi\Config;
 use QApi\Config\Application;
+use QApi\Config\Cache\FileSystem;
 use QApi\Data;
 use QApi\Enumeration\RunMode;
 use QApi\Logger;
@@ -27,6 +31,7 @@ class RunSwooleCommand extends CommandHandler
      * @var string
      */
     public string $name = 'run:swoole';
+
 
     /**
      * @var Application[]
@@ -87,23 +92,44 @@ class RunSwooleCommand extends CommandHandler
     public function handler(array $argv): mixed
     {
         $appDomain = $this->choseApp();
+        $lockFile = PROJECT_PATH . 'SwooleServer-' . $appDomain['port'] . '.lock';
+        if (file_exists($lockFile)) {
+            $options = ['reload', 'halt'];
+            $input = $this->command->cli->blue()->radio('Server is Running,Please select an action:', $options);
+            $response = $input->prompt();
+            $this->command->info('Start stopping the server...');
+            \swoole_process::kill((int)file_get_contents($lockFile));
+            \swoole_process::wait();
+            usleep(20000);
+            $this->command->info('Service stopped successfully！');
+            unlink($lockFile);
+            if ($response == 'halt') {
+                exit;
+            } else {
+                $this->command->info('Start starting the server!');
+            }
+        }
         @cli_set_process_title('QApiServer-' . $appDomain['port']);
+
         $http = new Server("0.0.0.0", $appDomain['port']);
+
         $options = [
             'enable_static_handler' => true,
             'document_root' => Config::command('ServerRunDir'),
             'package_max_length' => (int)ini_get('post_max_size') * 1024 * 1024,
             'http_parse_cookie' => true,
             'http_autoindex' => false,
-            'pid_file' => 'SwooleServer.pid',
             'http_index_files' => ['index.html', 'index.htm'],
             'daemonize' => in_array('--daemonize', $argv, true),
             'log_date_format' => '%Y-%m-%d %H:%M:%S',
         ];
         $http->set($options);
-        $http->on("start", function ($server) use ($appDomain) {
+        $http->on("start", function ($server) use ($appDomain, $lockFile, $argv) {
             $this->command->cli->blue(sprintf('QApi Server Startup On <http://%s:%s/> Server-PID：%s', $appDomain['host'],
                 $appDomain['port'], $server->master_pid . '-' . $server->manager_pid));
+            if (in_array('--daemonize', $argv, true)) {
+                file_put_contents($lockFile, $server->master_pid);
+            }
         });
         $cache = new SwooleTableAdapter(new Config\Cache\SwooleTable(2, 11));
         $http->on("request", function ($request, $response) use ($http, $appDomain, $cache) {

@@ -13,7 +13,7 @@ use QApi\Exception\CacheErrorException;
 
 class Cache
 {
-    private static array $cacheObjects = [];
+    private static array $adapters = [];
 
     /**
      * @param string $configName
@@ -22,11 +22,11 @@ class Cache
      */
     public static function initialization(string $configName = 'default'): CacheInterface
     {
-        if (isset(self::$cacheObjects[$configName])) {
-            return self::$cacheObjects[$configName];
+        if (isset(self::$adapters[$configName])) {
+            return self::$adapters[$configName];
         }
         if ($configName === '__document') {
-            return self::$cacheObjects[$configName] = new FileSystemAdapter(new FileSystem(PROJECT_PATH . '.document'));
+            return self::$adapters[$configName] = new FileSystemAdapter(new FileSystem(PROJECT_PATH . '.document'));
         }
         if (!is_cli()) {
             $runMode = Config::app()->getRunMode();
@@ -43,6 +43,25 @@ class Cache
                 0, 1, PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
                 . DIRECTORY_SEPARATOR . 'cache.php');
         }
-        return (self::$cacheObjects[$configName] = new $cache->driver($cache));
+        return (self::$adapters[$configName] = new $cache->driver($cache));
+    }
+
+    /**
+     * @param $configName
+     * @param CacheInterface $cacheAdapter
+     * @return CacheInterface
+     */
+    public static function add($configName, CacheInterface $cacheAdapter): CacheInterface
+    {
+        return self::$adapters[$configName] = $cacheAdapter;
+    }
+
+    /**
+     * @param $configName
+     * @return void
+     */
+    public static function remove($configName): void
+    {
+        unset(self::$adapters[$configName]);
     }
 }
