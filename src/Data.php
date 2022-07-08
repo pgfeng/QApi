@@ -139,7 +139,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
     public function unshift(mixed ...$data): Data
     {
         $array = $this->getArrayCopy();
-        array_unshift($array, $data);
+        array_unshift($array, ...$data);
         return new Data($array);
     }
 
