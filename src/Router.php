@@ -394,7 +394,7 @@ class Router
         if (is_string($middleware)) {
             $middleware = [$middleware];
         }
-        self::$routeLists[$method][$path] = [
+        self::$routeLists[App::$app->getDir()][$method][$path] = [
             'callback' => $runData,
             'pattern' => $pattern,
             'middleware' => $middleware,
@@ -434,7 +434,7 @@ class Router
     public
     function paramPattern(string $paramName, string $pattern): self
     {
-        self::$routeLists[$this->method][$this->path]['pattern'][$paramName] = $pattern;
+        self::$routeLists[App::$app->getDir()][$this->method][$this->path]['pattern'][$paramName] = $pattern;
         return $this;
     }
 
@@ -445,14 +445,14 @@ class Router
      */
     public function addMiddleware(string $middleware, bool $isClass = false): self
     {
-        if (!in_array($middleware, self::$routeLists[$this->method][$this->path]['middleware'], true)) {
-            self::$routeLists[$this->method][$this->path]['middleware'][] = $middleware;
-            if (is_string(self::$routeLists[$this->method][$this->path]['callback'])) {
-                self::$middlewareList[self::$routeLists[$this->method][$this->path]['callback']][] = $middleware;
+        if (!in_array($middleware, self::$routeLists[App::$app->getDir()][$this->method][$this->path]['middleware'], true)) {
+            self::$routeLists[App::$app->getDir()][$this->method][$this->path]['middleware'][] = $middleware;
+            if (is_string(self::$routeLists[App::$app->getDir()][$this->method][$this->path]['callback'])) {
+                self::$middlewareList[self::$routeLists[App::$app->getDir()][$this->method][$this->path]['callback']][] = $middleware;
             }
-            if ($isClass && is_string(self::$routeLists[$this->method][$this->path]['callback'])) {
-                $className = substr(self::$routeLists[$this->method][$this->path]['callback'], 0, strpos
-                (self::$routeLists[$this->method][$this->path]['callback'], '@'));
+            if ($isClass && is_string(self::$routeLists[App::$app->getDir()][$this->method][$this->path]['callback'])) {
+                $className = substr(self::$routeLists[App::$app->getDir()][$this->method][$this->path]['callback'], 0, strpos
+                (self::$routeLists[App::$app->getDir()][$this->method][$this->path]['callback'], '@'));
                 self::$classMiddlewareList[$className][] = $middleware;
             }
         }
