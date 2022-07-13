@@ -581,7 +581,7 @@ class Router
             $callback = self::$hitCache['callback'];
             $params = self::$hitCache['params'];
         }
-        return self::runCallBack($callback['callback'], $params, array_merge(self::$classMiddlewareList[Config::$app->getDir()]??[],$callback['middleware']));
+        return self::runCallBack($callback['callback'], $params, $callback['middleware']);
     }
 
     /**
