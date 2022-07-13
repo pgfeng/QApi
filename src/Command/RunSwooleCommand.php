@@ -100,7 +100,7 @@ class RunSwooleCommand extends CommandHandler
             $this->command->info('Start stopping the server...');
             \swoole_process::kill((int)file_get_contents($lockFile));
             \swoole_process::wait();
-            usleep(20000);
+            usleep(50000);
             $this->command->info('Service stopped successfully！');
             unlink($lockFile);
             if ($response == 'halt') {
@@ -127,7 +127,7 @@ class RunSwooleCommand extends CommandHandler
         $http->on("start", function ($server) use ($appDomain, $lockFile, $argv) {
             $this->command->cli->blue(sprintf('QApi Server Startup On <http://%s:%s/> Server-PID：%s', $appDomain['host'],
                 $appDomain['port'], $server->master_pid . '-' . $server->manager_pid));
-            if (in_array('--daemonize', $argv, true)) {
+            if (in_array('--daemonize', $argv, true) || in_array('-d', $argv, true)) {
                 file_put_contents($lockFile, $server->master_pid);
             }
         });
