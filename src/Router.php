@@ -473,7 +473,7 @@ class Router
         $uri = self::$URI;
         $method = self::$METHOD;
         if (!self::$hitCache) {
-            foreach ($routeList as $key => $routeMethodData) {
+            foreach ($routeList[App::$app->getDir()] as $key => $routeMethodData) {
                 $routeMethodData = array_reverse($routeMethodData);
                 $methodData = [];
                 foreach ($routeMethodData as $path => $route) {
