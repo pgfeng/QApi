@@ -120,7 +120,7 @@ class RunSwooleCommand extends CommandHandler
             'http_parse_cookie' => true,
             'http_autoindex' => false,
             'http_index_files' => ['index.html', 'index.htm'],
-            'daemonize' => in_array('--daemonize', $argv, true),
+            'daemonize' => in_array('--daemonize', $argv, true) || in_array('-d', $argv, true),
             'log_date_format' => '%Y-%m-%d %H:%M:%S',
         ];
         $http->set($options);
