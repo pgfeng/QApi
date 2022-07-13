@@ -54,13 +54,6 @@ class Router
      * @var array
      */
     public static array $routeLists = [
-        'GET' => [],
-        'POST' => [],
-        'PUT' => [],
-        'DELETE' => [],
-        'OPTIONS' => [],
-        'HEAD' => [],
-        'ALL' => [],
     ];
 
     /**
@@ -70,6 +63,16 @@ class Router
      */
     public static function init(Request $request = null): void
     {
+        if (!isset(self::$routeLists[Config::$app->getDir()])) {
+            self::$routeLists[Config::$app->getDir()] = [
+                'GET' => [],
+                'POST' => [],
+                'PUT' => [],
+                'DELETE' => [],
+                'OPTIONS' => [],
+                'HEAD' => [],
+                'ALL' => [],];
+        }
         if (!$request) {
             $arguments = [];
             self::$request = $request = new Request(new Data($arguments));
@@ -242,7 +245,7 @@ class Router
         if (!self::$hitCache && empty(self::$router)) {
             $versions = Config::versions();
             foreach ($versions as $version) {
-                $base_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
+                $base_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() . DIRECTORY_SEPARATOR
                     . str_replace('.', '', $version->versionName) . DIRECTORY_SEPARATOR;
                 mkPathDir($base_path . 'builder.php');
                 $data = glob($base_path . '*.php');
@@ -263,7 +266,7 @@ class Router
 
     public static function removeLockFile(): void
     {
-        $lockFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
+        $lockFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() .
             DIRECTORY_SEPARATOR
             . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'runBuildRoute.lock';
         try {
@@ -277,10 +280,10 @@ class Router
      */
     #[NoReturn] public static function BuildRoute(string $nameSpace): void
     {
-        $lockFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
+        $lockFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() .
             DIRECTORY_SEPARATOR
             . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'runBuildRoute.lock';
-        $runtimeFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
+        $runtimeFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() .
             DIRECTORY_SEPARATOR
             . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'route.lock';
         if (file_exists($runtimeFile)) {
@@ -294,24 +297,24 @@ class Router
         }
         mkPathDir($lockFile);
         touch($lockFile);
-        $builder_file_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
+        $builder_file_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() .
             DIRECTORY_SEPARATOR
             . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builder.php';
         $version_path = str_replace('.', '', App::getVersion());
-        $base_path = PROJECT_PATH . App::$app->getDir() . DIRECTORY_SEPARATOR . $version_path .
+        $base_path = PROJECT_PATH . Config::$app->getDir() . DIRECTORY_SEPARATOR . $version_path .
             DIRECTORY_SEPARATOR;
         mkPathDir($base_path . 'builder.php');
         $nameSpace .= '\\' . $version_path;
         try {
             try {
-                rename($builder_file_path, (PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
+                rename($builder_file_path, (PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() .
                     DIRECTORY_SEPARATOR
                     . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builderTmp.php'));
             } catch (\Exception) {
             }
             self::build(scandir($base_path), $base_path, $nameSpace, $base_path);
             try {
-                unlink(PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
+                unlink(PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() .
                     DIRECTORY_SEPARATOR
                     . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builderTmp.php');
             } catch (\Exception) {
@@ -371,7 +374,7 @@ class Router
                 }
             }
         }
-        $save_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() . DIRECTORY_SEPARATOR
+        $save_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() . DIRECTORY_SEPARATOR
             . Config::version()->versionDir . DIRECTORY_SEPARATOR . 'builder.php';
         if (!file_exists($save_path)) {
             mkPathDir($save_path);
@@ -388,13 +391,13 @@ class Router
      * @param QApi\Http\MiddlewareInterface[]|string $middleware
      */
     public
-    function __construct(protected string $method, protected string|null $path, protected $runData, array $pattern = [],
+    function __construct(protected string $app, protected string $method, protected string|null $path, protected $runData, array $pattern = [],
                          array|string     $middleware = [])
     {
         if (is_string($middleware)) {
             $middleware = [$middleware];
         }
-        self::$routeLists[App::$app->getDir()][$method][$path] = [
+        self::$routeLists[Config::$app->getDir()][$method][$path] = [
             'callback' => $runData,
             'pattern' => $pattern,
             'middleware' => $middleware,
@@ -422,7 +425,7 @@ class Router
             $params['path'] = str_replace(array(Config::$app->getNameSpace() . '\\' . Config::version()->versionDir, '\\'), array('', '/'), $params['callback']);
             $params['path'] = substr(str_replace('Controller@', '/', $params['path']), 0, -6);
         }
-        return new static(strtoupper($method), $params['path'] ?? null, $params['callback'], $params['pattern'] ?? [],
+        return new static(Config::$app->getDir(), strtoupper($method), $params['path'] ?? null, $params['callback'], $params['pattern'] ?? [],
             $params['middleware'] ?? []);
     }
 
@@ -434,7 +437,7 @@ class Router
     public
     function paramPattern(string $paramName, string $pattern): self
     {
-        self::$routeLists[App::$app->getDir()][$this->method][$this->path]['pattern'][$paramName] = $pattern;
+        self::$routeLists[Config::$app->getDir()][$this->method][$this->path]['pattern'][$paramName] = $pattern;
         return $this;
     }
 
@@ -445,15 +448,15 @@ class Router
      */
     public function addMiddleware(string $middleware, bool $isClass = false): self
     {
-        if (!in_array($middleware, self::$routeLists[App::$app->getDir()][$this->method][$this->path]['middleware'], true)) {
-            self::$routeLists[App::$app->getDir()][$this->method][$this->path]['middleware'][] = $middleware;
-            if (is_string(self::$routeLists[App::$app->getDir()][$this->method][$this->path]['callback'])) {
-                self::$middlewareList[self::$routeLists[App::$app->getDir()][$this->method][$this->path]['callback']][] = $middleware;
+        if (!in_array($middleware, self::$routeLists[Config::$app->getDir()][$this->method][$this->path]['middleware'], true)) {
+            self::$routeLists[Config::$app->getDir()][$this->method][$this->path]['middleware'][] = $middleware;
+            if (is_string(self::$routeLists[Config::$app->getDir()][$this->method][$this->path]['callback'])) {
+                self::$middlewareList[Config::$app->getDir()][self::$routeLists[Config::$app->getDir()][$this->method][$this->path]['callback']][] = $middleware;
             }
-            if ($isClass && is_string(self::$routeLists[App::$app->getDir()][$this->method][$this->path]['callback'])) {
-                $className = substr(self::$routeLists[App::$app->getDir()][$this->method][$this->path]['callback'], 0, strpos
-                (self::$routeLists[App::$app->getDir()][$this->method][$this->path]['callback'], '@'));
-                self::$classMiddlewareList[$className][] = $middleware;
+            if ($isClass && is_string(self::$routeLists[Config::$app->getDir()][$this->method][$this->path]['callback'])) {
+                $className = substr(self::$routeLists[Config::$app->getDir()][$this->method][$this->path]['callback'], 0, strpos
+                (self::$routeLists[Config::$app->getDir()][$this->method][$this->path]['callback'], '@'));
+                self::$classMiddlewareList[Config::$app->getDir()][$className][] = $middleware;
             }
         }
         return $this;
@@ -473,7 +476,7 @@ class Router
         $uri = self::$URI;
         $method = self::$METHOD;
         if (!self::$hitCache) {
-            foreach ($routeList[App::$app->getDir()] as $key => $routeMethodData) {
+            foreach ($routeList[Config::$app->getDir()] as $key => $routeMethodData) {
                 $routeMethodData = array_reverse($routeMethodData);
                 $methodData = [];
                 foreach ($routeMethodData as $path => $route) {
@@ -557,8 +560,8 @@ class Router
             ];
             if (!self::$cache?->has(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . '&__middleware__&')) {
                 self::$cache?->set(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . '&__middleware__&', [
-                    'classMiddlewareList' => self::$classMiddlewareList,
-                    'middlewareList' => self::$middlewareList,
+                    'classMiddlewareList' => self::$classMiddlewareList[Config::$app->getDir()]??[],
+                    'middlewareList' => self::$middlewareList[Config::$app->getDir()]??[],
                 ]);
             }
             if (!is_callable($data['callback']['callback'])) {
@@ -573,12 +576,12 @@ class Router
             Logger::info('RouteHitCache');
             $middleware = self::$cache->get(':' . Config::app()->getNameSpace() . ':' . Config::app()
                     ->getDefaultVersion() . '&__middleware__&');
-            self::$classMiddlewareList = $middleware['classMiddlewareList'];
-            self::$middlewareList = $middleware['middlewareList'];
+            self::$classMiddlewareList[Config::$app->getDir()] = $middleware['classMiddlewareList'];
+            self::$middlewareList[Config::$app->getDir()] = $middleware['middlewareList'];
             $callback = self::$hitCache['callback'];
             $params = self::$hitCache['params'];
         }
-        return self::runCallBack($callback['callback'], $params, $callback['middleware']);
+        return self::runCallBack($callback['callback'], $params, array_merge(self::$classMiddlewareList[Config::$app->getDir()]??[],$callback['middleware']));
     }
 
     /**
@@ -589,8 +592,7 @@ class Router
      * @return mixed
      * @throws ErrorException|JsonException
      */
-    public
-    static function runCallBack(string|callable|array|QApi\serializeClosure\Closure $callback, array $params, array $middleware = []): mixed
+    public static function runCallBack(string|callable|array|QApi\serializeClosure\Closure $callback, array $params, array $middleware = []): mixed
     {
         if ($callback instanceof QApi\serializeClosure\Closure) {
             $callback = $callback->getClosure();
@@ -697,8 +699,8 @@ class Router
                 $controller = new $controllerName;
                 if (method_exists($controller, $callback['method'])) {
                     $params = [];
-                    $classMiddleware = self::$classMiddlewareList[$controllerName] ?? [];
-                    $methodMiddleware = self::$middlewareList[$controllerName . '@' . $callback['method']] ?? [];
+                    $classMiddleware = self::$classMiddlewareList[Config::$app->getDir()][$controllerName] ?? [];
+                    $methodMiddleware = self::$middlewareList[Config::$app->getDir()][$controllerName . '@' . $callback['method']] ?? [];
                     $middlewareLists = array_unique(array_merge($classMiddleware, $methodMiddleware));
                     ksort($middlewareLists);
                     self::$router['middleware'] = &$middlewareLists;
