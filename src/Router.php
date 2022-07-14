@@ -242,7 +242,7 @@ class Router
                     ->getDefaultVersion() . ':' .
                 self::$METHOD . ':' . self::$URI);
         }
-        if (!self::$hitCache && empty(self::$router)) {
+        if (!self::$hitCache && (!isset(self::$router[Config::$app->getDir()])) || empty(self::$router[Config::$app->getDir()])) {
             $versions = Config::versions();
             foreach ($versions as $version) {
                 $base_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() . DIRECTORY_SEPARATOR
@@ -597,7 +597,7 @@ class Router
         if ($callback instanceof QApi\serializeClosure\Closure) {
             $callback = $callback->getClosure();
         }
-        self::$router = [
+        self::$router[Config::$app->getDir()] = [
             'callback' => $callback,
             'params' => $params,
             'middleware' => $middleware,
@@ -613,7 +613,7 @@ class Router
                 self::$request->arguments = $arguments;
                 $response = new Response();
                 Logger::info('Router -> ' . 'Callable()');
-                Logger::info('RouterOriginal -> ' . json_encode(self::$router, JSON_THROW_ON_ERROR));
+                Logger::info('RouterOriginal -> ' . json_encode(self::$router[Config::$app->getDir()], JSON_THROW_ON_ERROR));
                 $result = null;
                 if ($middleware) {
                     /**
@@ -658,7 +658,7 @@ class Router
             self::$request->arguments = $arguments;
             $response = new Response();
             Logger::info('Router -> ' . $controllerName . '@' . $method);
-            Logger::info('RouterOriginal -> ' . json_encode(self::$router, JSON_THROW_ON_ERROR));
+            Logger::info('RouterOriginal -> ' . json_encode(self::$router[Config::$app->getDir()], JSON_THROW_ON_ERROR));
             $result = '';
             if ($middleware) {
                 /**
@@ -703,17 +703,17 @@ class Router
                     $methodMiddleware = self::$middlewareList[Config::$app->getDir()][$controllerName . '@' . $callback['method']] ?? [];
                     $middlewareLists = array_unique(array_merge($classMiddleware, $methodMiddleware));
                     ksort($middlewareLists);
-                    self::$router['middleware'] = &$middlewareLists;
+                    self::$router[Config::$app->getDir()]['middleware'] = &$middlewareLists;
                     Logger::info('Router -> ' . $controllerName . '@' . $callback['method']);
-                    Logger::info('RouterOriginal -> ' . json_encode(self::$router, JSON_THROW_ON_ERROR));
+                    Logger::info('RouterOriginal -> ' . json_encode(self::$router[Config::$app->getDir()], JSON_THROW_ON_ERROR));
                     self::$request->arguments = new Data($params);
                     $response = new Response();
-                    if (self::$router['middleware']) {
+                    if (self::$router[Config::$app->getDir()]['middleware']) {
                         /**
                          * @var QApi\Http\MiddlewareInterface $middlewareObject
                          */
                         $middlewareObject = null;
-                        foreach (self::$router['middleware'] as $item) {
+                        foreach (self::$router[Config::$app->getDir()]['middleware'] as $item) {
                             $middlewareObject = new $item;
                             $result = $middlewareObject->handle(self::$request, $response, static function (Request  $request,
                                                                                                             Response $response) use ($controller, $callback) {
