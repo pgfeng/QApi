@@ -106,62 +106,73 @@ class Request
      * @param array|null $server
      * @param array|null $header
      */
-    public function __construct(public Data|null $arguments = null, array $get = null, array $post = null, array $request =
+    public function __construct(public Data|null|array $arguments = null, array $get = null, array $post = null, array $request =
     null,
-                                string           $input = null, array $files = null,
-                                array            $cookie = null, array $session = null, array $server = null, array $header = null)
+                                string                 $input = null, array $files = null,
+                                array                  $cookie = null, array $session = null, array $server = null, array $header = null, bool $init = true, bool $log = true)
     {
-        if (!$this->arguments) {
-            $params = [];
-            $this->arguments = new Data($params);
-        }
-        $_SESSION = $_SESSION ?? [];
-        $_GET = $get ?? $_GET;
-        $_POST = $post ?? $_POST;
-        $_REQUEST = $request ?? $_REQUEST;
-        $_FILES = $files ?? $_FILES;
-        $input = $input ?? file_get_contents('php://input');
-        $_COOKIE = $cookie ?? $_COOKIE;
-        $_SESSION = $session ?? $_SESSION;
-        $_SERVER = $server ?? $_SERVER;
-        $headers = $header ?? [];
-        foreach ($_SERVER as $name => $value) {
-            if (str_starts_with($name, 'HTTP_')) {
-                $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+        if ($init) {
+            if (!$this->arguments) {
+                $params = [];
+                $this->arguments = new Data($params);
+            } elseif (is_array($arguments)) {
+                $this->arguments = new Data($arguments);
+            }
+            $_SESSION = $_SESSION ?? [];
+            $_GET = $get ?? $_GET;
+            $_POST = $post ?? $_POST;
+            $_REQUEST = $request ?? $_REQUEST;
+            $_FILES = $files ?? $_FILES;
+            $input = $input ?? file_get_contents('php://input');
+            $_COOKIE = $cookie ?? $_COOKIE;
+            $_SESSION = $session ?? $_SESSION;
+            $_SERVER = $server ?? $_SERVER;
+            $headers = $header ?? [];
+            foreach ($_SERVER as $name => $value) {
+                if (str_starts_with($name, 'HTTP_')) {
+                    $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+                }
+            }
+            $this->header = new Data($headers);
+            $this->server = new Data($_SERVER);
+            if (isset($_GET['_router'])) {
+                $this->routeUri = $_GET['_router'];
+            } else {
+                $this->routeUri = substr($_SERVER['PATH_INFO'] ?? '', 1);
+            }
+            unset($_GET['_router'], $_REQUEST['_router']);
+            $this->get = new Data($_GET);
+            $this->post = new Data($_POST);
+            $this->request = new Data($_REQUEST);
+            $this->file = new Data($_FILES);
+            $this->cookie = new Data($_COOKIE);
+            $this->input = $input;
+            $this->session = new Data($_SESSION);
+            $this->method = strtoupper($this->server->get('REQUEST_METHOD'));
+            $this->requestUri = $this->prepareRequestUri();
+            if ($log) {
+                Logger::info(' RouterStart' . ' -> ' . $this->getScheme() . '://' . $this->getHost() .
+                    $this->requestUri);
+                Logger::info("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Request Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
+                Logger::info(' RequestMethod' . ' -> ' . $this->method);
+                Logger::info(' HeaderData -> ' . $this->header);
+                if ($this->method === MethodsEnum::METHOD_POST) {
+                    Logger::info(' PostData -> ' . $this->post);
+                    if ($this->file->count()) {
+                        Logger::info(' FileData -> ' . $this->file);
+                    }
+                    if ($this->input) {
+                        Logger::info(' InputData -> ' . $this->input);
+                    }
+                }
+                Logger::info("↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑  Request Data  ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ");
             }
         }
-        $this->header = new Data($headers);
-        $this->server = new Data($_SERVER);
-        if (isset($_GET['_router'])) {
-            $this->routeUri = $_GET['_router'];
-        } else {
-            $this->routeUri = substr($_SERVER['PATH_INFO'] ?? '', 1);
-        }
-        unset($_GET['_router'], $_REQUEST['_router']);
-        $this->get = new Data($_GET);
-        $this->post = new Data($_POST);
-        $this->request = new Data($_REQUEST);
-        $this->file = new Data($_FILES);
-        $this->cookie = new Data($_COOKIE);
-        $this->input = $input;
-        $this->session = new Data($_SESSION);
-        $this->method = strtoupper($this->server->get('REQUEST_METHOD'));
-        $this->requestUri = $this->prepareRequestUri();
-        Logger::info(' RouterStart' . ' -> ' . $this->getScheme() . '://' . $this->getHost() .
-            $this->requestUri);
-        Logger::info("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Request Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
-        Logger::info(' RequestMethod' . ' -> ' . $this->method);
-        Logger::info(' HeaderData -> ' . $this->header);
-        if ($this->method === MethodsEnum::METHOD_POST) {
-            Logger::info(' PostData -> ' . $this->post);
-            if ($this->file->count()) {
-                Logger::info(' FileData -> ' . $this->file);
-            }
-            if ($this->input) {
-                Logger::info(' InputData -> ' . $this->input);
-            }
-        }
-        Logger::info("↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑  Request Data  ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ");
+    }
+
+    public static function getInstance(): self
+    {
+        return new self(new Data(), [], [], [], null, [], [], [], [], null, false, false);
     }
 
     /**
@@ -212,7 +223,7 @@ class Request
     private
     function prepareRequestUri()
     {
-        if (stripos($this->server->get('REQUEST_URI'),'?') !== false) {
+        if (stripos($this->server->get('REQUEST_URI'), '?') !== false) {
             return $this->server->get('REQUEST_URI');
         } else {
             return $this->server->get('REQUEST_URI') . ($this->server->get('QUERY_STRING') ? '?' . $this->server['QUERY_STRING'] : '');
