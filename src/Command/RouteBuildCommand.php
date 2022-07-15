@@ -28,7 +28,7 @@ class RouteBuildCommand extends CommandHandler
         foreach ($apps as $host => $app) {
             $this->command->cli->blue('Start generating [' . $host . '] route!');
             $_SERVER['HTTP_HOST'] = $host;
-            App::$app = $app;
+            Config::$app = App::$app = $app;
             $languages = [
                 'Start generating application route......',
                 'Application route generation completed!',
@@ -44,7 +44,7 @@ class RouteBuildCommand extends CommandHandler
         usleep(80000);
         $this->command->cli->info()->border();
         $this->command->cli->info('All application routes have been generated!');
-        (new RouteCacheClearCommand($this->command,[]))->handler($argv);
+        (new RouteCacheClearCommand($this->command, []))->handler($argv);
         return null;
     }
 
