@@ -122,7 +122,7 @@ class RouteCommand extends CommandHandler
 
     public function loadRouter(): array
     {
-        Router::$routeLists = [
+        Router::$routeLists[$this->app->getDir()] = [
             'GET' => [],
             'POST' => [],
             'PUT' => [],
@@ -137,7 +137,7 @@ class RouteCommand extends CommandHandler
             }
         }
         $routeLists = Router::$routeLists;
-        Router::$routeLists = [
+        Router::$routeLists[$this->app->getDir()] = [
             'GET' => [],
             'POST' => [],
             'PUT' => [],

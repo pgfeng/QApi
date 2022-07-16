@@ -77,7 +77,7 @@ class RunSwooleCommand extends CommandHandler
      */
     public function getApp($http_host): Application|null
     {
-        $appConfig = Config::apps();
+        $appConfig = Config::apps(true);
         $appConfig = array_reverse($appConfig);
         $appHosts = array_keys($appConfig);
         $appHostPattern = str_replace('*', '(.+)', $appHosts);
@@ -165,18 +165,6 @@ class RunSwooleCommand extends CommandHandler
                         }
                         $cache->set('runNumber', $cache->get('runNumber', 0) + 1);
                     }
-                    $defaultHandle = new StreamHandler(PROJECT_PATH . DIRECTORY_SEPARATOR . App::$runtimeDir . DIRECTORY_SEPARATOR . 'CliLog' .
-                        DIRECTORY_SEPARATOR
-                        . date('Y-m-d')
-                        . DIRECTORY_SEPARATOR . (date('H') . '-' . ceil(((int)date('i')) / 10)) . '.log',
-                        \Monolog\Logger::API,
-                        true, null, true);
-                    $formatter = new LineFormatter("%datetime% %channel%.%level_name% > %message%\n", '[Y-m-d H:i:s]');
-                    $defaultHandle->setFormatter($formatter);
-                    $app->logHandler = [
-                        $defaultHandle
-                    ];
-                    Config::$command['logHandler'] = $defaultHandle;
                     Logger::init('QApiServer-' . $appDomain['port'] . '[' . $this->pid . ']', true);
                     $input = $request->rawContent();
                     $headers = [];
