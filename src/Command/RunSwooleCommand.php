@@ -165,6 +165,7 @@ class RunSwooleCommand extends CommandHandler
                         }
                         $cache->set('runNumber', $cache->get('runNumber', 0) + 1);
                     }
+                    Config::$command['logHandler'] = $app->logHandler;
                     Logger::init('QApiServer-' . $appDomain['port'] . '[' . $this->pid . ']', true);
                     $input = $request->rawContent();
                     $headers = [];
