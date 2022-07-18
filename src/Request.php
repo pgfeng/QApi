@@ -170,6 +170,36 @@ class Request
         }
     }
 
+
+    function get_real_ip(): string
+    {
+        $forwarded = $this->header->get('X-Forwarded-For');
+        if (!$forwarded) {
+            if ($ip = $this->header->get('X-Real-Ip')) {
+                return $ip;
+            }
+            if ($ip = $this->server->get('HTTP_CLIENT_IP')) {
+                return $ip;
+            }
+            if ($ip = $this->server->get('REMOTE_ADDR')) {
+                return $ip;
+            }
+        }
+        $forwarded = explode(',', $forwarded);
+        $temp = $forwarded;
+        for ($i = 0; $i < count($forwarded); $i++) {
+            $forwarded[$i] = trim($forwarded[$i]);
+            if (preg_match('/^(10|172|192)(.*)$/', $forwarded[$i])) {
+                unset($temp[$i]);
+            }
+        }
+        if (empty($temp)) {
+            return end($forwarded);
+        } else {
+            return end($temp);
+        }
+    }
+
     public static function getInstance(): self
     {
         return new self(new Data(), [], [], [], null, [], [], [], [], null, false, false);
