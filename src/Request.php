@@ -170,8 +170,10 @@ class Request
         }
     }
 
-
-    function get_real_ip(): string
+    /**
+     * @return string
+     */
+    function getClientIp(): string
     {
         $forwarded = $this->header->get('X-Forwarded-For');
         if (!$forwarded) {
@@ -222,33 +224,6 @@ class Request
         return $this->method;
     }
 
-
-    /**
-     * @return string
-     */
-    public
-    function getClientIp(): string
-    {
-        if ($this->server) {
-
-            $ip_address = $this->server["HTTP_X_FORWARDED_FOR"] ?? $this->server["HTTP_CLIENT_IP"] ?? $this->server["REMOTE_ADDR"];
-
-        } else if (getenv("HTTP_X_FORWARDED_FOR")) {
-
-            $ip_address = getenv("HTTP_X_FORWARDED_FOR");
-
-        } else if (getenv("HTTP_CLIENT_IP")) {
-
-            $ip_address = getenv("HTTP_CLIENT_IP");
-
-        } else {
-
-            $ip_address = getenv("REMOTE_ADDR");
-
-        }
-
-        return preg_match('/[\d\.]{7,15}/', $ip_address, $matches) ? $matches [0] : '';
-    }
 
     private
     function prepareRequestUri()
