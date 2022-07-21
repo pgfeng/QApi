@@ -292,7 +292,6 @@ class Request
         $scheme = $this->getScheme();
         $port = (int)$this->getPort();
         $host = $this->getHost();
-
         if (('http' === $scheme && 80 === $port) || ('https' === $scheme && 443 === $port)) {
             return $host;
         }
@@ -310,6 +309,10 @@ class Request
     public
     function getHost(): ?string
     {
+        $index = strpos($this->server->get('HTTP_HOST'), ':');
+        if ($index !== false) {
+            return substr($this->server->get('HTTP_HOST'), 0, $index);
+        }
         return $this->server->get('HTTP_HOST');
     }
 
@@ -337,6 +340,10 @@ class Request
     public
     function getPort(): int
     {
+        $index = strpos($this->server->get('HTTP_HOST'), ':');
+        if ($index !== false) {
+            return substr($this->server->get('HTTP_HOST'), $index + 1);
+        }
         return (int)$this->server->get('SERVER_PORT');
     }
 }
