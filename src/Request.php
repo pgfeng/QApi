@@ -130,7 +130,7 @@ class Request
             $headers = $header ?? [];
             foreach ($_SERVER as $name => $value) {
                 if (str_starts_with($name, 'HTTP_')) {
-                    $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+                    $headers[strtolower(substr($name, 5))] = $value;
                 }
             }
             $this->header = new Data($headers);
@@ -175,9 +175,17 @@ class Request
      */
     function getClientIp(): string
     {
-        $forwarded = $this->header->get('X-Forwarded-For');
+        $ali = $this->header->get('ali-cdn-real-ip');
+        if ($ali) {
+            return $ali;
+        }
+        $cdn = $this->header->get('cdn-src-ip');
+        if ($cdn) {
+            return $cdn;
+        }
+        $forwarded = $this->header->get('x-forwarded-for');
         if (!$forwarded) {
-            if ($ip = $this->header->get('X-Real-Ip')) {
+            if ($ip = $this->header->get('x-real-ip')) {
                 return $ip;
             }
             if ($ip = $this->server->get('HTTP_CLIENT_IP')) {
@@ -282,7 +290,7 @@ class Request
     function getHttpHost(): ?string
     {
         $scheme = $this->getScheme();
-        $port = $this->getPort();
+        $port = (int)$this->getPort();
         $host = $this->getHost();
 
         if (('http' === $scheme && 80 === $port) || ('https' === $scheme && 443 === $port)) {

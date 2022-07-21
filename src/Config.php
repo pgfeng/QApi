@@ -52,9 +52,9 @@ class Config
     /**
      * @return array
      */
-    public static function apps(): array
+    public static function apps($force = false): array
     {
-        if (!self::$apps) {
+        if (!self::$apps || $force) {
             $configPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'app.php';
             if (!file_exists($configPath)) {
                 mkPathDir($configPath);
