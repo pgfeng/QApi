@@ -130,7 +130,7 @@ class Request
             $headers = $header ?? [];
             foreach ($_SERVER as $name => $value) {
                 if (str_starts_with($name, 'HTTP_')) {
-                    $headers[strtolower(substr($name, 5))] = $value;
+                    $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
                 }
             }
             $this->header = new Data($headers);
