@@ -576,15 +576,16 @@ class DB
     {
         if (is_array($value)) {
             foreach ($value as &$v) {
-                $v = $this->quote($v, $type);
+                if ($v !== null && !is_numeric($v)) {
+                    $v = $this->quote($v, $type);
+                }
             }
             return $value;
         }
-        if (is_null($value)) {
-            return 'null';
-        } else {
+        if ($value !== null && !is_numeric($value)) {
             return $this->getConnection()->quote($value, $type);
         }
+        return $value;
     }
 
     /**
