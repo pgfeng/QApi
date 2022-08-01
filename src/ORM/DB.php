@@ -580,9 +580,9 @@ class DB
             }
             return $value;
         } else if ($value === null) {
-            return 'null';
+            $value = 'null';
         } else if (!is_numeric($value)) {
-            return $this->getConnection()->quote($value, $type);
+            $value = $this->getConnection()->quote($value, $type);
         }
         return $value;
     }

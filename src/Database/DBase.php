@@ -1353,7 +1353,7 @@ abstract class DBase
                 $v = $this->addslashes($v);
             }
         } else if ($data === null) {
-            return 'null';
+            $data = 'null';
         } else if (!is_numeric($data)) {
             $data = $this->real_escape_string($data);
         }
