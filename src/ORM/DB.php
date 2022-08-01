@@ -579,8 +579,9 @@ class DB
                 $v = $this->quote($v, $type);
             }
             return $value;
-        }
-        if ($value !== null && !is_numeric($value)) {
+        } else if ($value === null) {
+            return 'null';
+        } else if (!is_numeric($value)) {
             return $this->getConnection()->quote($value, $type);
         }
         return $value;

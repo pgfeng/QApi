@@ -1352,9 +1352,12 @@ abstract class DBase
             foreach ($data as &$v) {
                 $v = $this->addslashes($v);
             }
-        } else if ($data !== null && !is_numeric($data)) {
+        } else if ($data === null) {
+            return 'null';
+        } else if (!is_numeric($data)) {
             $data = $this->real_escape_string($data);
         }
+
         return $data;
     }
 
