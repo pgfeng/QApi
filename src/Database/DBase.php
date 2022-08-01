@@ -1285,9 +1285,9 @@ abstract class DBase
         Logger::sql($sql);
         try {
             $data = $this->_query($sql);
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             $exception = $e->getTrace()[4];
-            throw new SqlErrorException($e->getMessage(),$e->getCode(),0,$exception['file'],$exception['line'],$e);
+            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
         }
         if ($data === FALSE) {
             new Exception($this->getError());
@@ -1349,10 +1349,10 @@ abstract class DBase
     public function addslashes(array|string|null $data): string|array|null
     {
         if (is_array($data)) {
-            foreach ($data as $k => &$v) {
+            foreach ($data as &$v) {
                 $v = $this->addslashes($v);
             }
-        } else {
+        } else if ($data !== null && !is_numeric($data)) {
             $data = $this->real_escape_string($data);
         }
         return $data;

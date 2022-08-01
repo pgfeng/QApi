@@ -576,9 +576,7 @@ class DB
     {
         if (is_array($value)) {
             foreach ($value as &$v) {
-                if ($v !== null && !is_numeric($v)) {
-                    $v = $this->quote($v, $type);
-                }
+                $v = $this->quote($v, $type);
             }
             return $value;
         }
