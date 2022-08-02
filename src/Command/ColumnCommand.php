@@ -6,10 +6,8 @@ namespace QApi\Command;
 
 use ErrorException;
 use QApi\Attribute\Column\Table;
-use QApi\Command;
 use QApi\Config;
 use QApi\Database\DB;
-use QApi\Logger;
 
 class ColumnCommand extends CommandHandler
 {
@@ -37,11 +35,11 @@ class ColumnCommand extends CommandHandler
     }
 
     /**
-     * @return mixed
+     * @return void
      */
     function help(): void
     {
-        //        return null;
+
     }
 
     /**
@@ -189,8 +187,6 @@ class ColumnCommand extends CommandHandler
         $columns_comment = $columns_comment->transPrimaryIndex('column_name');
         $const = '';
         foreach ($columns as $column) {
-//            print_r($column);
-//            exit;
             $const .= '
             
     /**
@@ -244,7 +240,7 @@ Column;
      * @return string
      * @throws ErrorException
      */
-    protected function choseConfig($msg = '请输入配置名称[默认default]:'): string
+    protected function choseConfig(string $msg = '请输入配置名称[默认default]:'): string
     {
         $config = $this->command->getStdin($msg)[0];
         if (!$config) {
