@@ -13,6 +13,7 @@ use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Types\Type;
+use QApi\Attribute\Column\Field;
 use QApi\Config;
 use QApi\Config\Database\MysqliDatabase;
 use QApi\Config\Database\PdoMysqlDatabase;
@@ -75,17 +76,36 @@ class DB
      */
     protected ?int $lockMode = null;
 
+    public static array $dbColumns = [];
+
     /**
      * DB constructor.
      * @param string $table
      * @param string $configName
      */
-    public function __construct(string $table, string $configName)
+    public function __construct(string $table, private string $configName)
     {
         $this->config = Config::database($configName);
         $this->connection = DriverManager::connect($configName);
         $this->queryBuilder = $this->connection->createQueryBuilder();
         $this->select('*');
+        if (!isset(self::$dbColumns[$configName][$table])) {
+            try {
+                $ref = new \ReflectionClass(Config::command('BaseColumnNameSpace') . '_' . $configName . '\\' . $table);
+                $constants = $ref->getReflectionConstants();
+                $columns = [];
+                foreach ($constants as $constant) {
+                    $field = $constant->getAttributes(Field::class);
+                    if (isset($field[0])) {
+                        $arguments = $field[0]->getArguments();
+                        $columns[$arguments['name']] = $arguments;
+                    }
+                }
+                self::$dbColumns[$configName][$table] = $columns;
+            } catch (\ReflectionException $e) {
+                Logger::error($e->getMessage());
+            }
+        }
         if ($table) {
             $this->table = $table;
             $this->from($table);
@@ -756,6 +776,19 @@ class DB
             $setModel = false;
         }
         foreach ($data as $key => $item) {
+            if (isset(self::$dbColumns[$this->configName][$this->table])) {
+                foreach ($item as $k => $v) {
+                    if (!is_null($v) && isset(self::$dbColumns[$this->configName][$this->table][$k])) {
+                        $type = self::$dbColumns[$this->configName][$this->table][$k]['type'];
+                        if (stripos($type, 'int')) {
+                            $item[$k] = (int)$v;
+                        }
+                        if (stripos($type, 'decimal') || stripos($type, 'float')) {
+                            $item[$k] = (float)$v;
+                        }
+                    }
+                }
+            }
             $dataObject = new Data($item);
             if ($setModel) {
                 $dataObject->setModel($this);

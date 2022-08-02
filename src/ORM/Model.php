@@ -25,6 +25,7 @@ class Model extends DB
      */
     public string $primary_key = 'id';
 
+
     /**
      * Model constructor.
      * @param string|null $table
@@ -59,6 +60,7 @@ class Model extends DB
     /**
      * @param Data|array $data
      * @param string|null $primary_key
+     * @param array $types
      * @return int
      */
     public function save(Data|array $data, ?string $primary_key = null, array $types = []): int
