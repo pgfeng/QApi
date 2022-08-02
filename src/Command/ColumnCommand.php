@@ -189,7 +189,8 @@ class ColumnCommand extends CommandHandler
         $columns_comment = $columns_comment->transPrimaryIndex('column_name');
         $const = '';
         foreach ($columns as $column) {
-            //            print_r($column['Type']);
+//            print_r($column);
+//            exit;
             $const .= '
             
     /**
@@ -198,7 +199,7 @@ class ColumnCommand extends CommandHandler
             $const .= $column;
             $const .= '
      */
-    #[Field(name: \'' . $column['Field'] . '\', comment: \'' . addslashes($columns_comment[$column['Field']]['column_comment'] ?? '') . '\', type: \'' . $column['Type'] . '\')]
+    #[Field(name: \'' . $column['Field'] . '\', comment: \'' . addslashes($columns_comment[$column['Field']]['column_comment'] ?? '') . '\', type: \'' . $column['Type'] . '\', allowNull: \'' . ($column['Null'] === 'NO' ? 'true' : 'false') . '\', default: \'' . $column['Default'] . '\', key: \'' . $column['Key'] . '\', extra: \'' . $column['Extra'] . '\')]
     public const ' . strtoupper($column['Field']) . ' = \'' . $column['Field'] . '\';' . "\r\n";
         }
         $date = date('Y-m-d H:i:s');

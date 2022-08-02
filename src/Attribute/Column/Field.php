@@ -5,7 +5,7 @@ namespace QApi\Attribute\Column;
 
 use Attribute;
 
-#[Attribute(Attribute::TARGET_METHOD,Attribute::TARGET_CLASS_CONSTANT)] class Field
+#[Attribute(Attribute::TARGET_METHOD, Attribute::TARGET_CLASS_CONSTANT)] class Field
 {
 
     /**
@@ -14,7 +14,7 @@ use Attribute;
      * @param string $comment
      * @param string $type
      */
-    public function __construct(public string $name, public string $comment, public string $type)
+    public function __construct(public string $name, public string $comment, public string $type, public bool $allowNull = false, public ?string $default = null, public string $key = '', public string $extra = '')
     {
 
     }
