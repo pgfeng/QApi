@@ -6,12 +6,16 @@ namespace QApi\Attribute;
 
 use QApi\Attribute\Column\Field;
 use QApi\Attribute\Parameter\GetParam;
+use QApi\Attribute\Parameter\GetParamFromTableField;
 use QApi\Attribute\Parameter\HeaderParam;
 use QApi\Attribute\Parameter\PathParam;
+use QApi\Attribute\Parameter\PathParamFromTableField;
 use QApi\Attribute\Parameter\PostParam;
 use QApi\Attribute\Parameter\PostParamFromTable;
+use QApi\Attribute\Parameter\PostParamFromTableField;
 use QApi\Cache\Cache;
 use QApi\Config;
+use QApi\Logger;
 use ReflectionClass;
 use ReflectionException;
 
@@ -57,7 +61,7 @@ class Utils
                         foreach ($attr as $item) {
                             foreach ($item as $key => $v) {
                                 if ($v instanceof Route || $v instanceof GetParam || $v instanceof PostParam || $v
-                                    instanceof HeaderParam || $v instanceof PathParam) {
+                                    instanceof HeaderParam || $v instanceof PathParam || $v instanceof PostParamFromTableField || $v instanceof GetParamFromTableField || $v instanceof PathParamFromTableField) {
                                     if ($v instanceof Route) {
                                         if ($v->path) {
                                             $path = $v->path;
