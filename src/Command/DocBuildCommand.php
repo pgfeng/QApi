@@ -15,15 +15,8 @@ class DocBuildCommand extends CommandHandler
 {
     public string $name = 'doc:build';
 
-
-    public function help(): mixed
-    {
-        // TODO: Implement help() method.
-    }
-
     public function handler($argv): mixed
     {
-        Utils::rebuild();
-        return '';
+        return Utils::rebuild($this->command);
     }
 }

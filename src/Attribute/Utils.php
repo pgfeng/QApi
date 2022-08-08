@@ -14,8 +14,8 @@ use QApi\Attribute\Parameter\PostParam;
 use QApi\Attribute\Parameter\PostParamFromTable;
 use QApi\Attribute\Parameter\PostParamFromTableField;
 use QApi\Cache\Cache;
+use QApi\Command;
 use QApi\Config;
-use QApi\Logger;
 use ReflectionClass;
 use ReflectionException;
 
@@ -26,22 +26,26 @@ class Utils
 
     public static array $columns = [];
 
+
     /**
      * @return array
      */
-    public static function loadDocument():array
+    public static function loadDocument(Command $commandHandler = null):array
     {
+        $commandHandler?->info('Loading document...');
         /**
          * @var Config\Application[]
          */
         $apps = Config::apps();
         foreach ($apps as $host => $app) {
+            $commandHandler?->info('Loading document for app: ' . $host);
             if (!isset(self::$docApp[$app->appDir])) {
                 self::$docApp[$app->appDir] = [];
             }
             $versions = Config::versions($app->runMode);
             $apis = [];
             foreach ($versions as $version) {
+                $commandHandler?->info('Loading document for version: ' . $version->versionDir);
                 $path = PROJECT_PATH . $app->appDir . DIRECTORY_SEPARATOR . $version->versionDir .
                     DIRECTORY_SEPARATOR;
                 $data = [];
@@ -51,7 +55,9 @@ class Utils
                     $apis[$version->versionDir] = [];
                 }
                 foreach ($data as $controller => $methods) {
+                    $commandHandler?->info('Loading document for controller: ' . $controller);
                     foreach ($methods as $mname => $attr) {
+                        $commandHandler?->info('Loading document for method: ' . $mname);
                         $path = '';
                         $type = '';
                         $tag = '';
@@ -63,6 +69,9 @@ class Utils
                                 if ($v instanceof Route || $v instanceof GetParam || $v instanceof PostParam || $v
                                     instanceof HeaderParam || $v instanceof PathParam || $v instanceof PostParamFromTableField || $v instanceof GetParamFromTableField || $v instanceof PathParamFromTableField) {
                                     if ($v instanceof Route) {
+                                        if ($v->path){
+                                            $commandHandler?->info('Loading document for route: ' . $v->path);
+                                        }
                                         if ($v->path) {
                                             $path = $v->path;
                                         }
@@ -78,10 +87,13 @@ class Utils
                                         if ($v->methods) {
                                             $type = $v->methods;
                                         }
+                                    }else{
+                                        $commandHandler?->info('Loading document for parameter: ' .get_class($v).'->'. $v->name);
                                     }
                                     $item[$key] = $v->toArray();
                                 } else if ($v instanceof ResultDictionary || $v instanceof ResultDictionarys || $v
                                     instanceof ResultDictionaryFromTable) {
+                                    $commandHandler?->info('Loading document for result dictionary: ' .get_class($v).'->'. $v->name);
                                     $data = $v->toArray();
                                     foreach ($data as $resultField) {
                                         if (!empty($resultField['comment'])) {
@@ -123,6 +135,7 @@ class Utils
                         unset($apis[$version->versionDir][$tag]);
                     }
                 }
+                $commandHandler?->success('Loading document completed for version: [' . $version->versionDir.']');
             }
             self::$docApp[$app->appDir][] = [
                 'host' => $host,
@@ -131,6 +144,7 @@ class Utils
                 'nameSpace' => $app->nameSpace,
                 'doc' => $apis,
             ];
+            $commandHandler?->success('Loading document completed for app: [' . $host.']');
         }
         return self::$docApp;
     }
@@ -141,9 +155,9 @@ class Utils
      * @throws \ErrorException
      * @throws \QApi\Exception\CacheErrorException
      */
-    public static function rebuild(): mixed
+    public static function rebuild(Command $commandHandler = null): mixed
     {
-        self::loadDocument();
+        self::loadDocument($commandHandler);
         $cache = Cache::initialization('__document');
         $cache->set('__apiDocument', self::$docApp);
         return null;
