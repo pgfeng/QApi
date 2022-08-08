@@ -31,7 +31,7 @@ use QApi\Attribute\Column\Field;
                     $this->summary = $this->summary === null ? $argument['comment'] : $this->summary;
                     $this->description = $this->description === null ? $argument['comment'] : $this->description;
                     $this->type = $this->type === null ? $argument['type'] : $this->type;
-                    $this->required = $this->required === null ? !($argument['allowNull'] === 'true') : $this->required;
+                    $this->required = $this->required === null ? ($argument['allowNull'] === 'true') : $this->required;
                     $this->default = $this->default === null ? $argument['default'] : $this->default;
                 }
             }
