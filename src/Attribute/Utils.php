@@ -93,7 +93,7 @@ class Utils
                                     $item[$key] = $v->toArray();
                                 } else if ($v instanceof ResultDictionary || $v instanceof ResultDictionarys || $v
                                     instanceof ResultDictionaryFromTable) {
-                                    $commandHandler?->info('Loading document for result dictionary: ' .get_class($v).'->'. $v->name);
+                                    $commandHandler?->info('Loading document for result dictionary: ' .get_class($v).'->'. json_encode($data,JSON_UNESCAPED_UNICODE));
                                     $data = $v->toArray();
                                     foreach ($data as $resultField) {
                                         if (!empty($resultField['comment'])) {
@@ -148,7 +148,7 @@ class Utils
         }
         return self::$docApp;
     }
-    
+
     /**
      * Rebuild
      * @return mixed
