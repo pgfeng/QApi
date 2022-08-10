@@ -168,16 +168,21 @@ trait Validate
             if (isset($this->Column[$column])) {
                 if (is_callable($this->Column[$column]['rule'])) {
                     if ($res = $this->Column[$column]['rule']($this->Column[$column], $value)) {
+                        if (isset($this->Column[$column]['message']) && $this->Column[$column]['message'] !== '') {
+                            return $this->Column[$column]['message'];
+                        }
                         if (isset($this->Column[$column]['msg']) && $this->Column[$column]['msg'] !== '') {
                             return str_replace('%ColumnName%', $this->Column[$column]['ColumnName'], $this->validate[$this->Column[$column]['rule']]['msg'] ?? '请输入正确的%ColumnName%');
                         }
-
                         return $res;
                     }
                 } else
                     if (isset($this->validate[$this->Column[$column]['rule']])) {
                         if (is_callable($this->validate[$this->Column[$column]['rule']]['rule'])) {
                             if ($res = $this->validate[$this->Column[$column]['rule']]['rule']($this->Column[$column], $value)) {
+                                if (isset($this->Column[$column]['message']) && $this->Column[$column]['message'] !== '') {
+                                    return $this->Column[$column]['message'];
+                                }
                                 if (isset($this->validate[$this->Column[$column]['rule']]['msg']) &&
                                     $this->validate[$this->Column[$column]['rule']]['msg'] !== '') {
                                     return str_replace('%ColumnName%', $this->Column[$column]['ColumnName'], $this->validate[$this->Column[$column]['rule']]['msg'] ?? '请输入正确的%ColumnName%');
