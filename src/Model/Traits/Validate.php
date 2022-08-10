@@ -182,10 +182,12 @@ trait Validate
                                     $this->validate[$this->Column[$column]['rule']]['msg'] !== '') {
                                     return str_replace('%ColumnName%', $this->Column[$column]['ColumnName'], $this->validate[$this->Column[$column]['rule']]['msg'] ?? '请输入正确的%ColumnName%');
                                 }
-
                                 return $res;
                             }
                         } else if (preg_match($this->validate[$this->Column[$column]['rule']]['rule'], $value) !== 1) {
+                            if (isset($this->Column[$column]['message']) && $this->Column[$column]['message'] !== '') {
+                                return $this->Column[$column]['message'];
+                            }
                             return str_replace('%ColumnName%', $this->Column[$column]['ColumnName'], $this->validate[$this->Column[$column]['rule']]['msg'] ?? '请输入正确的%ColumnName%');
                         }
                     } else {
@@ -193,7 +195,6 @@ trait Validate
                     }
             }
         }
-
         return NULL;
 
     }
