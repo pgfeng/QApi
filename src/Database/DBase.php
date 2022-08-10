@@ -1354,7 +1354,7 @@ abstract class DBase
             }
         } else if ($data === null) {
             $data = 'null';
-        } else if (!is_numeric($data)) {
+        } else if (!is_numeric($data) && !str_contains($data, '+') && !str_contains($data, '-')) {
             $data = $this->real_escape_string($data);
         }
 
