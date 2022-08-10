@@ -601,7 +601,7 @@ class DB
             return $value;
         } else if ($value === null) {
             $value = 'null';
-        } else if (!is_numeric($value) && !str_contains($value, '+') && !str_contains($value, '-')) {
+        } else if (!is_numeric($value) || !str_contains($value, '+') || !str_contains($value, '-')) {
             $value = $this->getConnection()->quote($value, $type);
         }
         return $value;
