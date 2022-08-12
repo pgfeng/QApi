@@ -55,6 +55,8 @@ trait SoftDelete
         $aliasName = $this->getAliasName();
         if ($aliasName) {
             $softDeleteField = $aliasName . '.' . $this->softDeleteField;
+        } else {
+            $softDeleteField = $this->softDeleteField;
         }
         return $softDeleteField;
     }
