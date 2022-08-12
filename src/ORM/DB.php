@@ -83,7 +83,6 @@ class DB
      */
     public function getAliasName()
     {
-        Logger::error($this->aliasName);
         return $this->aliasName;
     }
 
