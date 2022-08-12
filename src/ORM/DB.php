@@ -79,6 +79,15 @@ class DB
     public static array $dbColumns = [];
 
     /**
+     * @return string|null
+     */
+    public function getAliasName()
+    {
+        Logger::error($this->aliasName);
+        return $this->aliasName;
+    }
+
+    /**
      * DB constructor.
      * @param string $table
      * @param string $configName

@@ -39,7 +39,7 @@ trait SoftDelete
     public function softDelete(bool $softDelete = true): bool|int
     {
         if ($softDelete) {
-            return $this->setField($this->softDeleteField, $this->deleted);
+            return $this->setField($this->getSoftDeleteField(), $this->deleted);
         } else {
             return $this->delete();
         }
@@ -47,7 +47,16 @@ trait SoftDelete
 
     public function deleteTrashed(): int
     {
-        return $this->where($this->softDeleteField, $this->deleted)->delete();
+        return $this->where($this->getSoftDeleteField(), $this->deleted)->delete();
+    }
+
+    private function getSoftDeleteField(): string
+    {
+        $aliasName = $this->getAliasName();
+        if ($aliasName) {
+            $softDeleteField = $aliasName . '.' . $this->softDeleteField;
+        }
+        return $softDeleteField;
     }
 
     /**
@@ -56,7 +65,7 @@ trait SoftDelete
      */
     public function queryTrashed(): self
     {
-        return $this->where($this->softDeleteField, $this->deleted);
+        return $this->where($this->getSoftDeleteField(), $this->deleted);
     }
 
     /**
@@ -65,6 +74,6 @@ trait SoftDelete
      */
     public function queryNoTrashed(): self
     {
-        return $this->where($this->softDeleteField, $this->notDeleted);
+        return $this->where($this->getSoftDeleteField(), $this->notDeleted);
     }
 }
