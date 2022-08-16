@@ -54,6 +54,13 @@ abstract class DBase
 
     public ?string $lastSql = null;
 
+
+    public function getAliasName()
+    {
+        return null;
+    }
+
+
     final public function lastSql(): string
     {
         return $this->lastSql;
