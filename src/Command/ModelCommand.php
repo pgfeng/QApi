@@ -8,6 +8,7 @@ use JetBrains\PhpStorm\Pure;
 use QApi\Command;
 use QApi\Config;
 use QApi\Logger;
+use QApi\Model\Traits\Authorize;
 use QApi\Model\Traits\Auxiliary;
 use QApi\Model\Traits\Partition;
 use QApi\Model\Traits\SoftDelete;
@@ -268,6 +269,7 @@ ModelFileContent;
         $choseData = str_replace('QApi\\Model\\Traits\\', '', [
             Auxiliary::class,
             SoftDelete::class,
+            Authorize::class,
             UUID::class,
             Validate::class,
             Partition::class,

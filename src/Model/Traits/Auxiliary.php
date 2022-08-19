@@ -117,15 +117,20 @@ trait Auxiliary
             }
         } else {
             $handle = $this->addString;
+            unset($data[$primary_key]);
             if ($this->autoSaveTime) {
                 $data[$this->insertTimeField] = $data[$this->insertTimeField] ?? $time;
                 $data[$this->updateTimeField] = $data[$this->updateTimeField] ?? $time;
             }
         }
-
-        if ($this->save($data, $primary_key)) {
+        if (method_exists($this, 'saveAuthorize')) {
+            $status = $this->saveAuthorize($data, $primary_key);
+        } else {
+            $status = $this->save($data, $primary_key);
+        }
+        if ($status) {
             if (isset($this->lastInsertUUID)) {
-                $response->setExtra(['UUID'=> $this->lastInsertUUID]);
+                $response->setExtra(['UUID' => $this->lastInsertUUID]);
             }
             return $response->ok()->setMsg($this->modelName . $handle . $this->successString);
         }
