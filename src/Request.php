@@ -151,8 +151,7 @@ class Request
             $this->method = strtoupper($this->server->get('REQUEST_METHOD'));
             $this->requestUri = $this->prepareRequestUri();
             if ($log) {
-                Logger::info(' RouterStart' . ' -> ' . $this->getScheme() . '://' . $this->getHost() .
-                    $this->requestUri);
+                Logger::info(' RouterStart' . ' -> ' . $this->domain() . $this->requestUri);
                 Logger::info("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Request Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
                 Logger::info(' RequestMethod' . ' -> ' . $this->method);
                 Logger::info(' HeaderData -> ' . $this->header);
