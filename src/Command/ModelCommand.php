@@ -265,7 +265,6 @@ ModelFileContent;
      */
     public function getUseTrait(): string
     {
-
         $choseData = str_replace('QApi\\Model\\Traits\\', '', [
             Auxiliary::class,
             SoftDelete::class,
