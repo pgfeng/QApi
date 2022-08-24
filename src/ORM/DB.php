@@ -597,15 +597,19 @@ class DB
 
     /**
      * @param $value
-     * @param int $type
+     * @param int|bool $type
      * @return mixed
      */
-    public function quote($value, int $type = ParameterType::STRING): mixed
+    public function quote($value, int|bool $type = ParameterType::STRING): mixed
     {
         if (is_array($value)) {
             foreach ($value as &$v) {
-                $v = $this->quote($v, $type);
+                if ($type !== true) {
+                    $v = $this->quote($v, $type);
+                }
             }
+            return $value;
+        } elseif ($type === true){
             return $value;
         } else if ($value === null) {
             $value = 'null';
