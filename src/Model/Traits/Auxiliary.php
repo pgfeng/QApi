@@ -117,7 +117,8 @@ trait Auxiliary
             }
         } else {
             $handle = $this->addString;
-            unset($data[$primary_key]);
+            if (isset($data[$primary_key]))
+                unset($data[$primary_key]);
             if ($this->autoSaveTime) {
                 $data[$this->insertTimeField] = $data[$this->insertTimeField] ?? $time;
                 $data[$this->updateTimeField] = $data[$this->updateTimeField] ?? $time;
