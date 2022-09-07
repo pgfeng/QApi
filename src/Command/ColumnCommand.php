@@ -26,7 +26,7 @@ class ColumnCommand extends CommandHandler
      */
     private function tableExists(string $table): bool
     {
-        if (!DB::table('')->query('show tables like \'' . $table . '\'')) {
+        if (!DB::table('',$this->argv[0])->query('show tables like \'' . $table . '\'')) {
             $this->command->cli->error("数据表{$table}不存在!");
             return false;
         }
