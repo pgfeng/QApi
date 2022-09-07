@@ -1293,8 +1293,20 @@ abstract class DBase
         try {
             $data = $this->_query($sql);
         } catch (\Exception $e) {
-            $exception = $e->getTrace()[4];
-            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+            $traces = $e->getTrace();
+            $realTrance = null;
+            foreach ($traces as $trace){
+                if (isset($trace['class']) && in_array($trace['class'],[
+                        'QApi\\Model',
+                    ])){
+                    $realTrance = $trace;
+                }
+            }
+            if ($realTrance){
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
+            }else{
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
+            }
         }
         if ($data === FALSE) {
             new Exception($this->getError());

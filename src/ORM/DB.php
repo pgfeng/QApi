@@ -589,8 +589,20 @@ class DB
         try {
             return $update->executeStatement();
         } catch (ServerException $e) {
-            $exception = $e->getTrace()[5];
-            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+            $traces = $e->getTrace();
+            $realTrance = null;
+            foreach ($traces as $trace){
+                if (isset($trace['class']) && in_array($trace['class'],[
+                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
+                    ])){
+                    $realTrance = $trace;
+                }
+            }
+            if ($realTrance){
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
+            }else{
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
+            }
         }
     }
 
@@ -779,8 +791,20 @@ class DB
                     ->fetchAllAssociative();
             }
         } catch (ServerException $e) {
-            $exception = $e->getTrace()[4];
-            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+            $traces = $e->getTrace();
+            $realTrance = null;
+            foreach ($traces as $trace){
+                if (isset($trace['class']) && in_array($trace['class'],[
+                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
+                    ])){
+                    $realTrance = $trace;
+                }
+            }
+            if ($realTrance){
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
+            }else{
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
+            }
         }
         if ($this instanceof Model) {
             $setModel = true;
@@ -821,8 +845,20 @@ class DB
         try {
             return (int)$this->queryBuilder->select('COUNT(' . $field . ')')->executeQuery()->fetchOne();
         } catch (ServerException $e) {
-            $exception = $e->getTrace()[4];
-            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+            $traces = $e->getTrace();
+            $realTrance = null;
+            foreach ($traces as $trace){
+                if (isset($trace['class']) && in_array($trace['class'],[
+                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
+                    ])){
+                    $realTrance = $trace;
+                }
+            }
+            if ($realTrance){
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
+            }else{
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
+            }
         }
     }
 
@@ -836,8 +872,20 @@ class DB
         try {
             return $this->queryBuilder->select('MAX(' . $field . ')')->executeQuery()->fetchOne();
         } catch (ServerException $e) {
-            $exception = $e->getTrace()[4];
-            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+            $traces = $e->getTrace();
+            $realTrance = null;
+            foreach ($traces as $trace){
+                if (isset($trace['class']) && in_array($trace['class'],[
+                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
+                    ])){
+                    $realTrance = $trace;
+                }
+            }
+            if ($realTrance){
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
+            }else{
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
+            }
         }
     }
 
@@ -851,8 +899,20 @@ class DB
         try {
             return $this->queryBuilder->select('MIN(' . $field . ')')->executeQuery()->fetchOne();
         } catch (ServerException $e) {
-            $exception = $e->getTrace()[4];
-            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+            $traces = $e->getTrace();
+            $realTrance = null;
+            foreach ($traces as $trace){
+                if (isset($trace['class']) && in_array($trace['class'],[
+                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
+                    ])){
+                    $realTrance = $trace;
+                }
+            }
+            if ($realTrance){
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
+            }else{
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
+            }
         }
     }
 
@@ -867,8 +927,20 @@ class DB
         try {
             return $this->queryBuilder->select('SUM(' . $field . ')')->executeQuery()->fetchOne();
         } catch (ServerException $e) {
-            $exception = $e->getTrace()[4];
-            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+            $traces = $e->getTrace();
+            $realTrance = null;
+            foreach ($traces as $trace){
+                if (isset($trace['class']) && in_array($trace['class'],[
+                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
+                    ])){
+                    $realTrance = $trace;
+                }
+            }
+            if ($realTrance){
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
+            }else{
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
+            }
         }
     }
 
@@ -883,8 +955,20 @@ class DB
         try {
             return $this->queryBuilder->select('AVG(' . $field . ')')->executeQuery()->fetchOne();
         } catch (ServerException $e) {
-            $exception = $e->getTrace()[4];
-            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+            $traces = $e->getTrace();
+            $realTrance = null;
+            foreach ($traces as $trace){
+                if (isset($trace['class']) && in_array($trace['class'],[
+                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
+                    ])){
+                    $realTrance = $trace;
+                }
+            }
+            if ($realTrance){
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
+            }else{
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
+            }
         }
     }
 
@@ -898,8 +982,20 @@ class DB
         try {
             return (int)$this->queryBuilder->select('LENGTH(' . $field . ')')->executeQuery()->fetchOne();
         } catch (ServerException $e) {
-            $exception = $e->getTrace()[4];
-            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+            $traces = $e->getTrace();
+            $realTrance = null;
+            foreach ($traces as $trace){
+                if (isset($trace['class']) && in_array($trace['class'],[
+                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
+                    ])){
+                    $realTrance = $trace;
+                }
+            }
+            if ($realTrance){
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
+            }else{
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
+            }
         }
     }
 
@@ -958,8 +1054,20 @@ class DB
         try {
             return $this->queryBuilder->select($field_name)->setMaxResults(1)->executeQuery()->fetchOne();
         } catch (ServerException $e) {
-            $exception = $e->getTrace()[4];
-            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+            $traces = $e->getTrace();
+            $realTrance = null;
+            foreach ($traces as $trace){
+                if (isset($trace['class']) && in_array($trace['class'],[
+                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
+                    ])){
+                    $realTrance = $trace;
+                }
+            }
+            if ($realTrance){
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
+            }else{
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
+            }
         }
     }
 
@@ -989,8 +1097,20 @@ class DB
         try {
             return $this->queryBuilder->delete($delete ?: $this->getTableName(), $alias)->executeStatement();
         } catch (ServerException $e) {
-            $exception = $e->getTrace()[5];
-            throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $exception['file'], $exception['line'], $e);
+            $traces = $e->getTrace();
+            $realTrance = null;
+            foreach ($traces as $trace){
+                if (isset($trace['class']) && in_array($trace['class'],[
+                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
+                    ])){
+                    $realTrance = $trace;
+                }
+            }
+            if ($realTrance){
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
+            }else{
+                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
+            }
         }
     }
 
