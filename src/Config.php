@@ -32,6 +32,7 @@ class Config
 
     /**
      * @return string
+     * @throws ErrorException
      */
     public static function getRunMode(): string
     {
@@ -50,9 +51,10 @@ class Config
     }
 
     /**
+     * @param bool $force 是否重新获取配置
      * @return array
      */
-    public static function apps($force = false): array
+    public static function apps(bool $force = false): array
     {
         if (!self::$apps || $force) {
             $configPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'app.php';
@@ -224,7 +226,7 @@ class Config
      * @param string|null $config_key
      * @return mixed
      */
-    public static function route(string $config_key = null): mixed
+    public static function route(string $config_key = null, $default = null): mixed
     {
         $runMode = self::getRunMode();
         if (!isset(self::$other['route'])) {
@@ -238,7 +240,7 @@ class Config
             self::$other['route'] = include $otherConfigPath;
         }
         if ($config_key) {
-            return self::$other['route'][$config_key] ?? null;
+            return self::$other['route'][$config_key] ?? $default;
         }
         return self::$other['route'];
     }
@@ -246,11 +248,12 @@ class Config
 
     /**
      * 获取其他配置
-     * @param $config_name
-     * @param $config_key
+     * @param string $config_name
+     * @param string|null $config_key
+     * @param null $default
      * @return mixed
      */
-    public static function other(string $config_name, string $config_key = null): mixed
+    public static function other(string $config_name, string $config_key = null, $default = null): mixed
     {
         $runMode = self::getRunMode();
         if (!isset(self::$other[$config_name])) {
@@ -264,7 +267,7 @@ class Config
             self::$other[$config_name] = include $otherConfigPath;
         }
         if ($config_key) {
-            return self::$other[$config_name][$config_key] ?? null;
+            return self::$other[$config_name][$config_key] ?? $default;
         }
         return self::$other[$config_name];
     }

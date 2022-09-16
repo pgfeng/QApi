@@ -1,5 +1,7 @@
 <?php
 
+use QApi\Config\Cache\FileSystem;
+
 return [
 
     /**
@@ -10,7 +12,7 @@ return [
     /**
      * 路由缓存驱动
      */
-    'cacheDriver' => new \QApi\Config\Cache\FileSystem(directory: PROJECT_PATH . 'runtime' . DIRECTORY_SEPARATOR . 'route'),
+    'cacheDriver' => new FileSystem(directory: PROJECT_PATH . 'runtime' . DIRECTORY_SEPARATOR . 'route'),
 
     /**
      * 缓存闭包函数开关
@@ -24,13 +26,19 @@ return [
      */
     'cacheTTL' => null,
 
+
     /**
-     * 默认控制器
+     * 自动路由
+     */
+    'autoRoute' => true,
+
+    /**
+     * 默认控制器 开启自动路由时有效
      */
     'defaultController' => 'Index',
 
     /**
-     * 默认行为
+     * 默认行为 开启自动路由时有效
      */
     'defaultAction' => 'index',
 

@@ -526,29 +526,33 @@ class Router
                 }
             }
             if (!$callback) {
-                $uri = trim($uri, '/');
-                $data = explode('/', $uri);
-                $runData = [];
-                $runData['nameSpace'] = App::$app->getNameSpace();
-                if (count($data) === 1) {
-                    if ($data[0] === '') {
-                        $data[0] = Config::route('defaultController');
+                if (Config::route('auto',true)){
+                    $uri = trim($uri, '/');
+                    $data = explode('/', $uri);
+                    $runData = [];
+                    $runData['nameSpace'] = App::$app->getNameSpace();
+                    if (count($data) === 1) {
+                        if ($data[0] === '') {
+                            $data[0] = Config::route('defaultController');
+                        }
+                        $runData['controller'] = $data[0];
+                        $runData['method'] = Config::route('defaultAction') . 'Action';
+                    } else if (count($data) === 2) {
+                        $runData['controller'] = $data[0];
+                        $runData['method'] = $data[1] . 'Action';
+                    } else {
+                        $method = array_pop($data);
+                        $runData['controller'] = implode('\\', $data);
+                        $runData['method'] = $method . 'Action';
                     }
-                    $runData['controller'] = $data[0];
-                    $runData['method'] = Config::route('defaultAction') . 'Action';
-                } else if (count($data) === 2) {
-                    $runData['controller'] = $data[0];
-                    $runData['method'] = $data[1] . 'Action';
-                } else {
-                    $method = array_pop($data);
-                    $runData['controller'] = implode('\\', $data);
-                    $runData['method'] = $method . 'Action';
+                    $callback = [
+                        'params' => [],
+                        'callback' => $runData,
+                        'middleware' => [],
+                    ];
+                }else{
+                    return (new Response())->setCode(404)->setMsg('404 Not Found');
                 }
-                $callback = [
-                    'params' => [],
-                    'callback' => $runData,
-                    'middleware' => [],
-                ];
             }
 
             if ($callback['params']) {
@@ -739,7 +743,7 @@ class Router
                 }
             }
         }
-        throw new RuntimeException($callback['nameSpace'] . '\\' . $nowVersion->versionDir . '\\' . $callback['controller']
+        return (new Response())->setCode(404)->setMsg($callback['nameSpace'] . '\\' . $nowVersion->versionDir . '\\' . $callback['controller']
             . 'Controller@'
             . $callback['method']
             . ' Not Found.');
