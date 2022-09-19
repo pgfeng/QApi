@@ -34,7 +34,6 @@ class RunSwooleCommand extends CommandHandler
     {
         parent::__construct($command, $argv);
         $this->apps = Config::apps();
-        $this->cache = new SwooleTableAdapter(new Config\Cache\SwooleTable(2, 11));
     }
 
     /**
@@ -112,6 +111,7 @@ class RunSwooleCommand extends CommandHandler
 
     public function handler(array $argv): mixed
     {
+        $this->cache = new SwooleTableAdapter(new Config\Cache\SwooleTable(2, 11));
         $appDomain = $this->choseApp();
         $lockFile = PROJECT_PATH . 'SwooleServer-' . $appDomain['port'] . '.lock';
         if (file_exists($lockFile)) {
