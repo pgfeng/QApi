@@ -219,26 +219,23 @@ class Request
      *
      * @return string
      */
-    public
-    function getScriptName(): string
+    public function getScriptName(): string
     {
         return $this->server->get('SCRIPT_NAME', $this->server->get('ORIG_SCRIPT_NAME', ''));
     }
 
-    public
-    function getMethod(): string
+    public function getMethod(): string
     {
         return $this->method;
     }
 
 
-    private
-    function prepareRequestUri()
+    private function prepareRequestUri(): string
     {
         if (stripos($this->server->get('REQUEST_URI'), '?') !== false) {
             return $this->server->get('REQUEST_URI');
         } else {
-            return $this->server->get('REQUEST_URI') . ($this->server->get('QUERY_STRING') ? '?' . $this->server['QUERY_STRING'] : '');
+            return $this->server->get('REQUEST_URI') . ($this->get->count() ? ('?' . http_build_query($this->get)) : '');
         }
     }
 
