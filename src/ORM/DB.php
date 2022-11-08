@@ -749,7 +749,7 @@ class DB
      */
     public function notLike(string $field, $value): self
     {
-        $this->queryBuilder->where($this->expr()->notLike($field, $value));
+        $this->queryBuilder->where($this->expr()->notLike($field, $this->quote($value)));
         return $this;
     }
 
