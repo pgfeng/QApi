@@ -145,8 +145,7 @@ trait Auxiliary
      * @param Response $response
      * @return Response
      */
-    public function toTableData
-    (Request $request, Response $response): Response
+    public function toTableData(Request $request, Response $response): Response
     {
         $sortField = $request->get->get('sortField');
         $sortOrder = $request->get->get('sortOrder');
@@ -157,7 +156,7 @@ trait Auxiliary
         }
         $countModel = clone $this;
         return $response->ok()->setExtra([
-            'total' => $countModel->count(),
+            'total' => $countModel->resetQueryPart('orderBy')->count(),
         ])->setData($this->paginate($size, $page));
     }
 
