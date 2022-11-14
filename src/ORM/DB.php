@@ -46,7 +46,7 @@ use QApi\Logger;
  * @method $this distinct()
  * @method $this groupBy(string|array $groupBy)
  * @method $this addGroupBy(string|array $groupBy)
- * @method $this resetQueryPart(string|array $groupBy)
+ * @method $this resetQueryPart(string|array $queryPart)
  * @method $this resetQueryParts($queryPartNames = null)
  * @method int executeStatement($sql, array $params = [], array $types = [])
  * @method $this having($having)

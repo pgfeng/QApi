@@ -60,6 +60,33 @@ abstract class DBase
         return null;
     }
 
+    public function resetQueryPart($queryPart)
+    {
+        $section = [
+            'handle' => 'select',
+            'select' => '*',
+            'insert' => '',
+            'set' => '',
+            'where' => '',
+            'join' => '',
+            'group' => '',
+            'orderBy' => '',
+            'limit' => '',
+            'lock' => null,
+        ];
+        $this->section[$partName] = $section[$queryPart];
+        return $this;
+    }
+
+    public function resetQueryParts($queryPartNames)
+    {
+        if (is_array($queryPartNames)) {
+            foreach ($queryPartNames as $partName) {
+                $this->resetQueryPart($partName);
+            }
+        }
+        return $this;
+    }
 
     final public function lastSql(): string
     {
@@ -1295,16 +1322,16 @@ abstract class DBase
         } catch (\Exception $e) {
             $traces = $e->getTrace();
             $realTrance = null;
-            foreach ($traces as $trace){
-                if (isset($trace['class']) && in_array($trace['class'],[
+            foreach ($traces as $trace) {
+                if (isset($trace['class']) && in_array($trace['class'], [
                         'QApi\\Model',
-                    ])){
+                    ])) {
                     $realTrance = $trace;
                 }
             }
-            if ($realTrance){
+            if ($realTrance) {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
-            }else{
+            } else {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
             }
         }
