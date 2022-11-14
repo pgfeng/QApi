@@ -74,7 +74,7 @@ abstract class DBase
             'limit' => '',
             'lock' => null,
         ];
-        $this->section[$partName] = $section[$queryPart];
+        $this->section[$queryPart] = $section[$queryPart];
         return $this;
     }
 
