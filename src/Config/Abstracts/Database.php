@@ -40,7 +40,7 @@ abstract class Database
      * @return $this
      * @throws \QApi\Exception\CacheErrorException
      */
-    public function openDefaultCacheAdapter($databaseName): self
+    public function defaultCacheAdapter($databaseName): self
     {
         return $this->setCacheAdapter(new FileSystemAdapter(new FileSystem(PROJECT_PATH . \QApi\App::$runtimeDir . DIRECTORY_SEPARATOR . 'Database' . DIRECTORY_SEPARATOR . $databaseName)));
     }
