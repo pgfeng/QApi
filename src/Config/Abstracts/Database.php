@@ -27,9 +27,9 @@ abstract class Database
 
     /**
      * @param ?CacheInterface $cacheAdapter
-     * @return Database
+     * @return $this
      */
-    public function setCacheAdapter(?CacheInterface $cacheAdapter): static
+    public function setCacheAdapter(?CacheInterface $cacheAdapter): self
     {
         $this->cacheAdapter = $cacheAdapter;
         return $this;
@@ -37,12 +37,12 @@ abstract class Database
 
     /**
      * @param $databaseName
-     * @return void
+     * @return $this
      * @throws \QApi\Exception\CacheErrorException
      */
-    public function openDefaultCacheAdapter($databaseName)
+    public function openDefaultCacheAdapter($databaseName): self
     {
-        $this->cacheAdapter = new FileSystemAdapter(new FileSystem(PROJECT_PATH . \QApi\App::$runtimeDir . DIRECTORY_SEPARATOR . 'Database' . DIRECTORY_SEPARATOR . $databaseName));
+        return $this->setCacheAdapter(new FileSystemAdapter(new FileSystem(PROJECT_PATH . \QApi\App::$runtimeDir . DIRECTORY_SEPARATOR . 'Database' . DIRECTORY_SEPARATOR . $databaseName)));
     }
 
 }
