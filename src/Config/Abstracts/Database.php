@@ -42,7 +42,7 @@ abstract class Database
      */
     public function openDefaultCacheAdapter($databaseName)
     {
-        $this->cacheAdapter = new FileSystemAdapter(new FileSystem(PROJECT_PATH . \QApi\App::$runtimeDir . DIRECTORY_SEPARATOR . 'Database' . DIRECTORY_SEPARATOR . 'amaze'));
+        $this->cacheAdapter = new FileSystemAdapter(new FileSystem(PROJECT_PATH . \QApi\App::$runtimeDir . DIRECTORY_SEPARATOR . 'Database' . DIRECTORY_SEPARATOR . $databaseName));
     }
 
 }
