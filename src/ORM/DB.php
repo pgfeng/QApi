@@ -4,6 +4,7 @@
 namespace QApi\ORM;
 
 use Closure;
+use DateInterval;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception\ServerException;
@@ -78,7 +79,18 @@ class DB
      */
     protected ?int $lockMode = null;
 
+    /**
+     * @var bool|null
+     */
+    protected ?bool $cacheSwitch = false;
+
+    /**
+     * @var int|DateInterval|null
+     */
+    protected null|int|DateInterval $cacheTtl = null;
+
     public static array $dbColumns = [];
+
 
     /**
      * @return string|null
@@ -593,16 +605,16 @@ class DB
         } catch (ServerException $e) {
             $traces = $e->getTrace();
             $realTrance = null;
-            foreach ($traces as $trace){
-                if (isset($trace['class']) && in_array($trace['class'],[
-                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
-                    ])){
+            foreach ($traces as $trace) {
+                if (isset($trace['class']) && in_array($trace['class'], [
+                        'QApi\\ORM\\Model', 'QApi\\ORM\\DB'
+                    ])) {
                     $realTrance = $trace;
                 }
             }
-            if ($realTrance){
+            if ($realTrance) {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
-            }else{
+            } else {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
             }
         }
@@ -767,6 +779,15 @@ class DB
         return $this;
     }
 
+    private function setCache($sql, $data): void
+    {
+        if ($this->config->cacheAdapter && $this->cacheSwitch) {
+            $this->config->cacheAdapter->set($sql, $data, $this->cacheTtl);
+        }
+        $this->cacheSwitch = false;
+        $this->cacheTtl = null;
+    }
+
     /**
      * @param string|null $sql
      * @param array $params
@@ -774,37 +795,49 @@ class DB
      * @param QueryCacheProfile|null $qcp
      * @return Data|bool
      */
-    public function query(string $sql = null, array $params = [], array $types = [], ?QueryCacheProfile $qcp =
-    null): Data|bool
+    public function query(string $sql = null, array $params = [], array $types = []): Data|bool
     {
         try {
-
             if ($sql) {
-                $data = $this->queryBuilder->getConnection()->executeQuery($sql, $params, $types, $qcp)
-                    ->fetchAllAssociative();
+                $data = null;
+                if ($this->config->cacheAdapter && $this->cacheSwitch) {
+                    $data = $this->config->cacheAdapter->get($sql);
+                }
+                if ($data === null) {
+                    $data = $this->queryBuilder->getConnection()->executeQuery($sql, $params, $types)
+                        ->fetchAllAssociative();
+                    $this->setCache($sql, $data);
+                }
             } else {
                 $sql = $this->queryBuilder->getSQL();
-                if ($this->lockMode !== null) {
-                    $sql .= ' ' . $this->connection->getDatabasePlatform()->getWriteLockSQL();
-                    $this->lockMode = null;
+                $data = null;
+                if ($this->config->cacheAdapter && $this->cacheSwitch) {
+                    $data = $this->config->cacheAdapter->get($sql);
                 }
-                $data = $this->connection->executeQuery($sql, $this->queryBuilder->getParameters(),
-                    $this->queryBuilder->getParameterTypes(), $qcp)
-                    ->fetchAllAssociative();
+                if ($data === null) {
+                    if ($this->lockMode !== null) {
+                        $sql .= ' ' . $this->connection->getDatabasePlatform()->getWriteLockSQL();
+                        $this->lockMode = null;
+                    }
+                    $data = $this->connection->executeQuery($sql, $this->queryBuilder->getParameters(),
+                        $this->queryBuilder->getParameterTypes())
+                        ->fetchAllAssociative();
+                    $this->setCache($sql, $data);
+                }
             }
         } catch (ServerException $e) {
             $traces = $e->getTrace();
             $realTrance = null;
-            foreach ($traces as $trace){
-                if (isset($trace['class']) && in_array($trace['class'],[
-                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
-                    ])){
+            foreach ($traces as $trace) {
+                if (isset($trace['class']) && in_array($trace['class'], [
+                        'QApi\\ORM\\Model', 'QApi\\ORM\\DB'
+                    ])) {
                     $realTrance = $trace;
                 }
             }
-            if ($realTrance){
+            if ($realTrance) {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
-            }else{
+            } else {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
             }
         }
@@ -845,23 +878,41 @@ class DB
     {
         $this->hasWhere = false;
         try {
-            return (int)$this->queryBuilder->select('COUNT(' . $field . ')')->executeQuery()->fetchOne();
+            return (int)$this->select('COUNT(' . $field . ')')->fetchOne();
         } catch (ServerException $e) {
             $traces = $e->getTrace();
             $realTrance = null;
-            foreach ($traces as $trace){
-                if (isset($trace['class']) && in_array($trace['class'],[
-                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
-                    ])){
+            foreach ($traces as $trace) {
+                if (isset($trace['class']) && in_array($trace['class'], [
+                        'QApi\\ORM\\Model', 'QApi\\ORM\\DB'
+                    ])) {
                     $realTrance = $trace;
                 }
             }
-            if ($realTrance){
+            if ($realTrance) {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
-            }else{
+            } else {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
             }
         }
+    }
+
+    /**
+     * @return mixed
+     * @throws \Doctrine\DBAL\Exception
+     */
+    public function fetchOne(): mixed
+    {
+        $sql = $this->queryBuilder->getSQL();
+        $data = null;
+        if ($this->config->cacheAdapter && $this->cacheSwitch) {
+            $data = $this->config->cacheAdapter->get($sql);
+        }
+        if ($data === null) {
+            $data = (int)$this->queryBuilder->getConnection()->executeQuery($sql)->fetchOne();
+            $this->setCache($sql, $data);
+        }
+        return $data;
     }
 
     /**
@@ -872,20 +923,20 @@ class DB
     {
         $this->hasWhere = false;
         try {
-            return $this->queryBuilder->select('MAX(' . $field . ')')->executeQuery()->fetchOne();
+            return $this->select('MAX(' . $field . ')')->fetchOne();
         } catch (ServerException $e) {
             $traces = $e->getTrace();
             $realTrance = null;
-            foreach ($traces as $trace){
-                if (isset($trace['class']) && in_array($trace['class'],[
-                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
-                    ])){
+            foreach ($traces as $trace) {
+                if (isset($trace['class']) && in_array($trace['class'], [
+                        'QApi\\ORM\\Model', 'QApi\\ORM\\DB'
+                    ])) {
                     $realTrance = $trace;
                 }
             }
-            if ($realTrance){
+            if ($realTrance) {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
-            }else{
+            } else {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
             }
         }
@@ -899,20 +950,20 @@ class DB
     {
         $this->hasWhere = false;
         try {
-            return $this->queryBuilder->select('MIN(' . $field . ')')->executeQuery()->fetchOne();
+            return $this->select('MIN(' . $field . ')')->fetchOne();
         } catch (ServerException $e) {
             $traces = $e->getTrace();
             $realTrance = null;
-            foreach ($traces as $trace){
-                if (isset($trace['class']) && in_array($trace['class'],[
-                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
-                    ])){
+            foreach ($traces as $trace) {
+                if (isset($trace['class']) && in_array($trace['class'], [
+                        'QApi\\ORM\\Model', 'QApi\\ORM\\DB'
+                    ])) {
                     $realTrance = $trace;
                 }
             }
-            if ($realTrance){
+            if ($realTrance) {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
-            }else{
+            } else {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
             }
         }
@@ -927,20 +978,20 @@ class DB
     {
         $this->hasWhere = false;
         try {
-            return $this->queryBuilder->select('SUM(' . $field . ')')->executeQuery()->fetchOne();
+            return $this->select('SUM(' . $field . ')')->fetchOne();
         } catch (ServerException $e) {
             $traces = $e->getTrace();
             $realTrance = null;
-            foreach ($traces as $trace){
-                if (isset($trace['class']) && in_array($trace['class'],[
-                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
-                    ])){
+            foreach ($traces as $trace) {
+                if (isset($trace['class']) && in_array($trace['class'], [
+                        'QApi\\ORM\\Model', 'QApi\\ORM\\DB'
+                    ])) {
                     $realTrance = $trace;
                 }
             }
-            if ($realTrance){
+            if ($realTrance) {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
-            }else{
+            } else {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
             }
         }
@@ -955,20 +1006,20 @@ class DB
     {
         $this->hasWhere = false;
         try {
-            return $this->queryBuilder->select('AVG(' . $field . ')')->executeQuery()->fetchOne();
+            return $this->select('AVG(' . $field . ')')->fetchOne();
         } catch (ServerException $e) {
             $traces = $e->getTrace();
             $realTrance = null;
-            foreach ($traces as $trace){
-                if (isset($trace['class']) && in_array($trace['class'],[
-                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
-                    ])){
+            foreach ($traces as $trace) {
+                if (isset($trace['class']) && in_array($trace['class'], [
+                        'QApi\\ORM\\Model', 'QApi\\ORM\\DB'
+                    ])) {
                     $realTrance = $trace;
                 }
             }
-            if ($realTrance){
+            if ($realTrance) {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
-            }else{
+            } else {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
             }
         }
@@ -982,20 +1033,20 @@ class DB
     {
         $this->hasWhere = false;
         try {
-            return (int)$this->queryBuilder->select('LENGTH(' . $field . ')')->executeQuery()->fetchOne();
+            return (int)$this->select('LENGTH(' . $field . ')')->fetchOne();
         } catch (ServerException $e) {
             $traces = $e->getTrace();
             $realTrance = null;
-            foreach ($traces as $trace){
-                if (isset($trace['class']) && in_array($trace['class'],[
-                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
-                    ])){
+            foreach ($traces as $trace) {
+                if (isset($trace['class']) && in_array($trace['class'], [
+                        'QApi\\ORM\\Model', 'QApi\\ORM\\DB'
+                    ])) {
                     $realTrance = $trace;
                 }
             }
-            if ($realTrance){
+            if ($realTrance) {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
-            }else{
+            } else {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
             }
         }
@@ -1054,20 +1105,20 @@ class DB
         $this->hasWhere = false;
         $field_name = $this->_Field($field_name);
         try {
-            return $this->queryBuilder->select($field_name)->setMaxResults(1)->executeQuery()->fetchOne();
+            return $this->select($field_name)->setMaxResults(1)->fetchOne();
         } catch (ServerException $e) {
             $traces = $e->getTrace();
             $realTrance = null;
-            foreach ($traces as $trace){
-                if (isset($trace['class']) && in_array($trace['class'],[
-                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
-                    ])){
+            foreach ($traces as $trace) {
+                if (isset($trace['class']) && in_array($trace['class'], [
+                        'QApi\\ORM\\Model', 'QApi\\ORM\\DB'
+                    ])) {
                     $realTrance = $trace;
                 }
             }
-            if ($realTrance){
+            if ($realTrance) {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
-            }else{
+            } else {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
             }
         }
@@ -1101,16 +1152,16 @@ class DB
         } catch (ServerException $e) {
             $traces = $e->getTrace();
             $realTrance = null;
-            foreach ($traces as $trace){
-                if (isset($trace['class']) && in_array($trace['class'],[
-                        'QApi\\ORM\\Model','QApi\\ORM\\DB'
-                    ])){
+            foreach ($traces as $trace) {
+                if (isset($trace['class']) && in_array($trace['class'], [
+                        'QApi\\ORM\\Model', 'QApi\\ORM\\DB'
+                    ])) {
                     $realTrance = $trace;
                 }
             }
-            if ($realTrance){
+            if ($realTrance) {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
-            }else{
+            } else {
                 throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
             }
         }
@@ -1144,6 +1195,17 @@ class DB
 
         $message = get_class($this) . '->' . $func . '(' . implode(', ', $val) . ') is Undefined!';
         throw  new \RuntimeException($message);
+    }
+
+    /**
+     * @param int|DateInterval|null $ttl
+     * @return $this
+     */
+    final public function cache(null|int|DateInterval $ttl = null): self
+    {
+        $this->cacheSwitch = true;
+        $this->cacheTtl = $ttl;
+        return $this;
     }
 
     /**
