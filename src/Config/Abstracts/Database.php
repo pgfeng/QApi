@@ -5,6 +5,8 @@ namespace QApi\Config\Abstracts;
 
 
 use QApi\Cache\CacheInterface;
+use QApi\Cache\FileSystemAdapter;
+use QApi\Config\Cache\FileSystem;
 
 abstract class Database
 {
@@ -31,6 +33,16 @@ abstract class Database
     {
         $this->cacheAdapter = $cacheAdapter;
         return $this;
+    }
+
+    /**
+     * @param $databaseName
+     * @return void
+     * @throws \QApi\Exception\CacheErrorException
+     */
+    public function openDefaultCacheAdapter($databaseName)
+    {
+        $this->cacheAdapter = new FileSystemAdapter(new FileSystem(PROJECT_PATH . \QApi\App::$runtimeDir . DIRECTORY_SEPARATOR . 'Database' . DIRECTORY_SEPARATOR . 'amaze'));
     }
 
 }
