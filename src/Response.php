@@ -97,9 +97,9 @@ class Response
                 $this->withHeader('Access-Control-Allow-Origin', Router::$request->getHost());
             }
             $this->withAddedHeader('Access-Control-Allow-Headers', $app->allowHeaders);
-            $this->withAddedHeader('Access-Control-Allow-Methods',$app->allowMethods);
+            $this->withAddedHeader('Access-Control-Allow-Methods', $app->allowMethods);
         }
-        $this->withAddedHeader('Access-Control-Allow-Headers','_QApi');
+        $this->withAddedHeader('Access-Control-Allow-Headers', '_QApi');
         $this->withHeader('X-Powered-By', 'QApi');
         $this->withHeader('Content-Type', 'application/json;charset=utf-8');
     }
@@ -147,21 +147,21 @@ class Response
      */
     public function withHeader(string $name, string|array $value): Response
     {
-        if (is_string($value)){
+        if (is_string($value)) {
             $value = [$value];
         }
         $this->headers[$name] = $value;
         return $this;
     }
 
-    public function withAddedHeader(string $name,string|array $value):Response
+    public function withAddedHeader(string $name, string|array $value): Response
     {
-        if (is_string($value)){
-            $value = explode(',',$value);
+        if (is_string($value)) {
+            $value = explode(',', $value);
         }
-        if (isset($this->headers[$name])){
-            $this->headers[$name] = array_merge($this->headers[$name],$value);
-        }else{
+        if (isset($this->headers[$name])) {
+            $this->headers[$name] = array_merge($this->headers[$name], $value);
+        } else {
             $this->headers[$name] = $value;
         }
         return $this;
@@ -194,7 +194,7 @@ class Response
         return $this;
     }
 
-    public function withoutHeader(string $name):Response
+    public function withoutHeader(string $name): Response
     {
         return $this->removeHeader($name);
     }
@@ -356,9 +356,8 @@ class Response
                 'msg' => $this->msg,
                 'data' => $this->data,
             ];
-            Logger::success("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Response Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
-            Logger::success($sendData);
-            Logger::success("↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑  Response Data ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ");
+            Logger::response('Headers -> ' . json_encode($this->getHeaders(), JSON_UNESCAPED_UNICODE));
+            Logger::response('Body -> ' . json_encode($sendData, JSON_UNESCAPED_UNICODE));
             return json_encode(array_merge($sendData, $this->extra), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
         }
         return $this->data;

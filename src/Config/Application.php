@@ -33,16 +33,16 @@ class Application
      * @param string $scheme
      * @param string $docPassword
      */
-    public function __construct(public string $appDir,
-                                public string $runMode,
-                                public string $defaultVersionName,
-                                public ?array $logHandler = null,
+    public function __construct(public string      $appDir,
+                                public string      $runMode,
+                                public string      $defaultVersionName,
+                                public ?array      $logHandler = null,
                                 public string|bool $nameSpace = false, public array $allowOrigin = ['*'],
-                                public array $allowHeaders = ['Request-Sign', 'Request-Time','Content-Type','Authorization'],
-                                public array $allowMethods = [
+                                public array       $allowHeaders = ['Request-Sign', 'Request-Time', 'Content-Type', 'Authorization'],
+                                public array       $allowMethods = [
                                     Methods::GET, Methods::POST, Methods::DELETE, Methods::HEAD, Methods::PUT
                                 ],
-                                public string $applicationName = '', public string $scheme = 'http', public string $docPassword = '')
+                                public string      $applicationName = '', public string $scheme = 'http', public string $docPassword = '', public array $disabledLogType = [], public array $disabledLogLevel = [])
     {
         $this->appDir = trim($this->appDir, '/');
         if ($this->nameSpace === false) {
@@ -57,6 +57,8 @@ class Application
     public function init(): void
     {
         Logger::init();
+        Logger::$disabledType = $this->disabledLogType;
+        Logger::$disabledLevel = $this->disabledLogLevel;
         if ($this->runMode === RunMode::DEVELOPMENT) {
             error_reporting(E_ALL);
         } else {

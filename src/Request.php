@@ -109,7 +109,7 @@ class Request
     public function __construct(public Data|null|array $arguments = null, array $get = null, array $post = null, array $request =
     null,
                                 string                 $input = null, array $files = null,
-                                array                  $cookie = null, array $session = null, array $server = null, array $header = null, bool $init = true, bool $log = true)
+                                array                  $cookie = null, array $session = null, array $server = null, array $header = null, bool $init = true)
     {
         if ($init) {
             if (!$this->arguments) {
@@ -150,22 +150,6 @@ class Request
             $this->session = new Data($_SESSION);
             $this->method = strtoupper($this->server->get('REQUEST_METHOD'));
             $this->requestUri = $this->prepareRequestUri();
-            if ($log) {
-                Logger::info(' RouterStart' . ' -> ' . $this->domain() . $this->requestUri);
-                Logger::info("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Request Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
-                Logger::info(' RequestMethod' . ' -> ' . $this->method);
-                Logger::info(' HeaderData -> ' . $this->header);
-                if ($this->method === MethodsEnum::METHOD_POST) {
-                    Logger::info(' PostData -> ' . $this->post);
-                    if ($this->file->count()) {
-                        Logger::info(' FileData -> ' . $this->file);
-                    }
-                    if ($this->input) {
-                        Logger::info(' InputData -> ' . $this->input);
-                    }
-                }
-                Logger::info("↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑  Request Data  ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ");
-            }
         }
     }
 

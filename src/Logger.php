@@ -7,15 +7,28 @@ namespace QApi;
 use JetBrains\PhpStorm\Pure;
 use QApi\Enumeration\CliColor;
 use QApi\Enumeration\RunMode;
+use QApi\Logger\LogLevel;
+use QApi\Logger\LogType;
 
 class Logger
 {
     public static ?\Monolog\Logger $logger = null;
 
     /**
+     * @var array
+     */
+    public static array $disabledType = [];
+
+    /**
+     * @var array
+     */
+    public static array $disabledLevel = [];
+
+    /**
      * 初始化
      * @param string $name
      * @param bool $force
+     * @throws \ErrorException
      */
     public static function init(string $name = 'QApi', bool $force = false): void
     {
@@ -47,7 +60,7 @@ class Logger
     /**
      * @return string
      */
-    #[Pure] private static function getRunMode(): string
+    #[Pure(true)] private static function getRunMode(): string
     {
         if (is_cli()) {
             if (Command::$showLogger) {
@@ -71,13 +84,15 @@ class Logger
      */
     public static function info(array|string $message): void
     {
-        if (is_array($message)) {
-            $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+        if (!in_array(LogLevel::INFO, self::$disabledLevel)) {
+            if (is_array($message)) {
+                $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+            }
+            if (self::getRunMode() === RunMode::DEVELOPMENT) {
+                error_log(self::getData($message, CliColor::INFO));
+            }
+            self::$logger?->info(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
-        if (self::getRunMode() === RunMode::DEVELOPMENT) {
-            error_log(self::getData($message, CliColor::INFO));
-        }
-        self::$logger?->info(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
     }
 
     /**
@@ -85,13 +100,31 @@ class Logger
      */
     public static function sql(array|string $message): void
     {
-        if (is_array($message)) {
-            $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+        if (!in_array(LogType::SQL, self::$disabledType)) {
+            if (is_array($message)) {
+                $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+            }
+            if (self::getRunMode() === RunMode::DEVELOPMENT) {
+                error_log(self::getData(' SQL => ' . $message, CliColor::WARNING));
+            }
+            self::$logger?->info(' SQL => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
-        if (self::getRunMode() === RunMode::DEVELOPMENT) {
-            error_log(self::getData(' SQL => ' . $message, CliColor::WARNING));
+    }
+
+    /**
+     * @param array|string $message
+     */
+    public static function cache(array|string $message): void
+    {
+        if (!in_array(LogType::CACHE, self::$disabledType)) {
+            if (is_array($message)) {
+                $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+            }
+            if (self::getRunMode() === RunMode::DEVELOPMENT) {
+                error_log(self::getData(' CACHE => ' . $message, CliColor::WARNING));
+            }
+            self::$logger?->info(' CACHE => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
-        self::$logger?->info(' SQL => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message));
     }
 
 
@@ -100,14 +133,70 @@ class Logger
      */
     public static function warning(array|string $message): void
     {
-        if (is_array($message)) {
-            $message = json_encode($message, JSON_UNESCAPED_UNICODE);
-        }
-        if (self::getRunMode() === RunMode::DEVELOPMENT) {
+        if (!in_array(LogLevel::WARNING, self::$disabledLevel)) {
+            if (is_array($message)) {
+                $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+            }
+            if (self::getRunMode() === RunMode::DEVELOPMENT) {
 
-            error_log(self::getData($message, CliColor::WARNING));
+                error_log(self::getData($message, CliColor::WARNING));
+            }
+            self::$logger?->warning(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
-        self::$logger?->warning(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+    }
+
+
+    /**
+     * @param array|string $message
+     */
+    public static function router(array|string $message): void
+    {
+        if (!in_array(LogType::ROUTER, self::$disabledType)) {
+            if (is_array($message)) {
+                $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+            }
+            $message = ' Router => ' . $message;
+            if (self::getRunMode() === RunMode::DEVELOPMENT) {
+                error_log(self::getData($message, CliColor::SUCCESS));
+            }
+            self::$logger?->alert(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+
+        }
+    }
+
+
+    /**
+     * @param array|string $message
+     */
+    public static function request(array|string $message): void
+    {
+        if (!in_array(LogType::REQUEST, self::$disabledType)) {
+            if (is_array($message)) {
+                $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+            }
+            $message = ' Request => ' . $message;
+            if (self::getRunMode() === RunMode::DEVELOPMENT) {
+                error_log(self::getData($message, CliColor::INFO));
+            }
+            self::$logger?->alert(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+        }
+    }
+
+    /**
+     * @param array|string $message
+     */
+    public static function response(array|string $message): void
+    {
+        if (!in_array(LogType::RESPONSE, self::$disabledType)) {
+            if (is_array($message)) {
+                $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+            }
+            $message = ' Response => ' . $message;
+            if (self::getRunMode() === RunMode::DEVELOPMENT) {
+                error_log(self::getData($message, CliColor::INFO));
+            }
+            self::$logger?->alert(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+        }
     }
 
     /**
@@ -115,15 +204,15 @@ class Logger
      */
     public static function success(array|string $message): void
     {
-        if (is_array($message)) {
-            $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+        if (!in_array(LogLevel::SUCCESS, self::$disabledLevel)) {
+            if (is_array($message)) {
+                $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+            }
+            if (self::getRunMode() === RunMode::DEVELOPMENT) {
+                error_log(self::getData($message, CliColor::SUCCESS));
+            }
+            self::$logger?->alert(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
-        if (self::getRunMode() === RunMode::DEVELOPMENT) {
-            error_log(self::getData($message, CliColor::SUCCESS));
-        }
-
-        self::$logger?->alert(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
-
     }
 
     /**
@@ -131,35 +220,53 @@ class Logger
      */
     public static function error(array|string $message): void
     {
-        self::init();
-        if (is_array($message)) {
-            $message = json_encode($message, JSON_UNESCAPED_UNICODE);
-        }
+        if (!in_array(LogLevel::ERROR, self::$disabledLevel)) {
+            self::init();
+            if (is_array($message)) {
+                $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+            }
 
-        if (self::getRunMode() === RunMode::DEVELOPMENT) {
-            error_log(self::getData($message, CliColor::ERROR));
+            if (self::getRunMode() === RunMode::DEVELOPMENT) {
+                error_log(self::getData($message, CliColor::ERROR));
+            }
+            self::$logger?->error(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
-        self::$logger?->error(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
     }
+
+    /**
+     * @param array|string $message
+     */
+    public static function notice(array|string $message): void
+    {
+        if (!in_array(LogLevel::NOTICE, self::$disabledLevel)) {
+            self::init();
+            if (is_array($message)) {
+                $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+            }
+
+            if (self::getRunMode() === RunMode::DEVELOPMENT) {
+                error_log(self::getData($message, CliColor::ERROR));
+            }
+            self::$logger?->notice(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+        }
+    }
+
 
     /**
      * @param array|string $message
      */
     public static function emergency(array|string $message): void
     {
+        if (!in_array(LogLevel::EMERGENCY, self::$disabledLevel)) {
+            if (is_array($message)) {
+                $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+            }
+            if (self::getRunMode() === RunMode::DEVELOPMENT) {
 
-
-        if (is_array($message)) {
-            $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+                error_log(self::getData($message, CliColor::ERROR));
+            }
+            self::$logger?->emergency(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
-
-        if (self::getRunMode() === RunMode::DEVELOPMENT) {
-
-            error_log(self::getData($message, CliColor::ERROR));
-        }
-
-        self::$logger?->error(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
-
     }
 
     /**
@@ -167,7 +274,7 @@ class Logger
      * @param string $type
      * @return string
      */
-    #[Pure] public static function getData(string $message, string $type): string
+    public static function getData(string $message, string $type): string
     {
         return "\x1b[" . $type . ";1m " . self::$logger->getName() . ":$message\e[0m";
     }

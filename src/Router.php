@@ -13,6 +13,7 @@ use QApi;
 use QApi\Attribute\Utils;
 use QApi\Cache\Cache;
 use QApi\Exception\CompileErrorException;
+use QApi\Http\Request\MethodsEnum;
 use ReflectionClass;
 use ReflectionException;
 use RuntimeException;
@@ -79,6 +80,25 @@ class Router
         } else {
             self::$request = $request;
         }
+
+        Logger::router($request->method . ' -> ' . $request->domain() . $request->requestUri);
+//            Logger::info("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Request Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
+        Logger::request('Headers -> ' . $request->header);
+        if ($request->input){
+            Logger::request('InputData -> ' . $request->input);
+        }
+//            Logger::info(' RequestMethod' . ' -> ' . $this->method);
+//            Logger::info(' HeaderData -> ' . $this->header);
+//            if ($this->method === MethodsEnum::METHOD_POST) {
+//                Logger::info(' PostData -> ' . $this->post);
+//                if ($this->file->count()) {
+//                    Logger::info(' FileData -> ' . $this->file);
+//                }
+//                if ($this->input) {
+//                    Logger::info(' InputData -> ' . $this->input);
+//                }
+//            }
+//            Logger::info("↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑  Request Data  ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ");
         self::$config = Config::route();
         if (self::$config['cache']) {
             self::$cache = new (self::$config['cacheDriver']->driver)(self::$config['cacheDriver']);
@@ -526,7 +546,7 @@ class Router
                 }
             }
             if (!$callback) {
-                if (Config::route('auto',true)){
+                if (Config::route('auto', true)) {
                     $uri = trim($uri, '/');
                     $data = explode('/', $uri);
                     $runData = [];
@@ -550,7 +570,7 @@ class Router
                         'callback' => $runData,
                         'middleware' => [],
                     ];
-                }else{
+                } else {
                     return (new Response())->setCode(404)->setMsg('404 Not Found');
                 }
             }
@@ -564,8 +584,8 @@ class Router
             ];
             if (!self::$cache?->has(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . '&__middleware__&')) {
                 self::$cache?->set(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . '&__middleware__&', [
-                    'classMiddlewareList' => self::$classMiddlewareList[Config::$app->getDir()]??[],
-                    'middlewareList' => self::$middlewareList[Config::$app->getDir()]??[],
+                    'classMiddlewareList' => self::$classMiddlewareList[Config::$app->getDir()] ?? [],
+                    'middlewareList' => self::$middlewareList[Config::$app->getDir()] ?? [],
                 ]);
             }
             if (!is_callable($data['callback']['callback'])) {
@@ -577,7 +597,6 @@ class Router
                 self::$cache?->set(':' . Config::app()->getNameSpace() . ':' . Config::app()->getDefaultVersion() . ':' . self::$METHOD . ':' . self::$URI, $data, self::$config['cacheTTL']);
             }
         } else {
-            Logger::info('RouteHitCache');
             $middleware = self::$cache->get(':' . Config::app()->getNameSpace() . ':' . Config::app()
                     ->getDefaultVersion() . '&__middleware__&');
             self::$classMiddlewareList[Config::$app->getDir()] = $middleware['classMiddlewareList'];
@@ -616,8 +635,7 @@ class Router
                 }
                 self::$request->arguments = $arguments;
                 $response = new Response();
-                Logger::info('Router -> ' . 'Callable()');
-                Logger::info('RouterOriginal -> ' . json_encode(self::$router[Config::$app->getDir()], JSON_THROW_ON_ERROR));
+                Logger::router('Running ' . '-> ' . str_replace('{"callback":{}', '{"callback":Closure', json_encode(self::$router[Config::$app->getDir()], JSON_THROW_ON_ERROR)));
                 $result = null;
                 if ($middleware) {
                     /**
@@ -661,8 +679,7 @@ class Router
             $arguments = new Data($params);
             self::$request->arguments = $arguments;
             $response = new Response();
-            Logger::info('Router -> ' . $controllerName . '@' . $method);
-            Logger::info('RouterOriginal -> ' . json_encode(self::$router[Config::$app->getDir()], JSON_THROW_ON_ERROR));
+            Logger::router('Running -> ' . json_encode(self::$router[Config::$app->getDir()], JSON_THROW_ON_ERROR));
             $result = '';
             if ($middleware) {
                 /**
@@ -708,8 +725,7 @@ class Router
                     $middlewareLists = array_unique(array_merge($classMiddleware, $methodMiddleware));
                     ksort($middlewareLists);
                     self::$router[Config::$app->getDir()]['middleware'] = &$middlewareLists;
-                    Logger::info('Router -> ' . $controllerName . '@' . $callback['method']);
-                    Logger::info('RouterOriginal -> ' . json_encode(self::$router[Config::$app->getDir()], JSON_THROW_ON_ERROR));
+                    Logger::router('Running -> ' . json_encode(self::$router[Config::$app->getDir()], JSON_THROW_ON_ERROR));
                     self::$request->arguments = new Data($params);
                     $response = new Response();
                     if (self::$router[Config::$app->getDir()]['middleware']) {
