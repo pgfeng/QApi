@@ -4,6 +4,7 @@
 namespace QApi\Config\Abstracts;
 
 
+use QApi\Cache\CacheContainer;
 use QApi\Cache\CacheInterface;
 use QApi\Cache\FileSystemAdapter;
 use QApi\Config\Cache\FileSystem;
@@ -31,7 +32,7 @@ abstract class Database
      */
     public function setCacheAdapter(?CacheInterface $cacheAdapter): self
     {
-        $this->cacheAdapter = $cacheAdapter;
+        $this->cacheAdapter = new CacheContainer($cacheAdapter,'Database');
         return $this;
     }
 

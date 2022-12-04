@@ -43,7 +43,7 @@ class Cache
                 0, 1, PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
                 . DIRECTORY_SEPARATOR . 'cache.php');
         }
-        return (self::$adapters[$configName] = new $cache->driver($cache));
+        return (self::$adapters[$configName] = new CacheContainer(new $cache->driver($cache),$configName));
     }
 
     /**

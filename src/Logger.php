@@ -121,7 +121,7 @@ class Logger
                 $message = json_encode($message, JSON_UNESCAPED_UNICODE);
             }
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
-                error_log(self::getData(' CACHE => ' . $message, CliColor::WARNING));
+                error_log(self::getData(' CACHE => ' . $message, CliColor::SUCCESS));
             }
             self::$logger?->info(' CACHE => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
