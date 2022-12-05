@@ -909,7 +909,7 @@ class DB
             $data = $this->config->cacheAdapter->get($sql);
         }
         if ($data === null) {
-            $data = (int)$this->queryBuilder->getConnection()->executeQuery($sql)->fetchOne();
+            $data = $this->queryBuilder->getConnection()->executeQuery($sql)->fetchOne();
             $this->setCache($sql, $data);
         }
         return $data;
