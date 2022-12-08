@@ -43,7 +43,7 @@ class FileSystemAdapter implements CacheInterface
      * @param FileSystem $config
      * @throws CacheErrorException
      */
-    public function __construct(FileSystem $config)
+    public function __construct(protected FileSystem $config)
     {
         $directory = $config->directory;
         $this->directory = $directory;
@@ -83,12 +83,11 @@ class FileSystemAdapter implements CacheInterface
         } else {
             $filename = bin2hex($id);
         }
-
         return $this->directory
             . DIRECTORY_SEPARATOR
             . substr($hash, 0, 2)
             . DIRECTORY_SEPARATOR
-            . $filename
+            . ($this->config->hashFileName ? $filename : $id)
             . $this->extension;
     }
 
