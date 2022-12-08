@@ -87,7 +87,7 @@ class FileSystemAdapter implements CacheInterface
             . DIRECTORY_SEPARATOR
             . substr($hash, 0, 2)
             . DIRECTORY_SEPARATOR
-            . ($this->config->hashFileName ? $filename : $id)
+            . ($this->config->hashFileName ? $filename : str_replace(['/', '\\'], '', $id))
             . $this->extension;
     }
 
