@@ -70,7 +70,7 @@ class FileSystemAdapter implements CacheInterface
      *
      * @return string
      */
-    #[Pure] protected function getFilename(string $id): string
+    protected function getFilename(string $id): string
     {
         $hash = hash('sha256', $id);
 
