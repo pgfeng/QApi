@@ -204,6 +204,17 @@ class Data extends ArrayObject implements JsonSerializableAlias
     }
 
     /**
+     * @param iterable $keys
+     * @return void
+     */
+    public function batchRemove(iterable $keys): void
+    {
+        foreach ($keys as $key) {
+            $this->remove($key);
+        }
+    }
+
+    /**
      * @param $key
      * @return bool
      */
