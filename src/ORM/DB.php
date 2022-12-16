@@ -849,8 +849,10 @@ class DB
         foreach ($data as $key => $item) {
             if (isset(self::$dbColumns[$this->configName][$this->table])) {
                 foreach ($item as $k => $v) {
-                    if (!is_null($v) && isset(self::$dbColumns[$this->configName][$this->table][$k])) {
-                        $type = self::$dbColumns[$this->configName][$this->table][$k]['type'];
+                    $field = explode('.',$k);
+                    $field = $field[count($field)-1];
+                    if (!is_null($v) && isset(self::$dbColumns[$this->configName][$this->table][$field])) {
+                        $type = self::$dbColumns[$this->configName][$this->table][$field]['type'];
                         if (stripos($type, 'int')) {
                             $item[$k] = (int)$v;
                         }
