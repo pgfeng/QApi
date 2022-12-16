@@ -853,10 +853,10 @@ class DB
                     $field = $field[count($field)-1];
                     if (!is_null($v) && isset(self::$dbColumns[$this->configName][$this->table][$field])) {
                         $type = self::$dbColumns[$this->configName][$this->table][$field]['type'];
-                        if (stripos($type, 'int')) {
+                        if (stripos($type, 'int')>-1) {
                             $item[$k] = (int)$v;
                         }
-                        if (stripos($type, 'decimal') || stripos($type, 'float')) {
+                        if (stripos($type, 'decimal')>-1 || stripos($type, 'float')>-1) {
                             $item[$k] = (float)$v;
                         }
                     }
