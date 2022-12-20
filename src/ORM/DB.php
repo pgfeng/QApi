@@ -85,6 +85,11 @@ class DB
     protected ?bool $cacheSwitch = false;
 
     /**
+     * @var string
+     */
+    protected string $cacheKey = '';
+
+    /**
      * @var int|DateInterval|null
      */
     protected null|int|DateInterval $cacheTtl = null;
@@ -782,10 +787,12 @@ class DB
     private function setCache($sql, $data): void
     {
         if ($this->config->cacheAdapter && $this->cacheSwitch) {
-            $this->config->cacheAdapter->set($sql, $data, $this->cacheTtl);
+            $this->config->cacheAdapter->set(($this->cacheKey ? '[' . $this->cacheKey . ']' : '') . $sql, $data, $this->cacheTtl);
         }
+        // resetCache
         $this->cacheSwitch = false;
         $this->cacheTtl = null;
+        $this->cacheKey = '';
     }
 
     /**
@@ -810,15 +817,15 @@ class DB
                 }
             } else {
                 $sql = $this->queryBuilder->getSQL();
+                if ($this->lockMode !== null) {
+                    $sql .= ' ' . $this->connection->getDatabasePlatform()->getWriteLockSQL();
+                    $this->lockMode = null;
+                }
                 $data = null;
                 if ($this->config->cacheAdapter && $this->cacheSwitch) {
                     $data = $this->config->cacheAdapter->get($sql);
                 }
                 if ($data === null) {
-                    if ($this->lockMode !== null) {
-                        $sql .= ' ' . $this->connection->getDatabasePlatform()->getWriteLockSQL();
-                        $this->lockMode = null;
-                    }
                     $data = $this->connection->executeQuery($sql, $this->queryBuilder->getParameters(),
                         $this->queryBuilder->getParameterTypes())
                         ->fetchAllAssociative();
@@ -849,14 +856,14 @@ class DB
         foreach ($data as $key => $item) {
             if (isset(self::$dbColumns[$this->configName][$this->table])) {
                 foreach ($item as $k => $v) {
-                    $field = explode('.',$k);
-                    $field = $field[count($field)-1];
+                    $field = explode('.', $k);
+                    $field = $field[count($field) - 1];
                     if (!is_null($v) && isset(self::$dbColumns[$this->configName][$this->table][$field])) {
                         $type = self::$dbColumns[$this->configName][$this->table][$field]['type'];
-                        if (stripos($type, 'int')>-1) {
+                        if (stripos($type, 'int') > -1) {
                             $item[$k] = (int)$v;
                         }
-                        if (stripos($type, 'decimal')>-1 || stripos($type, 'float')>-1) {
+                        if (stripos($type, 'decimal') > -1 || stripos($type, 'float') > -1) {
                             $item[$k] = (float)$v;
                         }
                     }
@@ -1201,12 +1208,14 @@ class DB
 
     /**
      * @param int|DateInterval|null $ttl
+     * @param string $key
      * @return $this
      */
-    final public function cache(null|int|DateInterval $ttl = null): self
+    final public function cache(null|int|DateInterval $ttl = null, string $key = ''): self
     {
         $this->cacheSwitch = true;
         $this->cacheTtl = $ttl;
+        $this->cacheKey = $key;
         return $this;
     }
 
