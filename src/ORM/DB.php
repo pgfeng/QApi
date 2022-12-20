@@ -87,7 +87,7 @@ class DB
     /**
      * @var string
      */
-    protected string $cacheKey = '';
+    protected string $cacheSpaceKey = '';
 
     /**
      * @var int|DateInterval|null
@@ -787,12 +787,12 @@ class DB
     private function setCache($sql, $data): void
     {
         if ($this->config->cacheAdapter && $this->cacheSwitch) {
-            $this->config->cacheAdapter->set(($this->cacheKey ? '[' . $this->cacheKey . ']' : '') . $sql, $data, $this->cacheTtl);
+            $this->config->cacheAdapter->set(($this->cacheSpaceKey ? '[' . $this->cacheSpaceKey . ']' : '') . $sql, $data, $this->cacheTtl);
         }
         // resetCache
         $this->cacheSwitch = false;
         $this->cacheTtl = null;
-        $this->cacheKey = '';
+        $this->cacheSpaceKey = '';
     }
 
     /**
@@ -1208,14 +1208,14 @@ class DB
 
     /**
      * @param int|DateInterval|null $ttl
-     * @param string $key
+     * @param string $spaceKey
      * @return $this
      */
-    final public function cache(null|int|DateInterval $ttl = null, string $key = ''): self
+    final public function cache(null|int|DateInterval $ttl = null, string $spaceKey = ''): self
     {
         $this->cacheSwitch = true;
         $this->cacheTtl = $ttl;
-        $this->cacheKey = $key;
+        $this->cacheSpaceKey = $spaceKey;
         return $this;
     }
 
