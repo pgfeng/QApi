@@ -11,7 +11,7 @@ class Event implements \ArrayAccess, \IteratorAggregate, StoppableEventInterface
     /**
      * @var string|mixed
      */
-    protected string $subject;
+    protected string|null $subject;
 
     /**
      * @var array
