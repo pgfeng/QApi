@@ -29,9 +29,12 @@ class Application
      * @param string|bool $nameSpace
      * @param array $allowOrigin
      * @param array $allowHeaders
+     * @param array $allowMethods
      * @param string $applicationName
      * @param string $scheme
      * @param string $docPassword
+     * @param array $disabledLogType
+     * @param array $disabledLogLevel
      */
     public function __construct(public string      $appDir,
                                 public string      $runMode,

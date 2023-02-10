@@ -20,7 +20,6 @@ use QApi\Exception\UserErrorException;
 use QApi\Exception\UserNoticeException;
 use QApi\Exception\UserWarningException;
 use QApi\Exception\WarningException;
-use QApi\Route\Methods;
 
 
 class App
@@ -34,6 +33,7 @@ class App
     public static ?string $uploadDir = null;
     public static ?\Closure $getVersionFunction = null;
     public static ?string $apiPassword = null;
+
 
     /**
      * 获取当前版本
@@ -58,12 +58,10 @@ class App
      * @param string $runtimeDir
      * @param string $uploadDir
      * @param \Closure|null $getVersionFunction
-     * @param array $allowMethods
      * @param array $allowHeaders
      * @param string $apiPassword
      * @param Request|null $request
      * @return Response|string
-     * @throws ErrorException|\JsonException
      */
     public static function run(?string $timezone = 'Asia/Shanghai', string $routeDir = 'routes', string $configDir = 'config', string $runtimeDir =
     'runtime', string                  $uploadDir = 'Upload', ?\Closure $getVersionFunction = null, array                           $allowHeaders = ['*'], string $apiPassword = '', Request $request = null): Response|string
