@@ -141,7 +141,8 @@ class RunSwooleCommand extends CommandHandler
             'http_index_files' => ['index.html', 'index.htm'],
             'daemonize' => in_array('--daemonize', $argv, true) || in_array('-d', $argv, true),
             'log_date_format' => '%Y-%m-%d %H:%M:%S',
-            'worker_num' => 8,
+            'worker_num' => ceil(swoole_cpu_num()*0.7),
+            'reload_async' => true,
         ];
         $http->set($options);
         $http->on("start", function ($server) use ($appDomain, $lockFile, $argv) {
@@ -203,13 +204,14 @@ class RunSwooleCommand extends CommandHandler
                 }
             }
             $response->end($res);
-//            $this->reload($http, $appDomain);
+            $this->reload($http, $appDomain);
 
         });
-//        $http->on('Close', function ($server, $fd) {
-//            $this->cache->set('runNumber', $this->cache->get('runNumber') - 1);
-//            $server->close($fd, true);
-//        });
+        $http->on('Close', function ($server, $fd) use ($appDomain) {
+            $this->cache->set('runNumber', $this->cache->get('runNumber') - 1);
+////            $server->close($fd, true);
+//            $this->reload($server, $appDomain);
+        });
         $http->start();
         $this->cache->set('reloadTime', time());
         return null;
