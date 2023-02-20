@@ -6,9 +6,9 @@ namespace QApi;
 
 use Closure;
 use ErrorException;
+use Exception;
 use JetBrains\PhpStorm\NoReturn;
 use JsonException;
-use Opis\Closure\SerializableClosure;
 use QApi;
 use QApi\Attribute\Utils;
 use QApi\Cache\Cache;
@@ -17,10 +17,8 @@ use QApi\Cache\CacheInterface;
 use QApi\Cache\FileSystemAdapter;
 use QApi\Config\Cache\FileSystem;
 use QApi\Exception\CompileErrorException;
-use QApi\Http\Request\MethodsEnum;
 use ReflectionClass;
 use ReflectionException;
-use RuntimeException;
 
 /**
  * Class Router
@@ -238,7 +236,7 @@ class Router
             $cache->set($request->get->get('type') . '/' . $request->get->get('path') . '#___TAGS', $tags);
             try {
                 $cache->delete($request->get->get('type') . '/' . $request->get->get('path') . '#---' . $tagName);
-            } catch (\Exception) {
+            } catch (Exception) {
             }
             return $response->setData(true)
                 ->setMsg('Deleting interface document example succeeded!');
@@ -301,6 +299,7 @@ class Router
         if (self::$routerBuilderCache->get('@buildTime', 0) >= time() - 3) {
             return;
         }
+        self::$routerBuilderCache->set('@buildTime', time());
         $lockFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() .
             DIRECTORY_SEPARATOR
             . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'runBuildRoute.lock';
@@ -316,11 +315,11 @@ class Router
         $nameSpace .= '\\' . $version_path;
         try {
             $data = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Route/buildTemplate.php');
-            $new_data = self::build(scandir($base_path), $base_path, $nameSpace, $base_path, $data);
+            $new_data = '';
+            self::build(scandir($base_path), $base_path, $nameSpace, $base_path, $new_data);
             $save_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() . DIRECTORY_SEPARATOR
                 . Config::version()->versionDir . DIRECTORY_SEPARATOR . 'builder.php';
-            @file_put_contents($save_path, $new_data);
-            self::$routerBuilderCache->set('@buildTime', time());
+            @file_put_contents($save_path, $data.$new_data);
         } catch (ReflectionException $e) {
             $message = $e->getMessage();
             $file = $e->getFile();
@@ -331,7 +330,7 @@ class Router
         }
         try {
             unlink($lockFile);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
     }
 
@@ -348,7 +347,7 @@ class Router
         foreach ($san_files as $path) {
             if ($path !== '.' && $path !== '..') {
                 if (is_dir($parent_path . $path)) {
-                    $data .= self::build(scandir($parent_path . $path . DIRECTORY_SEPARATOR), $parent_path . $path . DIRECTORY_SEPARATOR,
+                    self::build(scandir($parent_path . $path . DIRECTORY_SEPARATOR), $parent_path . $path . DIRECTORY_SEPARATOR,
                         $nameSpace, $base_path, $data);
                 } else if (preg_match('#(.+)Controller.php#', $path, $match)) {
                     $path_class = $nameSpace . '\\' . str_replace('/', '\\', str_replace($base_path, '',
