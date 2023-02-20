@@ -19,9 +19,6 @@ class RouteBuildCommand extends CommandHandler
 
     public function handler(array $argv): mixed
     {
-        /**
-         * @var Config\Application[]
-         */
         $apps = Config::apps();
         $this->command->cli->info('Start generating application route!');
         $this->command->cli->info()->border();
@@ -46,10 +43,5 @@ class RouteBuildCommand extends CommandHandler
         $this->command->cli->info('All application routes have been generated!');
         (new RouteCacheClearCommand($this->command, []))->handler($argv);
         return null;
-    }
-
-    public function help(): mixed
-    {
-        // TODO: Implement help() method.
     }
 }

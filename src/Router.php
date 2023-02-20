@@ -12,6 +12,10 @@ use Opis\Closure\SerializableClosure;
 use QApi;
 use QApi\Attribute\Utils;
 use QApi\Cache\Cache;
+use QApi\Cache\CacheContainer;
+use QApi\Cache\CacheInterface;
+use QApi\Cache\FileSystemAdapter;
+use QApi\Config\Cache\FileSystem;
 use QApi\Exception\CompileErrorException;
 use QApi\Http\Request\MethodsEnum;
 use ReflectionClass;
@@ -49,6 +53,12 @@ class Router
 
     public static ?Request $request = null;
 
+
+    /**
+     * @var CacheInterface|null
+     */
+    public static ?CacheInterface $routerBuilderCache = null;
+
     /**
      * 存储路由
      * 如果当前请求类型不存在会自动向ALL中查找
@@ -84,7 +94,7 @@ class Router
         Logger::router($request->method . ' -> ' . $request->domain() . $request->requestUri);
 //            Logger::info("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Request Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
         Logger::request('Headers -> ' . $request->header);
-        if ($request->input){
+        if ($request->input) {
             Logger::request('InputData -> ' . $request->input);
         }
 //            Logger::info(' RequestMethod' . ' -> ' . $this->method);
@@ -269,10 +279,6 @@ class Router
                     . str_replace('.', '', $version->versionName) . DIRECTORY_SEPARATOR;
                 mkPathDir($base_path . 'builder.php');
                 $data = glob($base_path . '*.php');
-                while ((App::$app->getRunMode() === QApi\Enumeration\RunMode::DEVELOPMENT && !file_exists($base_path .
-                            'route.lock')) || !in_array($base_path . 'builder.php', $data)) {
-                    $data = glob($base_path . '*.php');
-                }
                 foreach ($data as $file) {
                     include $file;
                 }
@@ -284,61 +290,37 @@ class Router
         }
     }
 
-    public static function removeLockFile(): void
-    {
-        $lockFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() .
-            DIRECTORY_SEPARATOR
-            . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'runBuildRoute.lock';
-        try {
-            unlink($lockFile);
-        } catch (\Exception) {
-        }
-    }
-
     /**
      * @param string $nameSpace
      */
     #[NoReturn] public static function BuildRoute(string $nameSpace): void
     {
+        if (!self::$routerBuilderCache) {
+            self::$routerBuilderCache = new CacheContainer(new FileSystemAdapter(new FileSystem(PROJECT_PATH . \QApi\App::$runtimeDir . DIRECTORY_SEPARATOR . '.routerBuilder')), 'RouterBuilder');
+        }
+        if (self::$routerBuilderCache->get('@buildTime', 0) >= time() - 3) {
+            return;
+        }
         $lockFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() .
             DIRECTORY_SEPARATOR
             . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'runBuildRoute.lock';
-        $runtimeFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() .
-            DIRECTORY_SEPARATOR
-            . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'route.lock';
-        if (file_exists($runtimeFile)) {
-            try {
-                unlink($runtimeFile);
-            } catch (\Exception $e) {
-            }
-        }
         if (file_exists($lockFile)) {
             return;
         }
         mkPathDir($lockFile);
         touch($lockFile);
-        $builder_file_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() .
-            DIRECTORY_SEPARATOR
-            . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builder.php';
         $version_path = str_replace('.', '', App::getVersion());
         $base_path = PROJECT_PATH . Config::$app->getDir() . DIRECTORY_SEPARATOR . $version_path .
             DIRECTORY_SEPARATOR;
         mkPathDir($base_path . 'builder.php');
         $nameSpace .= '\\' . $version_path;
         try {
-            try {
-                rename($builder_file_path, (PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() .
-                    DIRECTORY_SEPARATOR
-                    . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builderTmp.php'));
-            } catch (\Exception) {
-            }
-            self::build(scandir($base_path), $base_path, $nameSpace, $base_path);
-            try {
-                unlink(PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() .
-                    DIRECTORY_SEPARATOR
-                    . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'builderTmp.php');
-            } catch (\Exception) {
-            }
+            $data = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Route/buildTemplate.php');
+            $new_data = self::build(scandir($base_path), $base_path, $nameSpace, $base_path, $data);
+            $save_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() . DIRECTORY_SEPARATOR
+                . Config::version()->versionDir . DIRECTORY_SEPARATOR . 'builder.php';
+            @file_put_contents($save_path, $new_data);
+            self::$routerBuilderCache->set('@buildTime', time());
         } catch (ReflectionException $e) {
             $message = $e->getMessage();
             $file = $e->getFile();
@@ -349,7 +331,6 @@ class Router
         }
         try {
             unlink($lockFile);
-            touch($runtimeFile);
         } catch (\Exception $e) {
         }
     }
@@ -362,31 +343,31 @@ class Router
      * @param string $base_path
      * @throws ReflectionException
      */
-    public static function build($san_files, string $parent_path, string $nameSpace, string $base_path): void
+    public static function build($san_files, string $parent_path, string $nameSpace, string $base_path, &$data): string
     {
         foreach ($san_files as $path) {
             if ($path !== '.' && $path !== '..') {
                 if (is_dir($parent_path . $path)) {
-                    self::build(scandir($parent_path . $path . DIRECTORY_SEPARATOR), $parent_path . $path . DIRECTORY_SEPARATOR,
-                        $nameSpace, $base_path);
+                    $data .= self::build(scandir($parent_path . $path . DIRECTORY_SEPARATOR), $parent_path . $path . DIRECTORY_SEPARATOR,
+                        $nameSpace, $base_path, $data);
                 } else if (preg_match('#(.+)Controller.php#', $path, $match)) {
                     $path_class = $nameSpace . '\\' . str_replace('/', '\\', str_replace($base_path, '',
                             $parent_path)) . $match[1] . 'Controller';
                     $refClass = new ReflectionClass(new $path_class);
                     $methods = $refClass->getMethods();
                     foreach ($methods as $method) {
-                        if (substr($method->getName(), -6) === 'Action') {
+                        if (str_ends_with($method->getName(), 'Action')) {
                             $methodAttributes = $method->getAttributes(QApi\Attribute\Route::class);
                             if (!$methodAttributes) {
-                                $classAttrbutes = $refClass->getAttributes(QApi\Attribute\Route::class);
-                                if ($classAttrbutes) {
-                                    foreach ($classAttrbutes as $item) {
-                                        $item->newInstance()->builder($refClass, $path_class, $method->getName(), false);
+                                $classAttributes = $refClass->getAttributes(QApi\Attribute\Route::class);
+                                if ($classAttributes) {
+                                    foreach ($classAttributes as $item) {
+                                        $data .= $item->newInstance()->builder($refClass, $path_class, $method->getName(), false, $parent_path . $path);
                                     }
                                 }
                             } else {
                                 foreach ($methodAttributes as $key => $item) {
-                                    $item->newInstance()->builder($refClass, $path_class, $method->getName());
+                                    $data .= $item->newInstance()->builder($refClass, $path_class, $method->getName(), true, $parent_path . $path);
                                 }
                             }
                         }
@@ -394,12 +375,7 @@ class Router
                 }
             }
         }
-        $save_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() . DIRECTORY_SEPARATOR
-            . Config::version()->versionDir . DIRECTORY_SEPARATOR . 'builder.php';
-        if (!file_exists($save_path)) {
-            mkPathDir($save_path);
-            @file_put_contents($save_path, file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Route/buildTemplate.php'));
-        }
+        return $data;
     }
 
     /**

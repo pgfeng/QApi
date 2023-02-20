@@ -52,7 +52,7 @@ class Config
 
     /**
      * @param bool $force 是否重新获取配置
-     * @return array
+     * @return Application[]
      */
     public static function apps(bool $force = false): array
     {
