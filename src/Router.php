@@ -299,6 +299,7 @@ class Router
         if (self::$routerBuilderCache->get('@buildTime', 0) >= time() - 3) {
             return;
         }
+        self::$routerBuilderCache->set('@buildTime', time());
         $lockFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() .
             DIRECTORY_SEPARATOR
             . str_replace('.', '', App::getVersion()) . DIRECTORY_SEPARATOR . 'runBuildRoute.lock';
@@ -319,7 +320,6 @@ class Router
             $save_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() . DIRECTORY_SEPARATOR
                 . Config::version()->versionDir . DIRECTORY_SEPARATOR . 'builder.php';
             @file_put_contents($save_path, $data.$new_data);
-            self::$routerBuilderCache->set('@buildTime', time());
         } catch (ReflectionException $e) {
             $message = $e->getMessage();
             $file = $e->getFile();
