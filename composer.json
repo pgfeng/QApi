@@ -20,7 +20,10 @@
     "doctrine/dbal": "^3.4",
     "symfony/uid": "v5.4",
     "psr/event-dispatcher": "1.0.0",
-    "phpunit/phpunit": "^9.5"
+    "phpunit/phpunit": "^9.5",
+    "react/http": "^1.8",
+    "amphp/http-server": "^2.1",
+    "amphp/http-server-form-parser": "^1.1"
   },
   "bin": [
     "src/bin/QConsole"

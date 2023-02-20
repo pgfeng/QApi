@@ -158,12 +158,11 @@ class ChainAdapter implements CacheInterface
      */
     public function has($key): bool
     {
-        $status = false;
         foreach ($this->adapters as $adapter) {
             if ($adapter->has($key)) {
                 return true;
             }
         }
-        return $status;
+        return false;
     }
 }

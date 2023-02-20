@@ -218,7 +218,7 @@ class filesModel extends Model
                             $full_path = $path;
                         }
                         mkPathDir($full_path);
-                        if (@move_uploaded_file($file['tmp_name'][$key], $full_path)) {
+                        if (@move_uploaded_file($file['tmp_name'][$key], $full_path) || @rename($file['tmp_name'][$key], $full_path)) {
                             $this->Insert([
                                 'file_name' => $file['name'][$key],
                                 'file_size' => $file['size'][$key],
@@ -275,7 +275,7 @@ class filesModel extends Model
                 $full_path = $path;
             }
             mkPathDir($full_path);
-            if (@move_uploaded_file($file['tmp_name'], $full_path)) {
+            if (@move_uploaded_file($file['tmp_name'], $full_path) || @rename($file['tmp_name'], $full_path)) {
                 $this->Insert([
                     'file_name' => $file['name'],
                     'file_size' => $file['size'],

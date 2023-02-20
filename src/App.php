@@ -137,7 +137,7 @@ class App
         }
     }
 
-    public static function clearDevBuildRouteLock()
+    public static function clearDevBuildRouteLock(): void
     {
         try {
             $lockFile = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . App::$app->getDir() .
