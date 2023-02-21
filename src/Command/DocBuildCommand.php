@@ -17,6 +17,8 @@ class DocBuildCommand extends CommandHandler
 
     public function handler($argv): mixed
     {
-        return Utils::rebuild($this->command);
+        Utils::rebuild($this->command);
+        Utils::rebuild($this->command,'@1');
+        return true;
     }
 }

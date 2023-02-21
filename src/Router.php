@@ -129,7 +129,11 @@ class Router
                 }
             }
             $cache = Cache::initialization('__document');
-            return $response->setData($cache->get('__apiDocument'))->setMsg('Successfully obtained interface document!');
+            $v = '';
+            if ($request->get->get('v')){
+                $v = '@'.$request->get->get('v');
+            }
+            return $response->setData($cache->get('__apiDocument'.$v))->setMsg('Successfully obtained interface document!');
         });
         self::get(path: '/__apiResponse.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
@@ -251,9 +255,14 @@ class Router
             if (Config::app()->getRunMode() !== QApi\Enumeration\RunMode::DEVELOPMENT) {
                 return $response->setMsg('Please refresh the API document in the development environment!')->fail();
             }
-            Utils::rebuild();
+
+            $v = '';
+            if ($request->get->get('v')){
+                $v = '@'.$request->get->get('v');
+            }
+            Utils::rebuild(version: $v);
             $cache = Cache::initialization('__document');
-            return $response->setData($cache->get('__apiDocument'))->setMsg('Successfully obtained interface document!');
+            return $response->setData($cache->get('__apiDocument'.$v))->setMsg('Successfully obtained interface document!');
         });
         if (Config::app()->getRunMode() === QApi\Enumeration\RunMode::DEVELOPMENT) {
             self::BuildRoute(Config::$app->getNameSpace());

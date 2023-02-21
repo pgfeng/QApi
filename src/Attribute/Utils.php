@@ -27,16 +27,8 @@ class Utils
     public static array $columns = [];
 
 
-    /**
-     * @return array
-     */
-    public static function loadDocument(Command $commandHandler = null):array
+    public static function v0($apps, Command $commandHandler = null): array
     {
-        $commandHandler?->info('Loading document...');
-        /**
-         * @var Config\Application[]
-         */
-        $apps = Config::apps();
         foreach ($apps as $host => $app) {
             $commandHandler?->info('Loading document for app: ' . $host);
             if (!isset(self::$docApp[$app->appDir])) {
@@ -69,7 +61,7 @@ class Utils
                                 if ($v instanceof Route || $v instanceof GetParam || $v instanceof PostParam || $v
                                     instanceof HeaderParam || $v instanceof PathParam || $v instanceof PostParamFromTableField || $v instanceof GetParamFromTableField || $v instanceof PathParamFromTableField) {
                                     if ($v instanceof Route) {
-                                        if ($v->path){
+                                        if ($v->path) {
                                             $commandHandler?->info('Loading document for route: ' . $v->path);
                                         }
                                         if ($v->path) {
@@ -87,13 +79,13 @@ class Utils
                                         if ($v->methods) {
                                             $type = $v->methods;
                                         }
-                                    }else{
-                                        $commandHandler?->info('Loading document for parameter: ' .get_class($v).'->'. $v->name);
+                                    } else {
+                                        $commandHandler?->info('Loading document for parameter: ' . get_class($v) . '->' . $v->name);
                                     }
                                     $item[$key] = $v->toArray();
                                 } else if ($v instanceof ResultDictionary || $v instanceof ResultDictionarys || $v
                                     instanceof ResultDictionaryFromTable) {
-                                    $commandHandler?->info('Loading document for result dictionary: ' .get_class($v).'->'. json_encode($data,JSON_UNESCAPED_UNICODE));
+                                    $commandHandler?->info('Loading document for result dictionary: ' . get_class($v) . '->' . json_encode($data, JSON_UNESCAPED_UNICODE));
                                     $data = $v->toArray();
                                     foreach ($data as $resultField) {
                                         if (!empty($resultField['comment'])) {
@@ -135,7 +127,7 @@ class Utils
                         unset($apis[$version->versionDir][$tag]);
                     }
                 }
-                $commandHandler?->success('Loading document completed for version: [' . $version->versionDir.']');
+                $commandHandler?->success('Loading document completed for version: [' . $version->versionDir . ']');
             }
             self::$docApp[$app->appDir][] = [
                 'host' => $host,
@@ -144,9 +136,148 @@ class Utils
                 'nameSpace' => $app->nameSpace,
                 'doc' => $apis,
             ];
-            $commandHandler?->success('Loading document completed for app: [' . $host.']');
+            $commandHandler?->success('Loading document completed for app: [' . $host . ']');
         }
         return self::$docApp;
+    }
+
+    /**
+     * V1 文档生成
+     * @param Config\Application[] $apps
+     * @param Command|null $commandHandler
+     * @return array
+     */
+    public static function v1(array $apps, Command $commandHandler = null): array
+    {
+        $appData = [];
+        $namespaces = [];
+        $doc = [];
+        foreach ($apps as $host => $app) {
+            if (!array_key_exists($app->nameSpace, $namespaces)) {
+                $namespaces[$app->nameSpace] = $app->appDir;
+            }
+            $appData[$host] = [
+                'scheme' => $app->scheme,
+                'host' => $host,
+                'appDir' => $app->appDir,
+                'nameSpace' => $app->nameSpace,
+                'runMode' => $app->runMode,
+                'defaultVersionName' => $app->defaultVersionName,
+                'allowOrigin' => $app->allowOrigin,
+                'allowHeaders' => $app->allowHeaders,
+                'allowMethods' => $app->allowMethods,
+            ];
+        }
+        foreach ($namespaces as $namespace => $appDir) {
+            $versions = Config::versions($app->runMode);
+            foreach ($versions as $version) {
+                $path = PROJECT_PATH . $appDir . DIRECTORY_SEPARATOR . $version->versionDir .
+                    DIRECTORY_SEPARATOR;
+                $doc[$namespace][$version->versionName] = [];
+                $data = [];
+                self::buildVersionDoc(scandir($path), $path, $app->nameSpace . '\\' . $version->versionDir,
+                    $version->versionDir, $data, $path);
+                foreach ($data as $controller => $methods) {
+                    $commandHandler?->info('Loading document for controller: ' . $controller);
+                    foreach ($methods as $mname => $attr) {
+                        $commandHandler?->info('Loading document for method: ' . $mname);
+                        $path = '';
+                        $type = '';
+                        $tag = '';
+                        $summary = '';
+                        $description = '';
+                        $resultDictionary = [];
+                        foreach ($attr as $item) {
+                            foreach ($item as $key => $v) {
+                                if ($v instanceof Route || $v instanceof GetParam || $v instanceof PostParam || $v
+                                    instanceof HeaderParam || $v instanceof PathParam || $v instanceof PostParamFromTableField || $v instanceof GetParamFromTableField || $v instanceof PathParamFromTableField) {
+                                    if ($v instanceof Route) {
+                                        if ($v->path) {
+                                            $commandHandler?->info('Loading document for route: ' . $v->path);
+                                        }
+                                        if ($v->path) {
+                                            $path = $v->path;
+                                        }
+                                        if (!$tag && $v->tag) {
+                                            $tag = $v->tag;
+                                        }
+                                        if ($v->summary) {
+                                            $summary = $v->summary;
+                                        }
+                                        if ($v->description) {
+                                            $description = $v->description;
+                                        }
+                                        if ($v->methods) {
+                                            $type = $v->methods;
+                                        }
+                                    } else {
+                                        $commandHandler?->info('Loading document for parameter: ' . get_class($v) . '->' . $v->name);
+                                    }
+                                    $item[$key] = $v->toArray();
+                                } else if ($v instanceof ResultDictionary || $v instanceof ResultDictionarys || $v
+                                    instanceof ResultDictionaryFromTable) {
+                                    $commandHandler?->info('Loading document for result dictionary: ' . get_class($v) . '->' . json_encode($data, JSON_UNESCAPED_UNICODE));
+                                    $data = $v->toArray();
+                                    foreach ($data as $resultField) {
+                                        if (!empty($resultField['comment'])) {
+                                            if (!isset($resultDictionary[$resultField['tag']])) {
+                                                $resultDictionary[$resultField['tag']] = [];
+                                            }
+                                            $resultDictionary[$resultField['tag']][] = [
+                                                'name' => $resultField['name'],
+                                                'comment' => $resultField['comment'],
+                                                'type' => $resultField['type'],
+                                            ];
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (!$tag) {
+                            $tag = ['Default'];
+                        }
+                        if ($summary) {
+                            $doc[$namespace][$version->versionName][] = [
+                                'summary' => $summary,
+                                'moduleKey' => implode('-', $tag),
+                                'modules' => $tag,
+                                'type' => $type,
+                                'description' => $description,
+                                'path' => $path ?: ('/' . $controller . '/' . $mname),
+                                'systemPath' => '/' . $controller . '/' . $mname,
+                                'params' => $attr,
+                                'resultDictionary' => $resultDictionary,
+                                'response' => null,
+                            ];
+                        }
+                    }
+                }
+                foreach ($doc[$namespace][$version->versionName] as $tag => $docArray) {
+                    if (!count($docArray)) {
+                        unset($doc[$namespace][$version->versionName][$tag]);
+                    }
+                }
+                $commandHandler?->success('Loading document completed for version: [' . $version->versionDir . ']');
+            }
+        }
+        return [
+            'Applications' => $appData,
+            'Documents' => $doc,
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function loadDocument(Command $commandHandler = null, string $version = ''): array
+    {
+        $commandHandler?->info('Loading document...');
+        $apps = Config::apps();
+        if (!$version) {
+            return self::v0($apps, $commandHandler);
+        } else {
+            return self::v1($apps, $commandHandler);
+        }
     }
 
     /**
@@ -155,11 +286,11 @@ class Utils
      * @throws \ErrorException
      * @throws \QApi\Exception\CacheErrorException
      */
-    public static function rebuild(Command $commandHandler = null): mixed
+    public static function rebuild(Command $commandHandler = null, string $version = ''): mixed
     {
-        self::loadDocument($commandHandler);
+        $data = self::loadDocument($commandHandler, $version);
         $cache = Cache::initialization('__document');
-        $cache->set('__apiDocument', self::$docApp);
+        $cache->set('__apiDocument' . $version, $data);
         return null;
     }
 
@@ -173,7 +304,7 @@ class Utils
      * @return void
      */
     public static function buildVersionDoc(array $san_files, string $parent_path, string $nameSpace, string $versionDir, array &$data =
-    [], string                                   $base_path = ''): void
+    [], string                                   $base_path = ''): array
     {
         foreach ($san_files as $path) {
             if ($path !== '.' && $path !== '..') {
@@ -186,15 +317,19 @@ class Utils
                 }
             }
         }
+        return $data;
     }
 
-    public static function getDocAttribute(string $className)
+    /**
+     * @throws ReflectionException
+     */
+    public static function getDocAttribute(string $className): array
     {
         $data = [];
         $refClass = new ReflectionClass(new $className);
         $actions = $refClass->getMethods();
         foreach ($actions as $method) {
-            if (substr($method->getName(), -6) === 'Action') {
+            if (str_ends_with($method->getName(), 'Action')) {
                 $data[substr($method->getName(), 0, -6)] = self::getAttribute($className,
                     $method->getName(), [
                         Route::class,

@@ -150,7 +150,7 @@ class Config
 
     /**
      * @param string|null $runMode
-     * @return mixed
+     * @return Version[]
      * @throws ErrorException
      */
     public static function versions(string $runMode = null): mixed
