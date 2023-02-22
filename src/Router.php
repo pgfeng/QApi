@@ -123,7 +123,7 @@ class Router
         });
         self::get(path: '/__apis.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
-                $password = md5(trim($request->get->get('token')));
+                $password = md5(trim($request->get->get('token','')));
                 if ($password !== md5(md5(App::$apiPassword))) {
                     return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
@@ -137,7 +137,7 @@ class Router
         });
         self::get(path: '/__apiResponse.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
-                $password = md5(trim($request->get->get('token')));
+                $password = md5(trim($request->get->get('token','')));
                 if ($password !== md5(md5(App::$apiPassword))) {
                     return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
@@ -148,7 +148,7 @@ class Router
         });
         self::post(path: '/__apiResponse.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
-                $password = md5(trim($request->get->get('token')));
+                $password = md5(trim($request->get->get('token','')));
                 if ($password !== md5(md5(App::$apiPassword))) {
                     return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
@@ -164,7 +164,7 @@ class Router
         });
         self::get(path: '/__apiResponses.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
-                $password = md5(trim($request->get->get('token')));
+                $password = md5(trim($request->get->get('token','')));
                 if ($password !== md5(md5(App::$apiPassword))) {
                     return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
@@ -188,7 +188,7 @@ class Router
         });
         self::post(path: '/__apiResponses.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
-                $password = md5(trim($request->get->get('token')));
+                $password = md5(trim($request->get->get('token','')));
                 if ($password !== md5(md5(App::$apiPassword))) {
                     return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
@@ -216,7 +216,7 @@ class Router
         });
         self::delete(path: '/__apiResponses.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
-                $password = md5(trim($request->get->get('token')));
+                $password = md5(trim($request->get->get('token','')));
                 if ($password !== md5(md5(App::$apiPassword))) {
                     return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
@@ -247,7 +247,7 @@ class Router
         });
         self::post(path: '/__apis.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
-                $password = md5(trim($request->get->get('token')));
+                $password = md5(trim($request->get->get('token','')));
                 if ($password !== md5(md5(App::$apiPassword))) {
                     return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }

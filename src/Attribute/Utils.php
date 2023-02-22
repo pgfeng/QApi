@@ -175,7 +175,7 @@ class Utils
                     DIRECTORY_SEPARATOR;
                 $doc[$namespace][$version->versionName] = [];
                 $data = [];
-                self::buildVersionDoc(scandir($path), $path, $app->nameSpace . '\\' . $version->versionDir,
+                self::buildVersionDoc(scandir($path), $path, $namespace . '\\' . $version->versionDir,
                     $version->versionDir, $data, $path);
                 foreach ($data as $controller => $methods) {
                     $commandHandler?->info('Loading document for controller: ' . $controller);
