@@ -123,21 +123,21 @@ class Router
         });
         self::get(path: '/__apis.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
-                $password = md5(trim($request->get->get('token','')));
+                $password = md5(trim($request->get->get('token', '')));
                 if ($password !== md5(md5(App::$apiPassword))) {
                     return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
             }
             $cache = Cache::initialization('__document');
             $v = '';
-            if ($request->get->get('v')){
-                $v = '@'.$request->get->get('v');
+            if ($request->get->get('v')) {
+                $v = '@' . $request->get->get('v');
             }
-            return $response->setData($cache->get('__apiDocument'.$v))->setMsg('Successfully obtained interface document!');
+            return $response->setData($cache->get('__apiDocument' . $v))->setMsg('Successfully obtained interface document!');
         });
         self::get(path: '/__apiResponse.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
-                $password = md5(trim($request->get->get('token','')));
+                $password = md5(trim($request->get->get('token', '')));
                 if ($password !== md5(md5(App::$apiPassword))) {
                     return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
@@ -148,7 +148,7 @@ class Router
         });
         self::post(path: '/__apiResponse.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
-                $password = md5(trim($request->get->get('token','')));
+                $password = md5(trim($request->get->get('token', '')));
                 if ($password !== md5(md5(App::$apiPassword))) {
                     return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
@@ -164,18 +164,20 @@ class Router
         });
         self::get(path: '/__apiResponses.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
-                $password = md5(trim($request->get->get('token','')));
+                $password = md5(trim($request->get->get('token', '')));
                 if ($password !== md5(md5(App::$apiPassword))) {
                     return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
             }
             $cache = Cache::initialization('__document');
-            $default = $cache->get($request->get->get('type') . '/' . $request->get->get('path'));
             $data = [];
-            if ($default) {
-                $data['SUCCESS'] = $default;
+            if (!$request->get->get('v', '')) {
+                $default = $cache->get($request->get->get('type') . '/' . $request->get->get('path'));
+                if ($default) {
+                    $data['SUCCESS'] = $default;
+                }
+                unset($default);
             }
-            unset($default);
             $tags = $cache->get($request->get->get('type') . '/' . $request->get->get('path') . '#___TAGS');
             if (!$tags) {
                 $tags = [];
@@ -188,7 +190,7 @@ class Router
         });
         self::post(path: '/__apiResponses.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
-                $password = md5(trim($request->get->get('token','')));
+                $password = md5(trim($request->get->get('token', '')));
                 if ($password !== md5(md5(App::$apiPassword))) {
                     return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
@@ -209,7 +211,10 @@ class Router
                 $tags[] = $tagName;
             }
             $cache->set($request->get->get('type') . '/' . $request->get->get('path') . '#___TAGS', $tags);
-            $cache->set($request->get->get('type') . '/' . $request->get->get('path'), $request->post->get('response'));
+
+            if (!$request->get->get('v', '')) {
+                $cache->set($request->get->get('type') . '/' . $request->get->get('path'), $request->post->get('response'));
+            }
             return $response->setData(
                 $cache->set($request->get->get('type') . '/' . $request->get->get('path') . '#---' . $tagName, $request->post->get('response'))
             )
@@ -217,7 +222,7 @@ class Router
         });
         self::delete(path: '/__apiResponses.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
-                $password = md5(trim($request->get->get('token','')));
+                $password = md5(trim($request->get->get('token', '')));
                 if ($password !== md5(md5(App::$apiPassword))) {
                     return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
@@ -248,7 +253,7 @@ class Router
         });
         self::post(path: '/__apis.json', callback: function (Request $request, Response $response) {
             if (App::$apiPassword) {
-                $password = md5(trim($request->get->get('token','')));
+                $password = md5(trim($request->get->get('token', '')));
                 if ($password !== md5(md5(App::$apiPassword))) {
                     return $response->setMsg('The current request requires login！')->setCode(403)->fail();
                 }
@@ -257,12 +262,12 @@ class Router
                 return $response->setMsg('Please refresh the API document in the development environment!')->fail();
             }
             $v = '';
-            if ($request->get->get('v')){
-                $v = '@'.$request->get->get('v');
+            if ($request->get->get('v')) {
+                $v = '@' . $request->get->get('v');
             }
             Utils::rebuild(version: $v);
             $cache = Cache::initialization('__document');
-            return $response->setData($cache->get('__apiDocument'.$v))->setMsg('Successfully obtained interface document!');
+            return $response->setData($cache->get('__apiDocument' . $v))->setMsg('Successfully obtained interface document!');
         });
         if (Config::app()->getRunMode() === QApi\Enumeration\RunMode::DEVELOPMENT) {
             self::BuildRoute(Config::$app->getNameSpace());
@@ -303,7 +308,7 @@ class Router
     #[NoReturn] public static function BuildRoute(string $nameSpace): void
     {
         if (!self::$routerBuilderCache) {
-            self::$routerBuilderCache = new CacheContainer(new FileSystemAdapter(new FileSystem(PROJECT_PATH . \QApi\App::$runtimeDir . DIRECTORY_SEPARATOR . '.routerBuilder')), 'RouterBuilder',disableLog: true);
+            self::$routerBuilderCache = new CacheContainer(new FileSystemAdapter(new FileSystem(PROJECT_PATH . \QApi\App::$runtimeDir . DIRECTORY_SEPARATOR . '.routerBuilder')), 'RouterBuilder', disableLog: true);
         }
         if (self::$routerBuilderCache->get('@buildTime', 0) >= time() - 3) {
             return;
@@ -328,7 +333,7 @@ class Router
             self::build(scandir($base_path), $base_path, $nameSpace, $base_path, $new_data);
             $save_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() . DIRECTORY_SEPARATOR
                 . Config::version()->versionDir . DIRECTORY_SEPARATOR . 'builder.php';
-            @file_put_contents($save_path, $data.$new_data);
+            @file_put_contents($save_path, $data . $new_data);
         } catch (ReflectionException $e) {
             $message = $e->getMessage();
             $file = $e->getFile();
