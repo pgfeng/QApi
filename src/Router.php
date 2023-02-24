@@ -209,6 +209,7 @@ class Router
                 $tags[] = $tagName;
             }
             $cache->set($request->get->get('type') . '/' . $request->get->get('path') . '#___TAGS', $tags);
+            $cache->set($request->get->get('type') . '/' . $request->get->get('path'), $request->post->get('response'));
             return $response->setData(
                 $cache->set($request->get->get('type') . '/' . $request->get->get('path') . '#---' . $tagName, $request->post->get('response'))
             )
@@ -255,7 +256,6 @@ class Router
             if (Config::app()->getRunMode() !== QApi\Enumeration\RunMode::DEVELOPMENT) {
                 return $response->setMsg('Please refresh the API document in the development environment!')->fail();
             }
-
             $v = '';
             if ($request->get->get('v')){
                 $v = '@'.$request->get->get('v');
