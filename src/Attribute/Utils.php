@@ -65,7 +65,7 @@ class Utils
                                             $commandHandler?->info('Loading document for route: ' . $v->path);
                                         }
                                         if ($v->path) {
-                                            $path = $v->path;
+                                            $path .= $v->path;
                                         }
                                         if (!$tag && $v->tag) {
                                             $tag = implode('-', $v->tag);
@@ -175,6 +175,8 @@ class Utils
                     DIRECTORY_SEPARATOR;
                 $doc[$namespace][$version->versionName] = [];
                 $data = [];
+                if (!file_exists($path))
+                    continue;
                 self::buildVersionDoc(scandir($path), $path, $namespace . '\\' . $version->versionDir,
                     $version->versionDir, $data, $path);
                 foreach ($data as $controller => $methods) {
@@ -192,11 +194,16 @@ class Utils
                                 if ($v instanceof Route || $v instanceof GetParam || $v instanceof PostParam || $v
                                     instanceof HeaderParam || $v instanceof PathParam || $v instanceof PostParamFromTableField || $v instanceof GetParamFromTableField || $v instanceof PathParamFromTableField) {
                                     if ($v instanceof Route) {
-                                        if ($v->path) {
-                                            $commandHandler?->info('Loading document for route: ' . $v->path);
+                                        if($path){
+                                            if (!str_ends_with($path, '/')){
+                                                $path.='/';
+                                            }
                                         }
                                         if ($v->path) {
-                                            $path = $v->path;
+                                            $path .= $v->path;
+                                        }
+                                        if ($v->path) {
+                                            $commandHandler?->info('Loading document for route: ' . $path);
                                         }
                                         if (!$tag && $v->tag) {
                                             $tag = $v->tag;
@@ -390,6 +397,7 @@ class Utils
         $classAttributes = $refClass->getAttributes();
         $data = [];
         if ($classAttributes) {
+            $classRoute = $refClass->getAttributes(Route::class);
             foreach ($classAttributes as $item) {
                 $newInstance = $item->newInstance();
                 if ($attributeFilter && in_array($item->getName(), $attributeFilter, true)) {
@@ -398,6 +406,7 @@ class Utils
                     } else {
                         $data[$item->getName()][] = $newInstance;
                     }
+
                     if ($item->getName() === Route::class && $newInstance->middleware) {
                         self::margeMiddleware($newInstance->middleware, $data, $attributeFilter);
                     }
