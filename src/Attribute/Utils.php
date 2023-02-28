@@ -61,6 +61,11 @@ class Utils
                                 if ($v instanceof Route || $v instanceof GetParam || $v instanceof PostParam || $v
                                     instanceof HeaderParam || $v instanceof PathParam || $v instanceof PostParamFromTableField || $v instanceof GetParamFromTableField || $v instanceof PathParamFromTableField) {
                                     if ($v instanceof Route) {
+                                        if($path){
+                                            if (!str_ends_with($path, '/')){
+                                                $path.='/';
+                                            }
+                                        }
                                         if ($v->path) {
                                             $commandHandler?->info('Loading document for route: ' . $v->path);
                                         }
