@@ -219,7 +219,7 @@ class Request
         if (stripos($this->server->get('REQUEST_URI'), '?') !== false) {
             return $this->server->get('REQUEST_URI');
         } else {
-            return $this->server->get('REQUEST_URI') . ($this->get->count() ? ('?' . http_build_query($this->get)) : '');
+            return $this->server->get('REQUEST_URI') . ($this->get->count() ? ('?' . http_build_query($this->get->toArray())) : '');
         }
     }
 
