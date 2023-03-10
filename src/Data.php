@@ -96,7 +96,13 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function column(string $column_key, string|null $index_key = null): array
     {
-        return array_column($this->getArrayCopy(), $column_key, $index_key);
+        $array = $this->getArrayCopy();
+        foreach ($array as $key => $value) {
+            if (in_array(ArrayObject::class, array_keys(class_parents($value)))) {
+                $array[$key] = $value->getArrayCopy();
+            }
+        }
+        return array_column($array, $column_key, $index_key);
     }
 
     /**
