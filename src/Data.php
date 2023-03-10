@@ -85,11 +85,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function offsetGet(mixed $key): mixed
     {
-        try {
-            return parent::offsetGet($key);
-        } catch (\Exception) {
-            return null;
-        }
+        return parent::offsetGet($key);
     }
 
     /**
@@ -100,15 +96,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function column(string $column_key, string|null $index_key = null): array
     {
-        $array = $this->getArrayCopy();
-        foreach ($array as $key => $value) {
-            if (in_array(ArrayObject::class, array_keys(class_parents($value)))) {
-                $array[$key] = $value->getArrayCopy();
-            } else if (!is_array($value)) {
-                throw new \ErrorException('Wrong data format');
-            }
-        }
-        return array_column($array, $column_key, $index_key);
+        return array_column($this->getArrayCopy(), $column_key, $index_key);
     }
 
     /**
@@ -116,9 +104,13 @@ class Data extends ArrayObject implements JsonSerializableAlias
      * @param array $data
      * @return array
      */
-    public function merge(array $data): array
+    public function merge(array ...$data): array
     {
-        return array_merge($this->getArrayCopy(), $data);
+        $array = $this->getArrayCopy();
+        foreach ($data as $item) {
+            $array = array_merge($array, $item);
+        }
+        return $array;
     }
 
     /**
@@ -126,9 +118,11 @@ class Data extends ArrayObject implements JsonSerializableAlias
      * @param mixed $data
      * @return void
      */
-    public function push(mixed $data): void
+    public function push(mixed ...$data): void
     {
-        $this[] = $data;
+        $array = $this->getArrayCopy();
+        array_push($array, ...$data);
+        $this->exchangeArray($array);
     }
 
     /**
@@ -197,10 +191,11 @@ class Data extends ArrayObject implements JsonSerializableAlias
      * @param $key
      * @return void
      */
-    public function remove($key): void
+    public function remove(...$key): void
     {
-        if (isset($this[$key]))
-            unset($this[$key]);
+        foreach ($key as $k) {
+            unset($this[$k]);
+        }
     }
 
     /**
@@ -210,7 +205,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
     public function batchRemove(iterable $keys): void
     {
         foreach ($keys as $key) {
-            $this->remove($key);
+            unset($this[$key]);
         }
     }
 
@@ -218,9 +213,14 @@ class Data extends ArrayObject implements JsonSerializableAlias
      * @param $key
      * @return bool
      */
-    public function has($key): bool
+    public function has(...$key): bool
     {
-        return isset($this[$key]);
+        foreach ($key as $k) {
+            if (!isset($this[$k])) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
