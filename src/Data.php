@@ -81,11 +81,15 @@ class Data extends ArrayObject implements JsonSerializableAlias
 
     /**
      * @param mixed $key
-     * @return mixed
+     * @return string|array|null
      */
     public function offsetGet(mixed $key): mixed
     {
-        return parent::offsetGet($key);
+        if ($this->has($key)) {
+            return parent::offsetGet($key);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -165,13 +169,13 @@ class Data extends ArrayObject implements JsonSerializableAlias
 
     /**
      * 获取数据
-     * @param string|bool|null $key
+     * @param string|null $key
      * @param null $default_value
-     * @return null|string|array
+     * @return string|array|null
      */
-    public function get(string|bool|null $key = false, $default_value = null): null|string|array
+    public function get(string $key = null, $default_value = null): string|array|null
     {
-        if ($key === null || $key === false) {
+        if ($key === null) {
             return $this->getArrayCopy();
         }
         return $this[$key] ?? $default_value;
@@ -210,9 +214,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function batchRemove(iterable $keys): void
     {
-        foreach ($keys as $key) {
-            unset($this[$key]);
-        }
+        $this->remove(...$keys);
     }
 
     /**
