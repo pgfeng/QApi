@@ -199,24 +199,26 @@ class Data extends ArrayObject implements JsonSerializableAlias
 
     /**
      * @param $key
-     * @return void
+     * @return self
      */
-    public function remove(...$key): void
+    public function remove(...$key): self
     {
         foreach ($key as $k) {
-            if (isset($this[$k])){
+            if (isset($this[$k])) {
                 unset($this[$k]);
             }
         }
+        return $this;
     }
 
     /**
+     * @deprecated Please use remove
      * @param iterable $keys
-     * @return void
+     * @return self
      */
-    public function batchRemove(iterable $keys): void
+    public function batchRemove(iterable $keys): self
     {
-        $this->remove(...$keys);
+        return $this->remove(...$keys);
     }
 
     /**
