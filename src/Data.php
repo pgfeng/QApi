@@ -204,7 +204,9 @@ class Data extends ArrayObject implements JsonSerializableAlias
     public function remove(...$key): void
     {
         foreach ($key as $k) {
-            unset($this[$k]);
+            if (isset($this[$k])){
+                unset($this[$k]);
+            }
         }
     }
 
