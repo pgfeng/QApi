@@ -198,6 +198,20 @@ class Data extends ArrayObject implements JsonSerializableAlias
     }
 
     /**
+     * @param Callable $callable
+     * @return self
+     */
+    public function removeWhere(callable $callable): self
+    {
+        for ($i = 0; $i < $this->count(); $i++) {
+            if ($callable($this[$i])) {
+                $this->offsetUnset($i);
+            }
+        }
+        return $this;
+    }
+
+    /**
      * @param $key
      * @return self
      */
@@ -212,9 +226,9 @@ class Data extends ArrayObject implements JsonSerializableAlias
     }
 
     /**
-     * @deprecated Please use remove
      * @param iterable $keys
      * @return self
+     * @deprecated Please use remove
      */
     public function batchRemove(iterable $keys): self
     {
