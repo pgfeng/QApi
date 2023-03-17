@@ -396,7 +396,7 @@ class Response
             Logger::success("↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑  Response Data ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ");
             exit;
         }
-
+        $this->injectExtra();
         $sendData = [
             'version' => Config::version()->versionName,
             'code' => $this->statusCode,
