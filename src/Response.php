@@ -355,11 +355,11 @@ class Response
      */
     public function __toString(): string
     {
+        $this->injectExtra();
         if (!is_cli()) {
             $this->setHeader();
         }
         if (!$this->raw) {
-            $this->injectExtra();
             $sendData = [
                 'version' => Config::version()->versionName,
                 'code' => $this->statusCode,
@@ -367,9 +367,10 @@ class Response
                 'msg' => $this->msg,
                 'data' => $this->data,
             ];
+            $data = array_merge($sendData, $this->extra);
             Logger::response('Headers -> ' . json_encode($this->getHeaders(), JSON_UNESCAPED_UNICODE));
-            Logger::response('Body -> ' . json_encode($sendData, JSON_UNESCAPED_UNICODE));
-            return json_encode(array_merge($sendData, $this->extra), JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+            Logger::response('Body -> ' . json_encode($data, JSON_UNESCAPED_UNICODE));
+            return json_encode($data, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
         }
         return $this->data;
     }
