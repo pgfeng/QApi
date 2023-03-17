@@ -150,6 +150,9 @@ class Request
             $this->session = new Data($_SESSION);
             $this->method = strtoupper($this->server->get('REQUEST_METHOD'));
             $this->requestUri = $this->prepareRequestUri();
+            if (App::$app->injectionRunTime && $this->server->has('REQUEST_TIME_FLOAT')) {
+                $this->server->set('REQUEST_TIME_FLOAT', microtime(true));
+            }
         }
     }
 

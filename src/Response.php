@@ -343,12 +343,23 @@ class Response
         }
     }
 
+    private function injectExtra(): void
+    {
+        if (App::$app->injectionRunTime) {
+            $this->extra['time'] = (float)sprintf("%.8f", microtime(true) - (float)Router::$request->server->get('REQUEST_TIME_FLOAT'));
+        }
+    }
+
+    /**
+     * @throws \JsonException
+     */
     public function __toString(): string
     {
         if (!is_cli()) {
             $this->setHeader();
         }
         if (!$this->raw) {
+            $this->injectExtra();
             $sendData = [
                 'version' => Config::version()->versionName,
                 'code' => $this->statusCode,
@@ -366,6 +377,7 @@ class Response
     /**
      * @param mixed|null $sendData
      * @return mixed
+     * @deprecated
      */
     public function send(mixed $sendData = null): void
     {
