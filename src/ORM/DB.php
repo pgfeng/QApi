@@ -7,6 +7,8 @@ use Closure;
 use DateInterval;
 use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\Exception\InvalidLockMode;
 use Doctrine\DBAL\Exception\ServerException;
 use Doctrine\DBAL\LockMode;
 use Doctrine\DBAL\ParameterType;
@@ -32,7 +34,6 @@ use QApi\Logger;
  * @method $this setMaxResults(int $maxNumber),
  * @method ExpressionBuilder expr(),
  * @method int getType(),
- * @method Connection getConnection(),
  * @method int getState(),
  * @method $this select(string ...$selects = null)
  * @method $this setParameter(int|string $key, mixed $value, int|string|Type|null $type = null)
@@ -100,7 +101,7 @@ class DB
     /**
      * @return string|null
      */
-    public function getAliasName()
+    public function getAliasName(): ?string
     {
         return $this->aliasName;
     }
@@ -139,21 +140,30 @@ class DB
         }
     }
 
+    /**
+     * @return Connection
+     */
+    public function getConnection(): Connection
+    {
+        return $this->connection;
+    }
 
     /**
      * @param int $lockMode
      * @return $this
-     * @throws \Doctrine\DBAL\Exception
-     * @throws \Doctrine\DBAL\Exception\InvalidLockMode
+     * @throws Exception
+     * @throws InvalidLockMode
      */
-    public function lock(int $lockMode = LockMode::NONE): self
+    public
+    function lock(int $lockMode = LockMode::PESSIMISTIC_WRITE): self
     {
         $this->lockMode = $lockMode;
         $this->from($this->connection->getDatabasePlatform()->appendLockHint($this->table, $lockMode), $this->aliasName);
         return $this;
     }
 
-    public function getSchemaManager(): AbstractSchemaManager
+    public
+    function getSchemaManager(): AbstractSchemaManager
     {
         if ($this->schemaManager) {
             return $this->schemaManager;
@@ -166,7 +176,8 @@ class DB
      * @param bool $tablePrefix
      * @return string
      */
-    public function getTableName(bool $tablePrefix = true): string
+    public
+    function getTableName(bool $tablePrefix = true): string
     {
         if ($tablePrefix) {
             return $this->table ? $this->config->tablePrefix . $this->table : '';
@@ -178,7 +189,8 @@ class DB
      * @param string $formAlias
      * @return $this
      */
-    public function alias(string $formAlias): self
+    public
+    function alias(string $formAlias): self
     {
         $this->from($this->table, $formAlias);
         return $this;
@@ -191,7 +203,8 @@ class DB
      * @param string|null $fromAlias
      * @return $this
      */
-    public function join(string $join, string $condition, ?string $joinAlias = null, ?string $fromAlias = null): self
+    public
+    function join(string $join, string $condition, ?string $joinAlias = null, ?string $fromAlias = null): self
     {
         $join = $this->config->tablePrefix . $join;
         if ($fromAlias) {
@@ -218,7 +231,8 @@ class DB
      * @param string|null $fromAlias
      * @return $this
      */
-    public function innerJoin(string $join, string $condition, ?string $joinAlias = null, ?string $fromAlias = null): self
+    public
+    function innerJoin(string $join, string $condition, ?string $joinAlias = null, ?string $fromAlias = null): self
     {
         $join = $this->config->tablePrefix . $join;
         if ($fromAlias) {
@@ -244,7 +258,8 @@ class DB
      * @param string|null $fromAlias
      * @return $this
      */
-    public function leftJoin(string $join, string $condition, ?string $joinAlias = null, ?string $fromAlias = null): self
+    public
+    function leftJoin(string $join, string $condition, ?string $joinAlias = null, ?string $fromAlias = null): self
     {
         $join = $this->config->tablePrefix . $join;
         if ($fromAlias) {
@@ -270,7 +285,8 @@ class DB
      * @param string|null $fromAlias
      * @return $this
      */
-    public function rightJoin(string $join, string $condition, ?string $joinAlias = null, ?string $fromAlias = null):
+    public
+    function rightJoin(string $join, string $condition, ?string $joinAlias = null, ?string $fromAlias = null):
     self
     {
         $join = $this->config->tablePrefix . $join;
@@ -295,7 +311,8 @@ class DB
      * @param string|null $alias
      * @return DB
      */
-    public function from(string $table, string $alias = null): self
+    public
+    function from(string $table, string $alias = null): self
     {
         $this->table = $table;
         $this->aliasName = $alias;
@@ -311,7 +328,8 @@ class DB
      * @param string|null $alias
      * @return DB
      */
-    public function addFrom(string $table, string $alias = null): self
+    public
+    function addFrom(string $table, string $alias = null): self
     {
         $this->table = $table;
         $this->aliasName = $alias;
@@ -567,11 +585,11 @@ class DB
 
     /**
      * @param array|Data $data
-     * @param array $types
      * @param string|null $table
      * @return int
+     * @throws Exception
      */
-    public function insert(array|Data $data, array $types = [], ?string $table = null): int
+    public function insert(array|Data $data, ?string $table = null): int
     {
         if ($data instanceof Data) {
             $data = $data->toArray();
@@ -579,7 +597,38 @@ class DB
         if (!$table) {
             $table = $this->table;
         }
-        return $this->queryBuilder->getConnection()->insert($this->config->tablePrefix . $table, $data, $types);
+        return $this->queryBuilder
+            ->insert($this->config->tablePrefix . $table)
+            ->values($data)
+            ->executeStatement();
+    }
+
+    /**
+     * @param array|Data $data
+     * @param string|null $table
+     * @return int
+     * @throws Exception
+     */
+    public function batchInsert(array|Data $data, ?string $table = null): int
+    {
+        if ($data instanceof Data) {
+            $data = $data->toArray();
+        }
+        if (!$table) {
+            $table = $this->table;
+        }
+        // 多条数据插入把传入的data数据转为values
+        $valueDql = '';
+        foreach ($data as $key => $value) {
+            $valueDql .= '(';
+            foreach ($value as $k => $v) {
+                $valueDql .= $this->quote($v) . ',';
+            }
+            $valueDql = rtrim($valueDql, ',') . '),';
+        }
+        return $this->connection->executeStatement(
+            'INSERT INTO ' . $this->config->tablePrefix . $table . '(' . implode(',', array_keys($data[0])) . ') VALUES ' . rtrim($valueDql, ',')
+        );
     }
 
     /**
@@ -799,8 +848,9 @@ class DB
      * @param string|null $sql
      * @param array $params
      * @param array $types
-     * @param QueryCacheProfile|null $qcp
      * @return Data|bool
+     * @throws Exception
+     * @throws SqlErrorException
      */
     public function query(string $sql = null, array $params = [], array $types = []): Data|bool
     {
@@ -811,14 +861,18 @@ class DB
                     $data = $this->config->cacheAdapter->get($sql);
                 }
                 if ($data === null) {
-                    $data = $this->queryBuilder->getConnection()->executeQuery($sql, $params, $types)
+                    $data = $this->connection->executeQuery($sql, $params, $types)
                         ->fetchAllAssociative();
                     $this->setCache($sql, $data);
                 }
             } else {
                 $sql = $this->queryBuilder->getSQL();
                 if ($this->lockMode !== null) {
-                    $sql .= ' ' . $this->connection->getDatabasePlatform()->getWriteLockSQL();
+                    $sql .= match ($this->lockMode) {
+                        LockMode::PESSIMISTIC_READ => ' ' . $this->connection->getDatabasePlatform()->getReadLockSQL(),
+                        LockMode::PESSIMISTIC_WRITE => ' ' . $this->connection->getDatabasePlatform()->getWriteLockSQL(),
+                        default => '',
+                    };
                     $this->lockMode = null;
                 }
                 $data = null;
@@ -908,7 +962,7 @@ class DB
 
     /**
      * @return mixed
-     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
      */
     public function fetchOne(): mixed
     {
@@ -918,7 +972,7 @@ class DB
             $data = $this->config->cacheAdapter->get($sql);
         }
         if ($data === null) {
-            $data = $this->queryBuilder->getConnection()->executeQuery($sql)->fetchOne();
+            $data = $this->connection->executeQuery($sql)->fetchOne();
             $this->setCache($sql, $data);
         }
         return $data;
