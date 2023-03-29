@@ -62,23 +62,22 @@ class filesModel extends Model
 
     /**
      * 以base64格式上传
-     * @param $base64_data
-     * @param string[] $allow_type
+     * @param $base64Data
+     * @param string[] $allowType
      * @return array
      */
-    public function base64_upload($base64_data, array $allow_type): array
+    public function base64_upload($base64Data, array $allowType, string $secondaryDirectory = ''): array
     {
         //--如果没有设置允许格式,将使用默认允许的格式
-        foreach ($allow_type as &$type) {
+        foreach ($allowType as &$type) {
             $type = strtolower($type);
         }
-        preg_match('/data:(.*);/iUs', $base64_data, $type);
+        preg_match('/data:(.*);/iUs', $base64Data, $type);
         $mime = $type[1];
         $repository = new MimeTypes();
         $extensions = $repository->getExtensions($mime);
-        $data = base64_decode(explode('base64,', $base64_data)[1]);
+        $data = base64_decode(explode('base64,', $base64Data)[1]);
         if (is_array($extensions)) {
-
             $ext = $extensions[0];
         } else {
             return [
@@ -86,7 +85,7 @@ class filesModel extends Model
                 'msg' => "类型错误，无法上传！"
             ];
         }
-        if (in_array(strtolower($ext), $allow_type, true)) {
+        if (in_array(strtolower($ext), $allowType, true)) {
             $md5 = md5($data);
             if ($file = $this->getFileByMd5($md5)) {
                 return [
@@ -95,8 +94,11 @@ class filesModel extends Model
                     'msg' => '上传成功！！',
                 ];
             }
-
-            $path = App::$uploadDir . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
+            if ($secondaryDirectory) {
+                $path = App::$uploadDir . trim($secondaryDirectory, '/') . '/' . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
+            } else {
+                $path = App::$uploadDir . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
+            }
             $full_path = $path;
             mkPathDir($full_path);
             if (file_put_contents($full_path, $data)) {
@@ -114,11 +116,16 @@ class filesModel extends Model
                     'path' => $path,
                     'msg' => '上传成功',
                 ];
+            } else {
+                return [
+                    'status' => false,
+                    'msg' => '上传失败',
+                ];
             }
         } else {
             return [
                 'status' => false,
-                'msg' => '只允许上传' . implode('|', $allow_type) . '格式！',
+                'msg' => '只允许上传' . implode('|', $allowType) . '格式！',
             ];
         }
     }
@@ -179,13 +186,13 @@ class filesModel extends Model
      * @param string[] $allow_type
      * @return array
      */
-    public function upload($field_file, array $allow_type): array
+    public function upload($fieldFile, array $allowType, string $secondaryDirectory = ''): array
     {
         //--如果没有设置允许格式,将使用默认允许的格式
-        foreach ($allow_type as &$type) {
+        foreach ($allowType as &$type) {
             $type = strtolower($type);
         }
-        $file = $field_file;
+        $file = $fieldFile;
         if (!isset($file['error'])) {
             return [
                 'status' => false,
@@ -205,13 +212,17 @@ class filesModel extends Model
                             'msg' => '上传成功！！',
                         ];
                     } else {
-                        $result = $this->checkType($file, $allow_type);
+                        $result = $this->checkType($file, $allowType);
                         if ($result['status']) {
                             $ext = $result['ext'];
                         } else {
                             return $result;
                         }
-                        $path = App::$uploadDir . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
+                        if ($secondaryDirectory == '') {
+                            $path = App::$uploadDir . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
+                        } else {
+                            $path = App::$uploadDir . trim($secondaryDirectory) . '/' . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
+                        }
                         if (Router::$request) {
                             $full_path = Router::$request->server->get('DOCUMENT_ROOT') . DIRECTORY_SEPARATOR . $path;
                         } else {
@@ -262,7 +273,7 @@ class filesModel extends Model
                     'msg' => '上传成功！！',
                 ];
             }
-            $result = $this->checkType($file, $allow_type);
+            $result = $this->checkType($file, $allowType);
             if ($result['status']) {
                 $ext = $result['ext'];
             } else {
