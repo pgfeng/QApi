@@ -5,7 +5,6 @@ namespace QApi\ORM;
 
 use Closure;
 use DateInterval;
-use Doctrine\DBAL\Cache\QueryCacheProfile;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Exception\InvalidLockMode;
@@ -16,6 +15,7 @@ use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Types\Type;
+use ErrorException;
 use QApi\Attribute\Column\Field;
 use QApi\Config;
 use QApi\Config\Database\MysqliDatabase;
@@ -26,6 +26,8 @@ use QApi\Data;
 use QApi\Enumeration\CliColor;
 use QApi\Exception\SqlErrorException;
 use QApi\Logger;
+use ReflectionClass;
+use ReflectionException;
 
 /**
  * Class DB
@@ -67,16 +69,19 @@ class DB
         $config;
     private bool $hasWhere = false;
     protected Connection $connection;
+
     /**
      * @var AbstractSchemaManager|null
      */
     private ?AbstractSchemaManager $schemaManager = null;
+
     /**
      * @var string|null
      */
     protected ?string $aliasName = null;
+
     /**
-     * @var int
+     * @var int|null
      */
     protected ?int $lockMode = null;
 
@@ -110,6 +115,7 @@ class DB
      * DB constructor.
      * @param string $table
      * @param string $configName
+     * @throws ErrorException
      */
     public function __construct(string $table, private string $configName)
     {
@@ -119,7 +125,7 @@ class DB
         $this->select('*');
         if (!isset(self::$dbColumns[$configName][$table])) {
             try {
-                $ref = new \ReflectionClass(Config::command('BaseColumnNameSpace') . '_' . $configName . '\\' . $table);
+                $ref = new ReflectionClass(Config::command('BaseColumnNameSpace') . '_' . $configName . '\\' . $table);
                 $constants = $ref->getReflectionConstants();
                 $columns = [];
                 foreach ($constants as $constant) {
@@ -130,7 +136,7 @@ class DB
                     }
                 }
                 self::$dbColumns[$configName][$table] = $columns;
-            } catch (\ReflectionException $e) {
+            } catch (ReflectionException $e) {
                 Logger::error($e->getMessage());
             }
         }
@@ -162,6 +168,9 @@ class DB
         return $this;
     }
 
+    /**
+     * @throws Exception
+     */
     public
     function getSchemaManager(): AbstractSchemaManager
     {
@@ -319,7 +328,7 @@ class DB
         $this->queryBuilder->add('from', [[
             'table' => $this->config->tablePrefix . $table,
             'alias' => $alias,
-        ]], false);
+        ]]);
         return $this;
     }
 
@@ -345,11 +354,17 @@ class DB
         return $this->connection->beginTransaction();
     }
 
+    /**
+     * @throws Exception
+     */
     final public function commit(): bool
     {
         return $this->connection->commit();
     }
 
+    /**
+     * @throws Exception
+     */
     final public function rollBack(): bool
     {
         return $this->connection->rollBack();
@@ -359,6 +374,7 @@ class DB
      * 闭包执行事务，返回事务执行的状态
      * @param Closure $callback
      * @return bool
+     * @throws Exception
      */
     final public function transaction(Closure $callback): bool
     {
@@ -369,7 +385,7 @@ class DB
             }
             $this->rollBack();
             return false;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $msg = $e->getMessage();
             $file = $e->getFile();
             $line = $e->getLine();
@@ -617,11 +633,10 @@ class DB
         if (!$table) {
             $table = $this->table;
         }
-        // 多条数据插入把传入的data数据转为values
         $valueDql = '';
-        foreach ($data as $key => $value) {
+        foreach ($data as $value) {
             $valueDql .= '(';
-            foreach ($value as $k => $v) {
+            foreach ($value as $v) {
                 $valueDql .= $this->quote($v) . ',';
             }
             $valueDql = rtrim($valueDql, ',') . '),';
@@ -636,6 +651,7 @@ class DB
      * @param array $types
      * @param string|null $table
      * @return int
+     * @throws Exception|SqlErrorException
      */
     public function update(array|Data $data, array $types = [], ?string $table = null): int
     {
@@ -724,6 +740,7 @@ class DB
      * @param string $field
      * @param mixed $change
      * @return int
+     * @throws Exception|SqlErrorException
      */
     final public function setInc(string $field, mixed $change = 1): int
     {
@@ -737,6 +754,7 @@ class DB
      * @param string $field
      * @param int|float $change
      * @return bool
+     * @throws Exception|SqlErrorException
      */
     final public function setDec(string $field, mixed $change = 1): bool
     {
@@ -751,6 +769,7 @@ class DB
      * @param array $Between
      * @param int|string|Type|null $type
      * @return $this
+     * @throws SqlErrorException
      */
     final public function between($field, array $Between, Type|int|string|null $type = ParameterType::STRING): self
     {
@@ -768,6 +787,7 @@ class DB
      * @param array $Between
      * @param int|string|Type|null $type
      * @return $this
+     * @throws SqlErrorException
      */
     final public function notBetween($field, array $Between, Type|int|string|null $type = ParameterType::STRING): self
     {
@@ -936,6 +956,7 @@ class DB
     /**
      * @param string $field
      * @return int
+     * @throws SqlErrorException|Exception
      */
     public function count(string $field = '*'): int
     {
@@ -981,13 +1002,14 @@ class DB
     /**
      * @param string $field
      * @return false|mixed
+     * @throws SqlErrorException
      */
-    public function max(string $field)
+    public function max(string $field): mixed
     {
         $this->hasWhere = false;
         try {
             return $this->select('MAX(' . $field . ')')->fetchOne();
-        } catch (ServerException $e) {
+        } catch (ServerException|Exception $e) {
             $traces = $e->getTrace();
             $realTrance = null;
             foreach ($traces as $trace) {
@@ -1008,13 +1030,14 @@ class DB
     /**
      * @param string $field
      * @return false|mixed
+     * @throws SqlErrorException
      */
-    public function min(string $field)
+    public function min(string $field): mixed
     {
         $this->hasWhere = false;
         try {
             return $this->select('MIN(' . $field . ')')->fetchOne();
-        } catch (ServerException $e) {
+        } catch (ServerException|Exception $e) {
             $traces = $e->getTrace();
             $realTrance = null;
             foreach ($traces as $trace) {
@@ -1036,13 +1059,14 @@ class DB
     /**
      * @param string $field
      * @return false|mixed
+     * @throws SqlErrorException
      */
     public function sum(string $field)
     {
         $this->hasWhere = false;
         try {
             return $this->select('SUM(' . $field . ')')->fetchOne();
-        } catch (ServerException $e) {
+        } catch (ServerException|Exception $e) {
             $traces = $e->getTrace();
             $realTrance = null;
             foreach ($traces as $trace) {
@@ -1064,13 +1088,14 @@ class DB
     /**
      * @param string $field
      * @return false|mixed
+     * @throws SqlErrorException
      */
-    public function avg(string $field)
+    public function avg(string $field): mixed
     {
         $this->hasWhere = false;
         try {
             return $this->select('AVG(' . $field . ')')->fetchOne();
-        } catch (ServerException $e) {
+        } catch (ServerException|Exception $e) {
             $traces = $e->getTrace();
             $realTrance = null;
             foreach ($traces as $trace) {
@@ -1091,13 +1116,14 @@ class DB
     /**
      * @param string $field
      * @return int
+     * @throws SqlErrorException
      */
     public function length(string $field): int
     {
         $this->hasWhere = false;
         try {
             return (int)$this->select('LENGTH(' . $field . ')')->fetchOne();
-        } catch (ServerException $e) {
+        } catch (ServerException|Exception $e) {
             $traces = $e->getTrace();
             $realTrance = null;
             foreach ($traces as $trace) {
@@ -1117,6 +1143,7 @@ class DB
 
     /**
      * @return Data|null
+     * @throws SqlErrorException|Exception
      */
     public function find(): ?Data
     {
@@ -1133,6 +1160,7 @@ class DB
      * @param mixed $val
      * @param string $field
      * @return Data|null
+     * @throws SqlErrorException|Exception
      */
     public function findByKey(mixed $val, string $field): ?Data
     {
@@ -1140,7 +1168,6 @@ class DB
     }
 
     /**
-     * 获取完整字段
      * @param $field
      * @return string|array
      */
@@ -1159,9 +1186,10 @@ class DB
     }
 
     /**
-     * 获取一个字段值
      * @param $field_name
      * @return mixed
+     * @throws Exception
+     * @throws SqlErrorException
      */
     final public function getField($field_name): mixed
     {
@@ -1194,8 +1222,9 @@ class DB
      * @param $field_value
      * @param bool $format
      * @return int
+     * @throws Exception|SqlErrorException
      */
-    final public function setField($field_name, $field_value, $format = true): int
+    final public function setField($field_name, $field_value, bool $format = true): int
     {
         $field_name = $this->_Field($field_name);
         return $this->update([
@@ -1207,6 +1236,7 @@ class DB
      * @param string|null $delete
      * @param string|null $alias
      * @return int
+     * @throws SqlErrorException|Exception
      */
     final public function delete(?string $delete = null, ?string $alias = null): int
     {
@@ -1235,10 +1265,9 @@ class DB
      *
      * @param $func
      * @param $val
-     *
-     * @return mixed
+     * @return mixed|DB
      */
-    final public function __call($func, $val): mixed
+    final public function __call($func, $val)
     {
         /** @var array $val */
         if (method_exists($this->queryBuilder, $func)) {
@@ -1277,6 +1306,7 @@ class DB
      * @param int $number
      * @param int $page
      * @return Data|array
+     * @throws Exception|SqlErrorException
      */
     final public function paginate(int $number = 10, int $page = 1): Data|array
     {
