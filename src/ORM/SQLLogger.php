@@ -16,10 +16,10 @@ class SQLLogger implements \Doctrine\DBAL\Logging\SQLLogger
         $this->time = microtime(true);
         Logger::sql($sql);
         if ($params) {
-            Logger::sql('PARAMS:' . json_encode($params, JSON_THROW_ON_ERROR));
+            Logger::sql('PARAMS:' . json_encode($params, JSON_UNESCAPED_UNICODE));
         }
         if ($types) {
-            Logger::sql('TYPES:' . json_encode($types, JSON_THROW_ON_ERROR));
+            Logger::sql('TYPES:' . json_encode($types, JSON_UNESCAPED_UNICODE));
         }
     }
 

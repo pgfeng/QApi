@@ -4,8 +4,9 @@
 namespace QApi\ORM;
 
 
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
-use QApi\Config;
+use ErrorException;
 
 class SchemaManager
 {
@@ -16,6 +17,7 @@ class SchemaManager
 
     /**
      * @param string $configName
+     * @throws Exception|ErrorException
      */
     public static function create(string $configName = 'default'): AbstractSchemaManager
     {

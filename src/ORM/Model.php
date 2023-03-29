@@ -7,6 +7,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\Expression\ExpressionBuilder;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Types\Type;
+use ErrorException;
 use JetBrains\PhpStorm\Deprecated;
 use QApi\Config;
 use QApi\Config\Database\MysqliDatabase;
@@ -39,6 +40,7 @@ class Model extends DB
     /**
      * @param string|null $table
      * @param string $configName
+     * @throws ErrorException
      */
     protected function initialization(string $table = null, string $configName = 'default')
     {
