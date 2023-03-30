@@ -712,10 +712,9 @@ class DB
             return $value;
         } else if ($value === null) {
             return 'null';
-        } else if (!is_numeric($value) || !str_contains($value, '+') || !str_contains($value, '-')) {
+        } else {
             return $this->getConnection()->quote($value, $type);
         }
-        return $value;
     }
 
     /**
