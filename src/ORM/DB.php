@@ -628,7 +628,7 @@ class DB
      * @return int
      * @throws Exception
      */
-    public function batchInsert(array|Data $data, ?string $table = null): int
+    public function batchInsert(array|Data $data, array $types = [], ?string $table = null): int
     {
         if ($data instanceof Data) {
             $data = $data->toArray();
@@ -639,8 +639,8 @@ class DB
         $valueDql = '';
         foreach ($data as $value) {
             $valueDql .= '(';
-            foreach ($value as $v) {
-                $valueDql .= $this->quote($v) . ',';
+            foreach ($value as $k => $v) {
+                $valueDql .= $this->quote($v, $types[$k] ?? ParameterType::STRING) . ',';
             }
             $valueDql = rtrim($valueDql, ',') . '),';
         }
