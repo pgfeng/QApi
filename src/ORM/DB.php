@@ -605,13 +605,16 @@ class DB
      * @return int
      * @throws Exception
      */
-    public function insert(array|Data $data, ?string $table = null): int
+    public function insert(array|Data $data, array $types = [], ?string $table = null): int
     {
         if ($data instanceof Data) {
             $data = $data->toArray();
         }
         if (!$table) {
             $table = $this->table;
+        }
+        foreach ($data as $key => $value) {
+            $data[$key] = $this->quote($value, $types[$key] ?? ParameterType::STRING);
         }
         return $this->queryBuilder
             ->insert($this->config->tablePrefix . $table)

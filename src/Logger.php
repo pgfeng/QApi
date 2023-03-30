@@ -79,10 +79,24 @@ class Logger
         return App::$app->getRunMode();
     }
 
+    public static function log($level,array|string $message, array $context = []): void
+    {
+
+        if (!in_array(LogLevel::INFO, self::$disabledLevel)) {
+            if (is_array($message)) {
+                $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+            }
+            if (self::getRunMode() === RunMode::DEVELOPMENT) {
+                error_log(self::getData($message, CliColor::INFO));
+            }
+            self::$logger?->log($level,preg_replace('/\\x1b(.+)\s/iUs', '', $message), $context);
+        }
+    }
+
     /**
      * @param array|string $message
      */
-    public static function info(array|string $message): void
+    public static function info(array|string $message, array $context = []): void
     {
         if (!in_array(LogLevel::INFO, self::$disabledLevel)) {
             if (is_array($message)) {
@@ -91,14 +105,27 @@ class Logger
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
                 error_log(self::getData($message, CliColor::INFO));
             }
-            self::$logger?->info(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+            self::$logger?->info(preg_replace('/\\x1b(.+)\s/iUs', '', $message), $context);
+        }
+    }
+
+    public static function alert(array|string $message, array $context = []): void
+    {
+        if (!in_array(LogLevel::INFO, self::$disabledLevel)) {
+            if (is_array($message)) {
+                $message = json_encode($message, JSON_UNESCAPED_UNICODE);
+            }
+            if (self::getRunMode() === RunMode::DEVELOPMENT) {
+                error_log(self::getData($message, CliColor::INFO));
+            }
+            self::$logger?->alert(preg_replace('/\\x1b(.+)\s/iUs', '', $message), $context);
         }
     }
 
     /**
      * @param array|string $message
      */
-    public static function sql(array|string $message): void
+    public static function sql(array|string $message, array $context = []): void
     {
         if (!in_array(LogType::SQL, self::$disabledType)) {
             if (is_array($message)) {
@@ -107,7 +134,7 @@ class Logger
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
                 error_log(self::getData(' SQL => ' . $message, CliColor::WARNING));
             }
-            self::$logger?->info(' SQL => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+            self::$logger?->info(' SQL => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message), $context);
         }
     }
 
@@ -131,7 +158,7 @@ class Logger
     /**
      * @param array|string $message
      */
-    public static function warning(array|string $message): void
+    public static function warning(array|string $message, array $context = []): void
     {
         if (!in_array(LogLevel::WARNING, self::$disabledLevel)) {
             if (is_array($message)) {
@@ -141,7 +168,7 @@ class Logger
 
                 error_log(self::getData($message, CliColor::WARNING));
             }
-            self::$logger?->warning(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+            self::$logger?->warning(preg_replace('/\\x1b(.+)\s/iUs', '', $message), $context);
         }
     }
 
@@ -236,7 +263,7 @@ class Logger
     /**
      * @param array|string $message
      */
-    public static function notice(array|string $message): void
+    public static function notice(array|string $message, array $context = []): void
     {
         if (!in_array(LogLevel::NOTICE, self::$disabledLevel)) {
             self::init();
@@ -247,7 +274,7 @@ class Logger
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
                 error_log(self::getData($message, CliColor::ERROR));
             }
-            self::$logger?->notice(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
+            self::$logger?->notice(preg_replace('/\\x1b(.+)\s/iUs', '', $message), $context);
         }
     }
 
