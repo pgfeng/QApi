@@ -130,10 +130,21 @@ trait Auxiliary
             $status = $this->save($data, $primary_key);
         }
         if ($status) {
-            if (isset($data[$primary_key])) {
-                $response->setExtra(['UUID' => $data[$primary_key]]);
-            } else if (isset($this->lastInsertUUID)) {
-                $response->setExtra(['UUID' => $this->lastInsertUUID]);
+            if ($primary_key) {
+                if (!isset($this->lastInsertUUID)) {
+                    if (isset($data[$primary_key])) {
+                        $response->setExtra([$primary_key => $data[$primary_key], 'id' => $data[$primary_key]]);
+                    } else {
+                        $id = $this->lastInsertId();
+                        $response->setExtra([$primary_key => $id, 'id' => $id]);
+                    }
+                } else {
+                    if (isset($data[$primary_key])) {
+                        $response->setExtra([$primary_key => $data[$primary_key], 'UUID' => $data[$primary_key]]);
+                    } else {
+                        $response->setExtra([$primary_key => $this->lastInsertUUID, 'UUID' => $this->lastInsertUUID]);
+                    }
+                }
             }
             return $response->ok()->setMsg($this->modelName . $handle . $this->successString);
         }
