@@ -952,6 +952,9 @@ class DB
             $data[$key] = $dataObject;
         }
         $this->hasWhere = false;
+        if (!is_array($data)) {
+            $data = [];
+        }
         return new Data($data);
     }
 

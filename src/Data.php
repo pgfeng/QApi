@@ -13,10 +13,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
     private array $modifyKeys = [];
 
     /**
-     * 将数据转为primary_key为键名并返回
-     *
      * @param $primary_key
-     *
      * @return Data
      */
     public function transPrimaryIndex($primary_key): Data
@@ -31,6 +28,23 @@ class Data extends ArrayObject implements JsonSerializableAlias
         return new Data($newData);
     }
 
+    /**
+     * @param callable $callback
+     * @return Data
+     */
+    public function each(callable $callback): Data
+    {
+        foreach ($this as $key => $item) {
+            $callback($item, $key);
+        }
+        return $this;
+    }
+
+    /**
+     * @param mixed $key
+     * @param mixed $value
+     * @return void
+     */
     public function offsetSet(mixed $key, mixed $value): void
     {
         if (!in_array($key, $this->modifyKeys)) {
