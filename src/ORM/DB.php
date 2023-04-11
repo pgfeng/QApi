@@ -1168,7 +1168,9 @@ class DB
     {
         if (is_string($field)) {
             if (str_contains($field, '.')) {
-                $field = $this->config->tablePrefix . $field;
+                if (!$this->getAliasName()){
+                    $field = $this->config->tablePrefix . $field;
+                }
             }
         } else if (is_array($field)) {
             foreach ($field as &$item) {
