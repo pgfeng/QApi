@@ -102,6 +102,7 @@ class DB
 
     public static array $dbColumns = [];
 
+    private bool $isOr = false;
 
     /**
      * @return string|null
@@ -445,58 +446,82 @@ class DB
         return $this;
     }
 
+
     /**
-     * @param ExpressionBuilder|string|array $predicates
+     * @param ExpressionBuilder|string|array|Closure $predicates
      * @param mixed|null $op
      * @param mixed|null $value
+     * @param bool $or
      * @return $this
      */
-    public function where(ExpressionBuilder|string|array $predicates, mixed $op = null, mixed $value = null): self
+    public function where(ExpressionBuilder|string|array|Closure $predicates, mixed $op = null, mixed $value = null): self
     {
         $arg_number = func_num_args();
         if ($arg_number === 1) {
-            if ($this->hasWhere) {
-                $this->queryBuilder->andWhere($predicates);
+            if ($predicates instanceof Closure) {
+                $predicates($this);
+            } else if (is_array($predicates)) {
+                foreach ($predicates as $key => $value) {
+                    if ($value instanceof ExpressionBuilder) {
+                        $this->where($value);
+                    } else if ($value instanceof Closure) {
+                        $this->where($value);
+                    } else {
+                        $this->where($key, $value);
+                    }
+                }
             } else {
-                $this->queryBuilder->where($predicates);
+                if ($this->hasWhere) {
+                    if ($this->isOr) {
+                        $this->queryBuilder->orWhere($predicates);
+                    } else {
+                        $this->queryBuilder->andWhere($predicates);
+                    }
+                } else {
+                    $this->queryBuilder->where($predicates);
+                }
             }
         } else if ($arg_number === 2) {
             $values = func_get_arg(1);
-            if ($this->hasWhere) {
-                if (is_array($values)) {
-                    $this->queryBuilder
-                        ->andWhere(
-                            $this->expr()->in($predicates, $this->quote($values))
-                        );
-                } else {
-                    $this->queryBuilder
-                        ->andWhere(
-                            $this->expr()->eq($predicates, $this->quote($values))
-                        );
-                }
-            } else if (is_array($values)) {
-                $this->queryBuilder
-                    ->where(
-                        $this->expr()->in($predicates, $this->quote($values))
-                    );
+            if (is_array($values)) {
+                $this->where($predicates, 'in', $values);
+            } else if (is_null($values)) {
+                $this->isNull($predicates);
             } else {
-                $this->queryBuilder
-                    ->where(
-                        $this->expr()->eq($predicates, $this->quote($values))
-                    );
+                $this->where($predicates, '=', $values);
             }
         } elseif ($arg_number === 3) {
-
+            $expr = $this->expr();
+            $op = strtoupper($op);
+            $tmpOp = str_replace(' ', '-', $op);
+            if ($tmpOp === 'IN') {
+                $where = $expr->in($predicates, $this->quote($value));
+            } else if ($tmpOp === 'NOT-IN') {
+                $where = $expr->notIn($predicates, $this->quote($value));
+            } else if ($tmpOp === 'LIKE') {
+                $where = $expr->like($predicates, $this->quote($value));
+            } else if ($tmpOp === 'NOT-LIKE') {
+                $where = $expr->like($predicates, $this->quote($value));
+            } else if (str_contains($op, 'BETWEEN')) {
+                $where = $expr->comparison($predicates, $op, $this->quote($value[0]) . ' AND ' . $this->quote($value[1]));
+            } else if (is_null($value)) {
+                if ($op === '=') {
+                    $where = $expr->isNull($predicates);
+                } else {
+                    $where = $expr->isNotNull($predicates);
+                }
+            } else {
+                $where = $expr->comparison($predicates, $op, $this->quote($value));
+            }
             if ($this->hasWhere) {
-                $this->queryBuilder
-                    ->andWhere(
-                        $this->expr()->comparison($predicates, $op, $this->quote($value))
-                    );
+                if ($this->isOr) {
+                    $this->queryBuilder->orWhere($where);
+                } else {
+                    $this->queryBuilder->andWhere($where);
+                }
             } else {
                 $this->queryBuilder
-                    ->where(
-                        $this->expr()->comparison($predicates, $op, $this->quote($value))
-                    );
+                    ->where($where);
             }
         }
         $this->hasWhere = true;
@@ -543,28 +568,9 @@ class DB
      */
     public function orWhere(ExpressionBuilder|string|array $predicates, mixed $op = null, mixed $value = null): self
     {
-        $arg_number = func_num_args();
-        if ($arg_number === 1) {
-            $this->queryBuilder->orWhere($predicates);
-        } else if ($arg_number === 2) {
-            $values = func_get_arg(1);
-            if (is_array($values)) {
-                $this->queryBuilder
-                    ->orWhere(
-                        $this->expr()->in($predicates, $this->quote($values))
-                    );
-            } else {
-                $this->queryBuilder
-                    ->orWhere(
-                        $this->expr()->eq($predicates, $this->quote($values))
-                    );
-            }
-        } elseif ($arg_number === 3) {
-            $this->queryBuilder
-                ->orWhere(
-                    $this->expr()->comparison($predicates, $op, $this->quote($value))
-                );
-        }
+        $this->isOr = true;
+        $this->where(...func_get_args());
+        $this->isOr = false;
         return $this;
     }
 
@@ -578,25 +584,7 @@ class DB
     public function andWhere(ExpressionBuilder|string|array $predicates, mixed $op = null, mixed $value = null):
     self
     {
-        $arg_number = func_num_args();
-        if ($arg_number === 1) {
-            $this->queryBuilder->orWhere($predicates);
-        } else if ($arg_number === 2) {
-            $values = func_get_arg(1);
-            if (is_array($values)) {
-                $this->queryBuilder->andWhere($this->expr()->in($predicates, $this->quote
-                ($values)));
-            } else {
-                $this->queryBuilder->andWhere($this->expr()->eq($predicates, $this->quote
-                ($values)));
-            }
-        } elseif ($arg_number === 3) {
-            $this->queryBuilder
-                ->andWhere(
-                    $this->expr()->comparison($predicates, $op, $this->quote($value))
-                );
-        }
-        return $this;
+        return $this->where(...func_get_args());
     }
 
     /**
