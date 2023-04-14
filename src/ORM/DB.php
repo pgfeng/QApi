@@ -471,6 +471,7 @@ class DB
                     }
                 }
             } else {
+                $predicates = $this->parseField($predicates);
                 if ($this->hasWhere) {
                     if ($this->isOr) {
                         $this->queryBuilder->orWhere($predicates);
@@ -486,11 +487,12 @@ class DB
             if (is_array($values)) {
                 $this->where($predicates, 'in', $values);
             } else if (is_null($values)) {
-                $this->isNull($predicates);
+                $this->where($predicates, '=', null);
             } else {
                 $this->where($predicates, '=', $values);
             }
         } elseif ($arg_number === 3) {
+            $predicates = $this->parseField($predicates);
             $expr = $this->expr();
             $op = strtoupper($op);
             $tmpOp = str_replace(' ', '-', $op);
@@ -534,14 +536,7 @@ class DB
      */
     public function isNull(string $field): self
     {
-        $expr = $this->expr()->isNull($field);
-        if ($this->hasWhere) {
-            $this->queryBuilder->andWhere($expr);
-        } else {
-            $this->queryBuilder->where($expr);
-            $this->hasWhere = true;
-        }
-        return $this;
+        return $this->where($field, null);
     }
 
     /**
@@ -550,14 +545,7 @@ class DB
      */
     public function isNotNull(string $field): self
     {
-        $expr = $this->expr()->isNotNull($field);
-        if ($this->hasWhere) {
-            $this->queryBuilder->andWhere($expr);
-        } else {
-            $this->queryBuilder->where($expr);
-            $this->hasWhere = true;
-        }
-        return $this;
+        return $this->where($field, '<>', null);
     }
 
     /**
@@ -734,7 +722,7 @@ class DB
      */
     final public function setInc(string $field, mixed $change = 1): int
     {
-        $field = $this->_Field($field);
+        $field = $this->parseField($field);
         return $this->update([
             $field => $field . ' + ' . $change,
         ], [$field => true]);
@@ -748,7 +736,7 @@ class DB
      */
     final public function setDec(string $field, mixed $change = 1): bool
     {
-        $field = $this->_Field($field);
+        $field = $this->parseField($field);
         return $this->update([
             $field => $field . ' - ' . $change,
         ], [$field => true]);
@@ -763,7 +751,7 @@ class DB
      */
     final public function between($field, array $Between, Type|int|string|null $type = ParameterType::STRING): self
     {
-        $field = $this->_Field($field);
+        $field = $this->parseField($field);
         if (count($Between) !== 2) {
             throw new SqlErrorException('Too few params to function Between($field, $Between), Must two params;');
         }
@@ -781,7 +769,7 @@ class DB
      */
     final public function notBetween($field, array $Between, Type|int|string|null $type = ParameterType::STRING): self
     {
-        $field = $this->_Field($field);
+        $field = $this->parseField($field);
         if (count($Between) !== 2) {
             throw new SqlErrorException('Too few params to function Between($field, $Between), Must two params;');
         }
@@ -1164,17 +1152,17 @@ class DB
      * @param $field
      * @return string|array
      */
-    final public function _Field($field): string|array
+    final public function parseField($field): string|array
     {
         if (is_string($field)) {
-            if (str_contains($field, '.')) {
-                if (!$this->getAliasName()){
+            if (!$this->getAliasName()) {
+                if (str_contains($field, '.')) {
                     $field = $this->config->tablePrefix . $field;
                 }
             }
         } else if (is_array($field)) {
             foreach ($field as &$item) {
-                $item = $this->_Field($item);
+                $item = $this->parseField($item);
             }
         }
         return $field;
@@ -1189,7 +1177,7 @@ class DB
     final public function getField($field_name): mixed
     {
         $this->hasWhere = false;
-        $field_name = $this->_Field($field_name);
+        $field_name = $this->parseField($field_name);
         try {
             return $this->select($field_name)->setMaxResults(1)->fetchOne();
         } catch (ServerException $e) {
@@ -1221,7 +1209,7 @@ class DB
      */
     final public function setField($field_name, $field_value, bool $format = true): int
     {
-        $field_name = $this->_Field($field_name);
+        $field_name = $this->parseField($field_name);
         return $this->update([
             $field_name => $field_value,
         ], !$format ? [$field_name => true] : []);
