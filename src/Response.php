@@ -254,10 +254,20 @@ class Response
     }
 
     /**
+     * @deprecated use success() instead
      * @param string|null $msg
      * @return $this
      */
     public function ok(?string $msg = null): Response
+    {
+        return $this->success($msg);
+    }
+
+    /**
+     * @param string|null $msg
+     * @return $this
+     */
+    public function success(?string $msg = null): Response
     {
         if ($msg) {
             $this->setMsg($msg);
