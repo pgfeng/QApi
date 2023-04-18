@@ -113,7 +113,7 @@ class Router
         }
         self::get(path: '/__status.json', callback: function (Request $request, Response $response) {
             if (!App::$apiPassword) {
-                return $response->setMsg('Status success！')->ok();
+                return $response->success('Status success！');
             }
             $password = md5(trim($request->get->get('password')));
             if ($password === md5(md5(App::$apiPassword))) {

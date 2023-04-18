@@ -146,7 +146,7 @@ trait Auxiliary
                     }
                 }
             }
-            return $response->ok()->setMsg($this->modelName . $handle . $this->successString);
+            return $response->success()->setMsg($this->modelName . $handle . $this->successString);
         }
 
         return $response->fail()->setMsg($this->modelName . $handle . $this->errorString);
@@ -168,7 +168,7 @@ trait Auxiliary
             $this->orderBy($sortField, $sortOrder === 'ascend' ? 'asc' : 'desc');
         }
         $countModel = clone $this;
-        return $response->ok()->setExtra([
+        return $response->success()->setExtra([
             'total' => $countModel->resetQueryPart('orderBy')->count(),
         ])->setData($this->paginate($size, $page));
     }
@@ -185,11 +185,11 @@ trait Auxiliary
         }
         if (method_exists($this, 'softDelete')) {
             if ($this->softDelete($softDelete) !== false) {
-                return $response->ok()->setMsg($this->modelName . $this->deleteString . $this->successString);
+                return $response->success()->setMsg($this->modelName . $this->deleteString . $this->successString);
             }
         } else {
             if ($this->delete() !== false) {
-                return $response->ok()->setMsg($this->modelName . $this->deleteString . $this->successString);
+                return $response->success()->setMsg($this->modelName . $this->deleteString . $this->successString);
             }
         }
         return $response->fail()->setMsg($this->modelName . $this->deleteString . $this->errorString);

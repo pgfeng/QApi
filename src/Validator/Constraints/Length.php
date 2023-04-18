@@ -10,10 +10,9 @@ use Test\Model\_Column_default\article;
 class Length
 {
     public function __construct(
-        public string $name,
         public int|null $min = null,
         public int|null $max = null,
-        public bool     $allowEmptyString = false,
+        public bool     $allowEmpty = false,
     )
     {
     }
