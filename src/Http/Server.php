@@ -71,13 +71,11 @@ class Server
     private function socketRead($client): array
     {
         socket_set_option($client, SOL_SOCKET, SO_RCVTIMEO, array('sec' => 1, 'usec' => 10));
-        // 首先读取 HTTP 请求头信息，以便计算请求主体长度
         $requestHeader = '';
         $requestBody = '';
         while (false !== ($buf = socket_read($client, 8))) {
-//            var_dump($buf);
             $requestHeader .= $buf;
-            if (strpos($requestHeader, "\r\n\r\n") !== false) {
+            if (str_contains($requestHeader, "\r\n\r\n")) {
                 $data = explode("\r\n\r\n", $requestHeader);
                 if (count($data) > 2) {
                     $requestHeader = $data[0];
@@ -86,12 +84,10 @@ class Server
                 break;
             }
         }
-        // 获取Content-Length的值，并计算需要读取的请求主体长度
         $contentLength = 0;
         if (preg_match("/Content-Length:\s*(\d+)/", $requestHeader, $matches)) {
             $contentLength = (int)$matches[1];
         }
-        // 读取 HTTP 请求主体，直到全部接收完毕
         while (strlen($requestBody) < $contentLength) {
             $buf = socket_read($client, 8);
             if (false === $buf || '' === $buf) {
