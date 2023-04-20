@@ -79,7 +79,7 @@ class Logger
         return App::$app->getRunMode();
     }
 
-    public static function log($level,array|string $message, array $context = []): void
+    public static function log($level, array|string $message, array $context = []): void
     {
 
         if (!in_array(LogLevel::INFO, self::$disabledLevel)) {
@@ -89,7 +89,7 @@ class Logger
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
                 error_log(self::getData($message, CliColor::INFO));
             }
-            self::$logger?->log($level,preg_replace('/\\x1b(.+)\s/iUs', '', $message), $context);
+            self::$logger?->log($level, preg_replace('/\\x1b(.+)\s/iUs', '', $message), $context);
         }
     }
 
@@ -303,6 +303,6 @@ class Logger
      */
     public static function getData(string $message, string $type): string
     {
-        return "\x1b[" . $type . ";1m " . self::$logger->getName() . ":$message\e[0m";
+        return (App::$logTime?'['.date('Y-m-d H:i:s').']':'')."\x1b[" . $type . ";1m " . self::$logger->getName() . ":$message\e[0m";
     }
 }

@@ -106,7 +106,7 @@ class RunSwooleCommand extends CommandHandler
         /**
          * @var Response
          */
-        return \QApi\App::run(apiPassword: $appDomain['app']->docPassword, request: $req);
+        return \QApi\App::run(apiPassword: $appDomain['app']->docPassword, request: $req,logTime: true);
     }
 
     public function handler(array $argv): mixed
@@ -164,7 +164,7 @@ class RunSwooleCommand extends CommandHandler
                 $request->server = array_change_key_case($request->server, CASE_UPPER);
                 if (!$app) {
                     $configPath = PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . 'app.php';
-                    $response->header('Server', 'QApiServer');
+                    $response->header('Server', 'QApiServer-Swoole');
                     $response->status(404);
                     $response->header('Content-Type', 'application/json;charset=utf-8');
                     $response->end(json_encode([
@@ -188,7 +188,7 @@ class RunSwooleCommand extends CommandHandler
                             $e->getLine(),
                     ]);
             }
-            $response->header('Server', 'QApiServer');
+            $response->header('Server', 'QApiServer-Swoole');
             $response->status($res->getStatusCode(), $res->getReason());
             if ($res instanceof Response) {
                 $headers = $res->getHeaders();

@@ -150,10 +150,97 @@ class Request
             $this->session = new Data($_SESSION);
             $this->method = strtoupper($this->server->get('REQUEST_METHOD'));
             $this->requestUri = $this->prepareRequestUri();
-            if (App::$app->injectionRunTime && $this->server->has('REQUEST_TIME_FLOAT')) {
+            if (App::$app->injectionRunTime && !$this->server->has('REQUEST_TIME_FLOAT')) {
                 $this->server->set('REQUEST_TIME_FLOAT', microtime(true));
             }
         }
+    }
+
+    public static function compileRequest($requestHeader, $requestBody)
+    {
+        $input = $requestBody;
+        $server = [];
+        $get = [];
+        $post = [];
+        $file = [];
+        $cookie = [];
+        $requestHeader = explode("\r\n", $requestHeader);
+        $http = array_shift($requestHeader); //GET /favicon.ico HTTP/1.1
+        $http = explode(' ', $http);
+        if (count($http) != 3) {
+            return new Request(init: true);
+        }
+        $server['REQUEST_METHOD'] = $http[0];
+        $server['REQUEST_URI'] = $http[1];
+        $server['SERVER_PROTOCOL'] = $http[2];
+        foreach ($requestHeader as $item) {
+            if (!$item) {
+                break;
+            }
+            $item = trim($item);
+            if (empty($item)) {
+                continue;
+            }
+            $item = explode(':', $item, 2);
+            $header[$item[0]] = $item[1];
+        }
+        foreach ($header as $key => $value) {
+            $key = str_replace('-', '_', strtoupper($key));
+            $server['HTTP_' . $key] = $value;
+        }
+        $getString = parse_url($server['REQUEST_URI'], PHP_URL_QUERY);
+        if ($getString) {
+            parse_str($getString, $get);
+        }
+        if ($server['REQUEST_METHOD'] == 'POST') {
+            if (isset($header['Content-Type'])) {
+                if ($header['Content-Type'] == 'application/x-www-form-urlencoded') {
+                    parse_str($input, $post);
+                } else if (stripos($header['Content-Type'], 'multipart/form-data')) {
+                    // 处理文件上传
+                    $boundary = substr($header['Content-Type'], strpos($header['Content-Type'], 'boundary=') + strlen('boundary='));
+                    // 处理报文分割符和消息体内容
+                    $bodyData = $requestBody;
+                    $bodyData = explode("\r\n--{$boundary}\r\n", $bodyData);
+                    // 获取上传文件的信息和内容
+//                    print_r($bodyData);
+                    foreach ($bodyData as $item) {
+                        list($h, $content) = explode("\r\n\r\n", $item, 2);
+                        preg_match('/name="(?P<name>[^"]+)"(?:; filename="(?P<filename>[^"]+)")?/',
+                            $h,
+                            $matches);
+                        if (strpos($h, 'filename=') !== false) {
+                            $name = trim($matches['name'], '"');
+                            $filename = isset($matches['filename']) ? trim($matches['filename'], '"') : '';
+                            // 将二进制数据存储到本地磁盘
+                            $suffix = substr(strrchr($filename, '.'), 1);
+                            $newFilename = time() . '_' . mt_rand(100, 999) . '.' . $suffix;
+                            $tempDir = sys_get_temp_dir();
+                            file_put_contents($tempDir . "{$newFilename}", $content);
+                            // 添加到文件信息列表
+                            $file[] = [
+                                'name' => $name,
+                                'filename' => $filename,
+                                'tmp_filename' => $tempDir . "{$newFilename}"
+                            ];
+                        } else {
+                            $post[$matches[1]] = substr($content, 0, -strlen("\r\n\r\n--{$boundary}--"));
+                        }
+                    }
+                    echo "文件上传解析结果：" . json_encode(['post_data' => $post, 'file_info_list' => $file]) . "\n";
+
+                }
+            }
+        }
+        // cookie解析
+        if (isset($header['Cookie'])) {
+            $cookie = explode(';', $header['Cookie']);
+            foreach ($cookie as $item) {
+                list($key, $value) = explode('=', $item, 2);
+                $cookie[trim($key)] = trim($value);
+            }
+        }
+        return new self(get: $get, post: $post, input: $input, files: $file, cookie: $cookie, server: $server, header: $header,init: true);
     }
 
     /**

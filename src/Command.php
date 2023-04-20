@@ -21,6 +21,7 @@ use QApi\Command\RouteBuildCommand;
 use QApi\Command\RouteCacheClearCommand;
 use QApi\Command\RouteCommand;
 use QApi\Command\RunCommand;
+use QApi\Command\RunPhpCommand;
 use QApi\Command\RunReactCommand;
 use QApi\Command\RunSwooleCommand;
 
@@ -84,7 +85,7 @@ class Command
         $this->addHandler(new RouteBuildCommand($this));
         $this->addHandler(new RouteCommand($this));
         $this->addHandler(new RouteCacheClearCommand($this));
-        //        $this->addHandler(new RunReactCommand($this));
+        $this->addHandler(new RunPhpCommand($this));
         $Handlers = Config::command('CommandHandlers');
 
         /**

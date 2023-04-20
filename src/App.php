@@ -34,6 +34,7 @@ class App
     public static ?\Closure $getVersionFunction = null;
     public static ?string $apiPassword = null;
 
+    public static bool $logTime = false;
 
     /**
      * 获取当前版本
@@ -64,7 +65,7 @@ class App
      * @return Response|string
      */
     public static function run(?string $timezone = 'Asia/Shanghai', string $routeDir = 'routes', string $configDir = 'config', string $runtimeDir =
-    'runtime', string                  $uploadDir = 'Upload', ?\Closure $getVersionFunction = null, array                           $allowHeaders = ['*'], string $apiPassword = '', Request $request = null): Response|string
+    'runtime', string                  $uploadDir = 'Upload', ?\Closure $getVersionFunction = null, array $allowHeaders = ['*'], string $apiPassword = '', Request $request = null,bool $logTime=false): Response|string
     {
         try {
             set_error_handler(callback: static function ($err_severity, $err_msg, $err_file, $err_line) {
@@ -88,6 +89,7 @@ class App
             if (!defined('PROJECT_PATH')) {
                 define('PROJECT_PATH', $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR);
             }
+            self::$logTime = $logTime;
             self::$timezone = new \DateTimeZone($timezone);
             date_default_timezone_set($timezone);
             self::$routeDir = trim($routeDir, '/');
@@ -95,7 +97,7 @@ class App
             self::$configDir = trim($configDir, '/');
             self::$uploadDir = trim($uploadDir, '/') . DIRECTORY_SEPARATOR;
             self::$app = Config::app();
-            self::$apiPassword = trim(self::$app->docPassword?:$apiPassword);
+            self::$apiPassword = trim(self::$app->docPassword ?: $apiPassword);
             self::$app->init();
             self::$getVersionFunction = $getVersionFunction;
             Router::init($request);
