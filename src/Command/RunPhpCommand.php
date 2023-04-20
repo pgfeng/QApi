@@ -17,7 +17,7 @@ class RunPhpCommand extends CommandHandler
     /**
      * @var string
      */
-    public string $name = 'run:php';
+    public string $name = 'run:phpWebServer';
 
     /**
      * @var Application[]
