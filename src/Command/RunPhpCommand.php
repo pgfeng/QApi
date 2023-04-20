@@ -65,7 +65,8 @@ class RunPhpCommand extends CommandHandler
             $appDomain['port']));
         $server->handle(function (\QApi\Request $request) {
             $request->server['DOCUMENT_ROOT'] = Config::command('ServerRunDir');
-            return App::run(request: $request, logTime: true)->withHeader('Server', 'QApiServer-PhpSocket');
+            return App::run(request: $request, logTime: true)
+                ->withHeader('Server', 'QApiServer-PhpSocket');
         });
         return '';
     }
