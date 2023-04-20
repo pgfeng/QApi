@@ -60,7 +60,7 @@ class RunPhpCommand extends CommandHandler
         $appDomain = $this->choseApp();
         @cli_set_process_title('QApiServer-' . $appDomain['port']);
         App::$app = $appDomain['app'];
-        $server = new Server($appDomain['port'], Config::command('ServerRunDir'), $appDomain['allowOrigin']);
+        $server = new Server($appDomain['port'], Config::command('ServerRunDir'));
         $this->command->cli->blue(sprintf('QApi Server Startup On <http://%s:%s/>', $appDomain['host'],
             $appDomain['port']));
         $server->handle(function (\QApi\Request $request) {
