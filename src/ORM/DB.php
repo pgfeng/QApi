@@ -1273,6 +1273,15 @@ class DB
     }
 
     /**
+     * @return string|int
+     * @throws Exception
+     */
+    final function lastInsertId(): int|string
+    {
+        return $this->connection->lastInsertId();
+    }
+
+    /**
      * @param int|DateInterval|null $ttl
      * @param string $spaceKey
      * @return $this
