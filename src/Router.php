@@ -305,7 +305,7 @@ class Router
     /**
      * @param string $nameSpace
      */
-    #[NoReturn] public static function BuildRoute(string $nameSpace): void
+    #[NoReturn] public static function BuildRoute(string $nameSpace, bool $force = false): void
     {
         if (!self::$routerBuilderCache) {
             self::$routerBuilderCache = new CacheContainer(new FileSystemAdapter(new FileSystem(PROJECT_PATH . \QApi\App::$runtimeDir . DIRECTORY_SEPARATOR . '.routerBuilder')), 'RouterBuilder', disableLog: true);
@@ -330,7 +330,7 @@ class Router
         try {
             $data = file_get_contents(__DIR__ . DIRECTORY_SEPARATOR . 'Route/buildTemplate.php');
             $new_data = '';
-            self::build(scandir($base_path), $base_path, $nameSpace, $base_path, $new_data);
+            self::build(scandir($base_path), $base_path, $nameSpace, $base_path, $force, $new_data);
             $save_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() . DIRECTORY_SEPARATOR
                 . Config::version()->versionDir . DIRECTORY_SEPARATOR . 'builder.php';
             @file_put_contents($save_path, $data . $new_data);
@@ -356,13 +356,13 @@ class Router
      * @param string $base_path
      * @throws ReflectionException
      */
-    public static function build($san_files, string $parent_path, string $nameSpace, string $base_path, &$data): string
+    public static function build($san_files, string $parent_path, string $nameSpace, string $base_path, $force, &$data): string
     {
         foreach ($san_files as $path) {
             if ($path !== '.' && $path !== '..') {
                 if (is_dir($parent_path . $path)) {
                     self::build(scandir($parent_path . $path . DIRECTORY_SEPARATOR), $parent_path . $path . DIRECTORY_SEPARATOR,
-                        $nameSpace, $base_path, $data);
+                        $nameSpace, $base_path, $force, $data);
                 } else if (preg_match('#(.+)Controller.php#', $path, $match)) {
                     $path_class = $nameSpace . '\\' . str_replace('/', '\\', str_replace($base_path, '',
                             $parent_path)) . $match[1] . 'Controller';
@@ -375,12 +375,12 @@ class Router
                                 $classAttributes = $refClass->getAttributes(QApi\Attribute\Route::class);
                                 if ($classAttributes) {
                                     foreach ($classAttributes as $item) {
-                                        $data .= $item->newInstance()->builder($refClass, $path_class, $method->getName(), false, $parent_path . $path);
+                                        $data .= $item->newInstance()->builder($refClass, $path_class, $method->getName(), $force, $parent_path . $path);
                                     }
                                 }
                             } else {
                                 foreach ($methodAttributes as $key => $item) {
-                                    $data .= $item->newInstance()->builder($refClass, $path_class, $method->getName(), true, $parent_path . $path);
+                                    $data .= $item->newInstance()->builder($refClass, $path_class, $method->getName(), $force, $parent_path . $path);
                                 }
                             }
                         }

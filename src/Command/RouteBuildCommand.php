@@ -32,7 +32,7 @@ class RouteBuildCommand extends CommandHandler
             ];
             $progress = $this->command->cli->yellow()->progress()->total(count($languages));
             usleep(80000);
-            Router::BuildRoute($app->nameSpace);
+            Router::BuildRoute($app->nameSpace,true);
             usleep(80000);
             $progress->current(1, $languages[0]);
             usleep(80000);
