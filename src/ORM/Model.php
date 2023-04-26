@@ -67,6 +67,7 @@ class Model extends DB
      */
     public function save(Data|array $data, ?string $primary_key = null, array $types = []): int
     {
+        $data = $data->toArray();
         if (!$primary_key) {
             $primary_key = $this->primary_key;
         }
