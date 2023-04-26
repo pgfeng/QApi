@@ -312,6 +312,14 @@ class Data extends ArrayObject implements JsonSerializableAlias
     }
 
     /**
+     * @return Data
+     */
+    public function clone(): Data
+    {
+        return new Data($this->toArray());
+    }
+
+    /**
      * @return string
      * @throws \JsonException
      */
