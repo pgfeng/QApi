@@ -38,10 +38,10 @@ use QApi\Router;
      * @param \ReflectionClass $class
      * @param string $controllerName
      * @param string $methodName
-     * @param bool $attr
+     * @param bool $force
      * @return mixed
      */
-    public function builder(\ReflectionClass $class, string $controllerName, string $methodName, bool $attr, string $classPath):
+    public function builder(\ReflectionClass $class, string $controllerName, string $methodName, bool $force, string $classPath):
     mixed
     {
         $classRoute = $class->getAttributes(__CLASS__);
