@@ -316,7 +316,11 @@ class Data extends ArrayObject implements JsonSerializableAlias
      */
     public function clone(): Data
     {
-        return new Data($this->toArray());
+        $data = new Data($this->toArray());
+        if ($this->model) {
+            $data->setModel($this->model);
+        }
+        return $data;
     }
 
     /**
