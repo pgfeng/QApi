@@ -16,13 +16,12 @@ return [
 
     /**
      * 缓存闭包函数开关
-     * 注意：函数内部代码也会一并缓存 建议正式环境开启
      */
     'cacheClosure' => false,
 
     /**
      * 缓存时间
-     * @var DateInterval|int|null
+     * DateInterval|int|null
      */
     'cacheTTL' => null,
 
