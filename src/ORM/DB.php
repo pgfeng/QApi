@@ -916,12 +916,15 @@ class DB
                     $field = $field[count($field) - 1];
                     if (!is_null($v) && isset(self::$dbColumns[$this->configName][$this->table][$field])) {
                         $type = self::$dbColumns[$this->configName][$this->table][$field]['type'];
-                        if (stripos($type, 'int') === 0) {
+                        if (stripos($type, 'INT') === 0) {
                             $item[$k] = (int)$v;
                         } else {
                             $item[$k] = (string)$v;
                         }
-                        if (stripos($type, 'decimal') > -1 || stripos($type, 'float') > -1) {
+                        if (stripos($type, 'TINYINT') === 0) {
+                            $item[$k] = (int)$v;
+                        }
+                        if (stripos($type, 'DECIMAL') > -1 || stripos($type, 'FLOAT') > -1) {
                             if ($v > PHP_FLOAT_MAX || $v < PHP_FLOAT_MIN) {
                                 $item[$k] = (string)$v;
                             } else {
