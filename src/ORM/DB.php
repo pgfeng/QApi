@@ -118,12 +118,18 @@ class DB
      * @param string $columnClassName
      * @return $this
      */
-    public function reject(array|string $rejectFiled, string $columnClassName): self
+    public function reject(string $columnClassName, array|string $rejectFiled, null|string $aliasName = null): self
     {
         if (is_string($rejectFiled)) {
             $rejectFiled = [$rejectFiled];
         }
-        return $this->select(...array_keys(Utils::tableColumn($columnClassName, $rejectFiled)));
+        $columns = array_keys(Utils::tableColumn($columnClassName, $rejectFiled));
+        if ($aliasName) {
+            foreach ($columns as $k => $column) {
+                $columns[$k] = $aliasName . '.' . $column;
+            }
+        }
+        return $this->select(...$columns);
     }
 
     /**
