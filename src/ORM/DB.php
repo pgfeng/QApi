@@ -17,6 +17,7 @@ use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Types\Type;
 use ErrorException;
 use QApi\Attribute\Column\Field;
+use QApi\Attribute\Utils;
 use QApi\Config;
 use QApi\Config\Database\MysqliDatabase;
 use QApi\Config\Database\PdoMysqlDatabase;
@@ -110,6 +111,19 @@ class DB
     public function getAliasName(): ?string
     {
         return $this->aliasName;
+    }
+
+    /**
+     * @param array|string $rejectFiled
+     * @param string $columnClassName
+     * @return $this
+     */
+    public function reject(array|string $rejectFiled, string $columnClassName): self
+    {
+        if (is_string($rejectFiled)) {
+            $rejectFiled = [$rejectFiled];
+        }
+        return $this->select(...array_keys(Utils::tableColumn($columnClassName, $rejectFiled)));
     }
 
     /**
