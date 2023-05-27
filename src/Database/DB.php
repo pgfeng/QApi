@@ -23,7 +23,7 @@ class DB
      * @param string $config_name
      * @return Model
      */
-    public static function table($table_name, $config_name = 'default'): Model
+    public static function table(string $table_name,string $config_name = 'default'): Model
     {
         return new Model($table_name, $config_name);
     }

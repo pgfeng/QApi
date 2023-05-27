@@ -253,11 +253,11 @@ class Model
     /**
      * Model constructor.
      *
-     * @param bool|string|null $table
+     * @param string|null $table
      * @param string $configName
      * @throws \Exception
      */
-    public function __construct(null|string|bool $table = null, string $configName = 'default')
+    public function __construct(string $table = null, string $configName = 'default')
     {
         $this->initialization($table,$configName);
         /**

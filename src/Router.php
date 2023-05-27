@@ -366,7 +366,7 @@ class Router
                 } else if (preg_match('#(.+)Controller.php#', $path, $match)) {
                     $path_class = $nameSpace . '\\' . str_replace('/', '\\', str_replace($base_path, '',
                             $parent_path)) . $match[1] . 'Controller';
-                    $refClass = new ReflectionClass(new $path_class);
+                    $refClass = new ReflectionClass(App::$container->make($path_class));
                     $methods = $refClass->getMethods();
                     foreach ($methods as $method) {
                         if (str_ends_with($method->getName(), 'Action')) {
@@ -688,7 +688,7 @@ class Router
             }
             $controllerName = App::$app->getNameSpace() . '\\' . $version->versionDir . '\\' . ($callback['controller']) . 'Controller';
             if (class_exists($controllerName)) {
-                $controller = new $controllerName;
+                $controller = App::$container->make($controllerName);
                 if (method_exists($controller, $callback['method'])) {
                     $params = [];
                     $classMiddleware = self::$classMiddlewareList[Config::$app->getDir()][$controllerName] ?? [];
