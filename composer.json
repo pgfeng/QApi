@@ -23,7 +23,8 @@
     "phpunit/phpunit": "^9.5",
     "react/http": "^1.8",
     "amphp/http-server": "^2.1",
-    "amphp/http-server-form-parser": "^1.1"
+    "amphp/http-server-form-parser": "^1.1",
+    "psr/container": "^2.0"
   },
   "bin": [
     "src/bin/QConsole"
