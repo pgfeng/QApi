@@ -57,7 +57,7 @@ class Container implements ContainerInterface
      * @param string|\Closure|null $value
      * @return void
      */
-    public function set(string $id, string|object $value=null): void
+    public function set(string $id, string|object $value = null): void
     {
         if ($value === null) {
             $value = $id;
@@ -75,7 +75,7 @@ class Container implements ContainerInterface
      * @throws NotFoundException
      * @throws ReflectionException
      */
-    public function make(string $className,array $parameters = [], $autoMake = true): mixed
+    public function make(string $className, array $parameters = [], $autoMake = true): mixed
     {
         $reflectionClass = new ReflectionClass($className);
         $constructor = $reflectionClass->getConstructor();
@@ -90,16 +90,18 @@ class Container implements ContainerInterface
                 continue;
             }
             if ($parameter->isVariadic()) {
-                throw new \InvalidArgumentException("Variadic arguments are not supported");
+                throw new InvalidArgumentException("[{$className}::__construct]Variadic parameters are not supported: \${$parameter->getName()}");
             }
             $parameterType = $parameter->getType();
             if ($parameterType === null) {
-                throw new \InvalidArgumentException("Parameter type is not defined");
+                throw new \InvalidArgumentException("[{$className}::__construct]Cannot resolve parameter: \${$parameter->getName()}");
             }
-            if(in_array($parameterType->getName(),['int','string','float','bool','array','object','callable','iterable'])){
+            if (in_array($parameterType->getName(), ['int', 'string', 'float', 'bool', 'array', 'object', 'callable', 'iterable'])) {
                 if ($parameter->isDefaultValueAvailable()) {
                     $dependencies[] = $parameter->getDefaultValue();
                     continue;
+                } else {
+                    throw new \InvalidArgumentException("[{$className}::__construct]Cannot resolve parameter: \${$parameter->getName()}");
                 }
             }
             $parameterInterface = $parameterType->getName();
@@ -107,7 +109,7 @@ class Container implements ContainerInterface
                 if ($autoMake) {
                     $this->set($parameterInterface, $parameterInterface);
                 } else {
-                    throw new NotFoundException("Dependency not found in container: $parameterInterface");
+                    throw new NotFoundException("[{$className}::__construct]Dependency not found in container: $parameterInterface");
                 }
             }
             $dependencies[] = $this->get($parameterInterface);
@@ -128,7 +130,7 @@ class Container implements ContainerInterface
      * @throws ReflectionException
      * @throws NotFoundException|ReflectionException
      */
-    public function call(mixed $callable, array $parameters = [],$autoMake=true): mixed
+    public function call(mixed $callable, array $parameters = [], $autoMake = true): mixed
     {
         if (is_string($callable) && str_contains($callable, '::')) {
             $callable = explode('::', $callable, 2);
@@ -136,7 +138,7 @@ class Container implements ContainerInterface
         if (is_array($callable)) {
             [$class, $method] = $callable;
             if (is_string($class)) {
-                $class = $this->make($class,[],$autoMake);
+                $class = $this->make($class, [], $autoMake);
             }
             $reflection = new ReflectionMethod($class, $method);
         } else {
@@ -151,14 +153,18 @@ class Container implements ContainerInterface
                 $paramTypeName = null;
             }
             if ($paramTypeName !== null) {
-                if (isset($parameters[$param->name])){
+                if (isset($parameters[$param->name])) {
                     $dependencies[] = $parameters[$param->name];
                     continue;
                 }
                 if (!$this->has($paramTypeName)) {
-                    if (in_array($paramTypeName, ['int', 'string', 'bool', 'float', 'array', 'object'])){
-                        $dependencies[] = $param->getDefaultValue();
-                        continue;
+                    if (in_array($paramTypeName, ['int', 'string', 'float', 'bool', 'array', 'object', 'callable', 'iterable'])) {
+                        if ($param->isDefaultValueAvailable()) {
+                            $dependencies[] = $param->getDefaultValue();
+                            continue;
+                        } else {
+                            throw new InvalidArgumentException("Cannot resolve parameter: \${$param->name}");
+                        }
                     }
                     if ($autoMake) {
                         $this->set($paramTypeName);
@@ -166,7 +172,7 @@ class Container implements ContainerInterface
                         throw new NotFoundException("Dependency not found in container: $paramTypeName");
                     }
                     $dependencies[] = $this->get($paramTypeName);
-                }else{
+                } else {
                     $dependencies[] = $this->get($paramTypeName);
                 }
             } elseif (array_key_exists($param->name, $parameters)) {
