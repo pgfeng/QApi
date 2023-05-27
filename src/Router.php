@@ -628,7 +628,7 @@ class Router
                 $result = null;
                 if ($middleware) {
                     foreach ($middleware as $item) {
-                        $result = App::$container->call([$item, 'handle'],['next'=>fn()=>App::$container->call($callback)]);
+                        $result = App::$container->call([$item, 'handle'], ['next' => fn() => App::$container->call($callback)]);
                         if ($result instanceof Response) {
                             break;
                         }
@@ -659,7 +659,7 @@ class Router
             $result = '';
             if ($middleware) {
                 foreach ($middleware as $item) {
-                    $result = App::$container->call([$item, 'handle'], ['next'=>static function (Request $request, Response $response) use ($controller, $method) {
+                    $result = App::$container->call([$item, 'handle'], ['next' => static function () use ($controller, $method) {
                         return App::$container->call([$controller, $method]);
                     }]);
                     if ($result instanceof Response) {
@@ -715,7 +715,6 @@ class Router
                         }
                         if ($result instanceof Closure) {
                             return App::$container->call($result);
-//                            return $result(self::$request, $response);
                         }
                         return $result;
                     }
