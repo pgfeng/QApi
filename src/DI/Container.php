@@ -175,7 +175,7 @@ class Container implements ContainerInterface
                 } else {
                     $dependencies[] = $this->get($paramTypeName);
                 }
-            } elseif (array_key_exists($param->name, $parameters)) {
+            } elseif (isset($parameters[$param->name])) {
                 $dependencies[] = $parameters[$param->name];
             } elseif ($param->isDefaultValueAvailable()) {
                 $dependencies[] = $param->getDefaultValue();
