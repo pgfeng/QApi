@@ -161,7 +161,7 @@ class Container implements ContainerInterface
                         continue;
                     }
                     if ($autoMake) {
-                        $this->set($paramTypeName, $paramTypeName);
+                        $this->set($paramTypeName);
                     } else {
                         throw new NotFoundException("Dependency not found in container: $paramTypeName");
                     }
