@@ -54,7 +54,7 @@ class Container implements ContainerInterface
      * $container->set('foo', Foo::class);
      * $container->set('foo', fn() => new Foo());
      * @param string $id
-     * @param string|\Closure|null $value
+     * @param string|object|null $value
      * @return void
      */
     public function set(string $id, string|object $value = null): void
