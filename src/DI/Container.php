@@ -38,7 +38,6 @@ class Container implements ContainerInterface
         if (!$this->has($id)) {
             throw new NotFoundException("Service not found: $id");
         }
-
         return $this->resolveDependencies($this->dependencies[$id]);
     }
 
@@ -55,11 +54,14 @@ class Container implements ContainerInterface
      * $container->set('foo', Foo::class);
      * $container->set('foo', fn() => new Foo());
      * @param string $id
-     * @param string|\Closure $value
+     * @param string|\Closure|null $value
      * @return void
      */
-    public function set(string $id, string|\Closure $value): void
+    public function set(string $id, string|object $value=null): void
     {
+        if ($value === null) {
+            $value = $id;
+        }
         if (is_string($value) && class_exists($value)) {
             $value = fn() => $this->make($value);
         }
@@ -73,40 +75,43 @@ class Container implements ContainerInterface
      * @throws NotFoundException
      * @throws ReflectionException
      */
-    public function make(string $className) : mixed
+    public function make(string $className,array $parameters = [], $autoMake = true): mixed
     {
         $reflectionClass = new ReflectionClass($className);
-
         $constructor = $reflectionClass->getConstructor();
-
         if ($constructor === null) {
             return $reflectionClass->newInstanceWithoutConstructor();
         }
-
-        $parameters = $constructor->getParameters();
-
+        $refParameters = $constructor->getParameters();
         $dependencies = [];
-
-        foreach ($parameters as $parameter) {
+        foreach ($refParameters as $parameter) {
+            if (isset($parameters[$parameter->getName()])) {
+                $dependencies[] = $parameters[$parameter->getName()];
+                continue;
+            }
             if ($parameter->isVariadic()) {
                 throw new \InvalidArgumentException("Variadic arguments are not supported");
             }
-
             $parameterType = $parameter->getType();
-
             if ($parameterType === null) {
                 throw new \InvalidArgumentException("Parameter type is not defined");
             }
-
-            $parameterInterface = $parameterType->getName();
-
-            if (!$this->has($parameterInterface)) {
-                throw new NotFoundException("Dependency not found in container: $parameterInterface");
+            if(in_array($parameterType->getName(),['int','string','float','bool','array','object','callable','iterable'])){
+                if ($parameter->isDefaultValueAvailable()) {
+                    $dependencies[] = $parameter->getDefaultValue();
+                    continue;
+                }
             }
-
+            $parameterInterface = $parameterType->getName();
+            if (!$this->has($parameterInterface)) {
+                if ($autoMake) {
+                    $this->set($parameterInterface, $parameterInterface);
+                } else {
+                    throw new NotFoundException("Dependency not found in container: $parameterInterface");
+                }
+            }
             $dependencies[] = $this->get($parameterInterface);
         }
-
         return $reflectionClass->newInstanceArgs($dependencies);
     }
 
@@ -123,24 +128,20 @@ class Container implements ContainerInterface
      * @throws ReflectionException
      * @throws NotFoundException|ReflectionException
      */
-    public function call(mixed $callable, array $parameters = []): mixed
+    public function call(mixed $callable, array $parameters = [],$autoMake=true): mixed
     {
         if (is_string($callable) && str_contains($callable, '::')) {
             $callable = explode('::', $callable, 2);
         }
-
         if (is_array($callable)) {
             [$class, $method] = $callable;
-
             if (is_string($class)) {
-                $class = $this->make($class);
+                $class = $this->make($class,[],$autoMake);
             }
-
             $reflection = new ReflectionMethod($class, $method);
         } else {
             $reflection = new ReflectionFunction($callable);
         }
-
         $dependencies = [];
         foreach ($reflection->getParameters() as $param) {
             $paramType = $param->getType();
@@ -150,7 +151,24 @@ class Container implements ContainerInterface
                 $paramTypeName = null;
             }
             if ($paramTypeName !== null) {
-                $dependencies[] = $this->get($paramTypeName);
+                if (isset($parameters[$param->name])){
+                    $dependencies[] = $parameters[$param->name];
+                    continue;
+                }
+                if (!$this->has($paramTypeName)) {
+                    if (in_array($paramTypeName, ['int', 'string', 'bool', 'float', 'array', 'object'])){
+                        $dependencies[] = $param->getDefaultValue();
+                        continue;
+                    }
+                    if ($autoMake) {
+                        $this->set($paramTypeName, $paramTypeName);
+                    } else {
+                        throw new NotFoundException("Dependency not found in container: $paramTypeName");
+                    }
+                    $dependencies[] = $this->get($paramTypeName);
+                }else{
+                    $dependencies[] = $this->get($paramTypeName);
+                }
             } elseif (array_key_exists($param->name, $parameters)) {
                 $dependencies[] = $parameters[$param->name];
             } elseif ($param->isDefaultValueAvailable()) {
@@ -161,17 +179,16 @@ class Container implements ContainerInterface
         }
         if (isset($class)) {
             return $reflection->invokeArgs($class, $dependencies);
-        }else{
+        } else {
             return $reflection->invokeArgs($dependencies);
         }
     }
-
 
     /**
      * @param mixed $value
      * @return mixed
      */
-    private function resolveDependencies(mixed $value) : mixed
+    private function resolveDependencies(mixed $value): mixed
     {
         if (is_callable($value)) {
             return $value($this);

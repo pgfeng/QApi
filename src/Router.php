@@ -614,6 +614,7 @@ class Router
             'params' => $params,
             'middleware' => $middleware,
         ];
+        App::$container->set(Response::class);
         if (!is_array($callback)) {
             if (is_callable($callback)) {
                 if ($params) {
@@ -623,33 +624,23 @@ class Router
                     $arguments = new Data($params);
                 }
                 self::$request->arguments = $arguments;
-                $response = new Response();
                 Logger::router('Running ' . '-> ' . str_replace('{"callback":{}', '{"callback":Closure', json_encode(self::$router[Config::$app->getDir()], JSON_THROW_ON_ERROR)));
                 $result = null;
                 if ($middleware) {
-                    /**
-                     * @var QApi\Http\MiddlewareInterface $middlewareObject
-                     */
-                    $middlewareObject = null;
                     foreach ($middleware as $item) {
-                        $middlewareObject = new $item;
-                        $result = $middlewareObject->handle(self::$request, $response, static function (Request  $request,
-                                                                                                        Response $response)
-                        use ($callback) {
-                            return $callback($request, $response);
-                        });
+                        $result = App::$container->call([$item, 'handle'],['next'=>fn()=>App::$container->call($callback)]);
                         if ($result instanceof Response) {
                             break;
                         }
                     }
                 } else {
-                    $result = $callback(self::$request, $response);
+                    $result = App::$container->call($callback);
                 }
                 if ($result instanceof Response) {
                     return $result;
                 }
                 if ($result instanceof Closure) {
-                    return $result(self::$request, $response);
+                    return App::$container->call($result);
                 }
 
                 return $result;
@@ -662,37 +653,28 @@ class Router
             $controllerName = $segments[0];
             $controller = new $controllerName();
             $method = $segments[1];
-            if (!is_array($params)) {
-                $params = [];
-            }
             $arguments = new Data($params);
             self::$request->arguments = $arguments;
-            $response = new Response();
             Logger::router('Running -> ' . json_encode(self::$router[Config::$app->getDir()], JSON_THROW_ON_ERROR));
             $result = '';
             if ($middleware) {
-                /**
-                 * @var QApi\Http\MiddlewareInterface $middlewareObject
-                 */
-                $middlewareObject = null;
                 foreach ($middleware as $item) {
-                    $middlewareObject = new $item;
-                    $result = $middlewareObject->handle(self::$request, $response, static function (Request $request, Response $response) use ($controller, $method) {
-                        return $controller->$method($request, $response);
-                    });
+                    $result = App::$container->call([$item, 'handle'], ['next'=>static function (Request $request, Response $response) use ($controller, $method) {
+                        return App::$container->call([$controller, $method]);
+                    }]);
                     if ($result instanceof Response) {
                         break;
                     }
                 }
             } else {
                 self::$request->arguments = $arguments;
-                $result = $controller->$method(self::$request, $response);
+                $result = App::$container->call([$controller, $method]);
             }
             if ($result instanceof Response) {
                 return $result;
             }
             if ($result instanceof Closure) {
-                return $result(self::$request, $response);
+                return App::$container->call($result);
             }
 
             return $result;
@@ -716,32 +698,24 @@ class Router
                     self::$router[Config::$app->getDir()]['middleware'] = &$middlewareLists;
                     Logger::router('Running -> ' . json_encode(self::$router[Config::$app->getDir()], JSON_THROW_ON_ERROR));
                     self::$request->arguments = new Data($params);
-                    $response = new Response();
                     if (self::$router[Config::$app->getDir()]['middleware']) {
-                        /**
-                         * @var QApi\Http\MiddlewareInterface $middlewareObject
-                         */
-                        $middlewareObject = null;
                         foreach (self::$router[Config::$app->getDir()]['middleware'] as $item) {
-                            $middlewareObject = new $item;
-                            $result = $middlewareObject->handle(self::$request, $response, static function (Request  $request,
-                                                                                                            Response $response) use ($controller, $callback) {
-                                return $controller->{$callback['method']}($request, $response);
-                            });
+                            $result = App::$container->call([$item, 'handle'], ['next' => fn() => App::$container->call([$controller, $callback['method']])]);
                             if ($result instanceof Response) {
                                 break;
                             }
                         }
 
                     } else {
-                        $result = $controller->{$callback['method']}(self::$request, $response);
+                        $result = App::$container->call([$controller, $callback['method']]);
                     }
                     if (isset($result)) {
                         if ($result instanceof Response) {
                             return $result;
                         }
                         if ($result instanceof Closure) {
-                            return $result(self::$request, $response);
+                            return App::$container->call($result);
+//                            return $result(self::$request, $response);
                         }
                         return $result;
                     }
