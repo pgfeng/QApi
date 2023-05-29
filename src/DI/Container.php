@@ -53,11 +53,12 @@ class Container implements ContainerInterface
     /**
      * $container->set('foo', Foo::class);
      * $container->set('foo', fn() => new Foo());
+     * $container->set('foo', ['a'=>[]]);
      * @param string $id
-     * @param string|object|null $value
+     * @param mixed $value
      * @return void
      */
-    public function set(string $id, string|object $value = null): void
+    public function set(string $id, mixed $value = null): void
     {
         if ($value === null) {
             $value = $id;
