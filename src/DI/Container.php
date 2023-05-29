@@ -15,6 +15,11 @@ use ReflectionMethod;
  */
 class Container implements ContainerInterface
 {
+    /**
+     * @var Container[]
+     */
+    private static array $containers = [];
+
     private array $dependencies;
 
     /**
@@ -25,6 +30,45 @@ class Container implements ContainerInterface
     public function __construct(array $dependencies = [])
     {
         $this->dependencies = $dependencies;
+    }
+
+    /**
+     * @param string $containerId
+     * @return Container
+     */
+    public static function getContainer(string $containerId): Container
+    {
+        if (!isset(self::$containers[$containerId])) {
+            self::$containers[$containerId] = new Container();
+        }
+        return self::$containers[$containerId];
+    }
+
+    /**
+     * @param string $containerId
+     * @return Container
+     */
+    public static function G(string $containerId='App'): Container
+    {
+        return self::getContainer($containerId);
+    }
+
+    /**
+     * $container->delete('foo', 'bar');
+     * @param string ...$id
+     * @return bool
+     */
+    public function delete(string ...$id):bool
+    {
+        $result = true;
+        foreach ($id as $item){
+            if (isset($this->dependencies[$item])){
+                unset($this->dependencies[$item]);
+            }else{
+                $result = false;
+            }
+        }
+        return $result;
     }
 
     /**
