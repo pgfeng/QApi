@@ -48,7 +48,7 @@ class Container implements ContainerInterface
      * @param string $containerId
      * @return Container
      */
-    public static function G(string $containerId='App'): Container
+    public static function G(string $containerId = 'App'): Container
     {
         return self::getContainer($containerId);
     }
@@ -58,13 +58,13 @@ class Container implements ContainerInterface
      * @param string ...$id
      * @return bool
      */
-    public function delete(string ...$id):bool
+    public function delete(string ...$id): bool
     {
         $result = true;
-        foreach ($id as $item){
-            if (isset($this->dependencies[$item])){
+        foreach ($id as $item) {
+            if (isset($this->dependencies[$item])) {
                 unset($this->dependencies[$item]);
-            }else{
+            } else {
                 $result = false;
             }
         }
@@ -102,12 +102,12 @@ class Container implements ContainerInterface
      * @param mixed $value
      * @return void
      */
-    public function set(string $id, mixed $value = null): void
+    public function set(string $id, mixed $value = null, $isClass = true): void
     {
         if ($value === null) {
             $value = $id;
         }
-        if (is_string($value) && class_exists($value)) {
+        if (is_string($value) && $isClass && class_exists($value)) {
             $value = fn() => $this->make($value);
         }
         $this->dependencies[$id] = $value;
