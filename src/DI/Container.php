@@ -141,7 +141,7 @@ class Container implements ContainerInterface
             if ($parameterType === null) {
                 throw new \InvalidArgumentException("[{$className}::__construct]Cannot resolve parameter: \${$parameter->getName()}");
             }
-            if (in_array($parameterType->getName(), ['int', 'string', 'float', 'bool', 'array', 'object', 'callable', 'iterable'])) {
+            if ($parameterType instanceof \ReflectionUnionType || in_array($parameterType->getName(), ['int', 'string', 'float', 'bool', 'array', 'object', 'callable', 'iterable'])) {
                 if ($parameter->isDefaultValueAvailable()) {
                     $dependencies[] = $parameter->getDefaultValue();
                     continue;
@@ -247,13 +247,13 @@ class Container implements ContainerInterface
         if (is_object($value)) {
             return $value;
         }
-        if (is_array($value)) {
-            $resolved = [];
-            foreach ($value as $key => $item) {
-                $resolved[$key] = $this->resolveDependencies($item);
-            }
-            return $resolved;
-        }
+//        if (is_array($value)) {
+//            $resolved = [];
+//            foreach ($value as $key => $item) {
+//                $resolved[$key] = $this->resolveDependencies($item);
+//            }
+//            return $resolved;
+//        }
         return $value;
     }
 }
