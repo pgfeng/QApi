@@ -183,7 +183,7 @@ class ColumnCommand extends CommandHandler
     private function buildTableColumn($table, $config, $nameSpace, $columnPath): void
     {
         $columns = DB::table('', $config)->query('desc ' . Config::database($config)->tablePrefix . $table);
-        $columns_comment = DB::table('', $config)->query('select column_name,column_comment from information_schema.columns where table_schema =\'' . Config::database($config)->dbName . '\'  and table_name = \'' . Config::database($config)->tablePrefix . $table . '\';');
+        $columns_comment = DB::table('', $config)->query('select column_name as column_name,column_comment as column_comment from information_schema.columns where table_schema =\'' . Config::database($config)->dbName . '\'  and table_name = \'' . Config::database($config)->tablePrefix . $table . '\';');
         $columns_comment = $columns_comment->transPrimaryIndex('column_name');
         $const = '';
         foreach ($columns as $column) {
