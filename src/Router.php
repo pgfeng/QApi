@@ -84,9 +84,9 @@ class Router
                 'ALL' => [],];
         }
         if ($request){
-            App::$container->setStatic(Request::class, fn() => $request);
+            App::$container->setGlobal(Request::class, fn() => $request);
         }else{
-            App::$container->setStatic(Request::class, Request::class);
+            App::$container->setGlobal(Request::class, Request::class);
         }
         $request = self::$request = QApi\DI\Container::G()->get(Request::class);
         Logger::router($request->method . ' -> ' . $request->domain() . $request->requestUri);

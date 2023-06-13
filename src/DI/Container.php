@@ -26,9 +26,9 @@ class Container implements ContainerInterface
     private array $dependencies;
 
     /**
-     * @var array 保存实例化后的对象
+     * @var array 保存实例化后的静态对象
      */
-    private array $instances = [];
+    private array $globalInstances = [];
 
     /**
      * Container constructor.
@@ -85,13 +85,13 @@ class Container implements ContainerInterface
      * @return mixed
      * @throws NotFoundException
      */
-    public function get(string $id, bool $getStatic = true): mixed
+    public function get(string $id, bool $getGlobalInstance = true): mixed
     {
         if (!$this->has($id)) {
             throw new NotFoundException("Service not found: $id");
         }
-        if ($getStatic && isset($this->instances[$id])) {
-            return $this->instances[$id];
+        if ($getGlobalInstance && isset($this->globalInstances[$id])) {
+            return $this->globalInstances[$id];
         }
         return $this->resolveDependencies($this->dependencies[$id]);
     }
@@ -129,10 +129,10 @@ class Container implements ContainerInterface
      * @param mixed|null $value
      * @return void
      */
-    public function setStatic(string $id, mixed $value = null): void
+    public function setGlobal(string $id, mixed $value = null): void
     {
         $this->set($id, $value);
-        $this->instances[$id] = $this->get($id);
+        $this->globalInstances[$id] = $this->get($id);
     }
 
     /**
