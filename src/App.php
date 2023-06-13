@@ -70,8 +70,7 @@ class App
     public static function run(?string $timezone = 'Asia/Shanghai', string $routeDir = 'routes', string $configDir = 'config', string $runtimeDir =
     'runtime', string                  $uploadDir = 'Upload', ?\Closure $getVersionFunction = null, array $allowHeaders = ['*'], string $apiPassword = '', Request $request = null,bool $logTime=false): Response|string
     {
-        self::$container = new Container();
-        self::$container->set(Container::class, self::$container);
+        self::$container = Container::G();
         try {
             set_error_handler(callback: static function ($err_severity, $err_msg, $err_file, $err_line) {
                 match ($err_severity) {
