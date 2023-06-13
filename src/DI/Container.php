@@ -20,7 +20,15 @@ class Container implements ContainerInterface
      */
     private static array $containers = [];
 
+    /**
+     * @var array 保存依赖关系
+     */
     private array $dependencies;
+
+    /**
+     * @var array 保存实例化后的对象
+     */
+    private array $instances = [];
 
     /**
      * Container constructor.
@@ -77,10 +85,13 @@ class Container implements ContainerInterface
      * @return mixed
      * @throws NotFoundException
      */
-    public function get(string $id): mixed
+    public function get(string $id, bool $getStatic = true): mixed
     {
         if (!$this->has($id)) {
             throw new NotFoundException("Service not found: $id");
+        }
+        if ($getStatic && isset($this->instances[$id])) {
+            return $this->instances[$id];
         }
         return $this->resolveDependencies($this->dependencies[$id]);
     }
@@ -102,15 +113,26 @@ class Container implements ContainerInterface
      * @param mixed $value
      * @return void
      */
-    public function set(string $id, mixed $value = null, $isClass = true): void
+    public function set(string $id, mixed $value = null): void
     {
         if ($value === null) {
             $value = $id;
         }
-        if (is_string($value) && $isClass && class_exists($value)) {
+        if (is_string($value) && class_exists($value)) {
             $value = fn() => $this->make($value);
         }
         $this->dependencies[$id] = $value;
+    }
+
+    /**
+     * @param string $id
+     * @param mixed|null $value
+     * @return void
+     */
+    public function setStatic(string $id, mixed $value = null): void
+    {
+        $this->set($id, $value);
+        $this->instances[$id] = $this->get($id);
     }
 
     /**

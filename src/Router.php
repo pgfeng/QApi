@@ -33,6 +33,7 @@ use ReflectionException;
  */
 class Router
 {
+
     public static array $router = [];
 
     public static array $middlewareList = [];
@@ -70,7 +71,7 @@ class Router
      * @param Request|null $request
      * @throws ErrorException
      */
-    public static function init(Request $request = null): void
+    public static function init(?Request $request=null): void
     {
         if (!isset(self::$routeLists[Config::$app->getDir()])) {
             self::$routeLists[Config::$app->getDir()] = [
@@ -82,13 +83,12 @@ class Router
                 'HEAD' => [],
                 'ALL' => [],];
         }
-        if (!$request) {
-            $arguments = [];
-            self::$request = $request = new Request(new Data($arguments));
-        } else {
-            self::$request = $request;
+        if ($request){
+            App::$container->setStatic(Request::class, fn() => $request);
+        }else{
+            App::$container->setStatic(Request::class, Request::class);
         }
-
+        $request = self::$request = QApi\DI\Container::G()->get(Request::class);
         Logger::router($request->method . ' -> ' . $request->domain() . $request->requestUri);
 //            Logger::info("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Request Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
         Logger::request('Headers -> ' . $request->header);

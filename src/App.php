@@ -25,9 +25,7 @@ use QApi\Exception\WarningException;
 
 class App
 {
-
     public static Container $container;
-
     public static ?Application $app = null;
     public static ?string $routeDir = 'routes';
     public static ?string $configDir = 'config';
@@ -70,8 +68,8 @@ class App
     public static function run(?string $timezone = 'Asia/Shanghai', string $routeDir = 'routes', string $configDir = 'config', string $runtimeDir =
     'runtime', string                  $uploadDir = 'Upload', ?\Closure $getVersionFunction = null, array $allowHeaders = ['*'], string $apiPassword = '', Request $request = null,bool $logTime=false): Response|string
     {
-        self::$container = Container::G();
         try {
+            App::$container = Container::G();
             set_error_handler(callback: static function ($err_severity, $err_msg, $err_file, $err_line) {
                 match ($err_severity) {
                     E_ERROR => throw new ErrorException  ($err_msg, 0, $err_severity, $err_file, $err_line),
@@ -104,12 +102,7 @@ class App
             self::$apiPassword = trim(self::$app->docPassword ?: $apiPassword);
             self::$app->init();
             self::$getVersionFunction = $getVersionFunction;
-            if ($request){
-                self::$container->set(Request::class,fn()=>$request);
-            }else{
-                self::$container->set(Request::class, fn()=>new Request());
-            }
-            Router::init(self::$container->get(Request::class));
+            Router::init($request);
             return Router::run();
         } catch (\Exception $e) {
             $msg = $e->getMessage();
