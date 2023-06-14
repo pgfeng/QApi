@@ -84,29 +84,16 @@ class Router
                 'ALL' => [],];
         }
         if ($request){
-            App::$container->setGlobal(Request::class, fn() => $request);
+            App::$container->set(Request::class, $request);
         }else{
-            App::$container->setGlobal(Request::class, Request::class);
+            App::$container->set(Request::class, new Request([]));
         }
         $request = self::$request = QApi\DI\Container::G()->get(Request::class);
         Logger::router($request->method . ' -> ' . $request->domain() . $request->requestUri);
-//            Logger::info("↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓  Request Data ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ");
         Logger::request('Headers -> ' . $request->header);
         if ($request->input) {
             Logger::request('InputData -> ' . $request->input);
         }
-//            Logger::info(' RequestMethod' . ' -> ' . $this->method);
-//            Logger::info(' HeaderData -> ' . $this->header);
-//            if ($this->method === MethodsEnum::METHOD_POST) {
-//                Logger::info(' PostData -> ' . $this->post);
-//                if ($this->file->count()) {
-//                    Logger::info(' FileData -> ' . $this->file);
-//                }
-//                if ($this->input) {
-//                    Logger::info(' InputData -> ' . $this->input);
-//                }
-//            }
-//            Logger::info("↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑  Request Data  ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ");
         self::$config = Config::route();
         if (self::$config['cache']) {
             self::$cache = new (self::$config['cacheDriver']->driver)(self::$config['cacheDriver']);
@@ -516,7 +503,7 @@ class Router
                 $callback = $compileList['ALL'][$uri];
             } else {
                 $routers = array_keys($compileList[$method]);
-                foreach ($routers as $routerKey => $router) {
+                foreach ($routers as $router) {
                     if ($uri === $router || preg_match('#^' . $router . '$#', $uri, $params)) {
                         $callback = $compileList[$method][$router];
                         array_shift($params);
@@ -525,7 +512,7 @@ class Router
                 }
                 if (!$callback) {
                     $routers = array_keys($compileList['ALL']);
-                    foreach ($routers as $routerKey => $router) {
+                    foreach ($routers as $router) {
                         if ($uri === $router || preg_match('#^' . $router . '$#', $uri, $params)) {
                             $callback = $compileList['ALL'][$router];
                             array_shift($params);

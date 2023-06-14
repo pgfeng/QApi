@@ -85,13 +85,10 @@ class Container implements ContainerInterface
      * @return mixed
      * @throws NotFoundException
      */
-    public function get(string $id, bool $getGlobalInstance = true): mixed
+    public function get(string $id): mixed
     {
         if (!$this->has($id)) {
             throw new NotFoundException("Service not found: $id");
-        }
-        if ($getGlobalInstance && isset($this->globalInstances[$id])) {
-            return $this->globalInstances[$id];
         }
         return $this->resolveDependencies($this->dependencies[$id]);
     }
@@ -125,24 +122,13 @@ class Container implements ContainerInterface
     }
 
     /**
-     * @param string $id
-     * @param mixed|null $value
-     * @return void
-     */
-    public function setGlobal(string $id, mixed $value = null): void
-    {
-        $this->set($id, $value);
-        $this->globalInstances[$id] = $this->get($id);
-    }
-
-    /**
      * $container->make(Foo::class);
      * @param string $className
      * @return mixed
      * @throws NotFoundException
      * @throws ReflectionException
      */
-    public function make(string $className, array $parameters = [], $autoMake = true): mixed
+    public function make(string $className, array $parameters = []): mixed
     {
         $reflectionClass = new ReflectionClass($className);
         $constructor = $reflectionClass->getConstructor();
@@ -173,11 +159,7 @@ class Container implements ContainerInterface
             }
             $parameterInterface = $parameterType->getName();
             if (!$this->has($parameterInterface)) {
-                if ($autoMake) {
-                    $this->set($parameterInterface, $parameterInterface);
-                } else {
-                    throw new NotFoundException("[{$className}::__construct]Dependency not found in container: $parameterInterface");
-                }
+                $this->set($parameterInterface, $parameterInterface);
             }
             $dependencies[] = $this->get($parameterInterface);
         }
@@ -197,7 +179,7 @@ class Container implements ContainerInterface
      * @throws ReflectionException
      * @throws NotFoundException|ReflectionException
      */
-    public function call(mixed $callable, array $parameters = [], $autoMake = true): mixed
+    public function call(mixed $callable, array $parameters = []): mixed
     {
         if (is_string($callable) && str_contains($callable, '::')) {
             $callable = explode('::', $callable, 2);
@@ -205,7 +187,7 @@ class Container implements ContainerInterface
         if (is_array($callable)) {
             [$class, $method] = $callable;
             if (is_string($class)) {
-                $class = $this->make($class, [], $autoMake);
+                $class = $this->make($class, []);
             }
             $reflection = new ReflectionMethod($class, $method);
         } else {
@@ -225,7 +207,7 @@ class Container implements ContainerInterface
                     continue;
                 }
                 if (!$this->has($paramTypeName)) {
-                    if (in_array($paramTypeName, ['int', 'string', 'float', 'bool', 'array', 'object', 'callable', 'iterable'])) {
+                    if (in_array($paramTypeName, ['int', 'string', 'float', 'bool', 'array', 'object', 'callable', 'iterable','resource'])) {
                         if ($param->isDefaultValueAvailable()) {
                             $dependencies[] = $param->getDefaultValue();
                             continue;
@@ -233,11 +215,7 @@ class Container implements ContainerInterface
                             throw new InvalidArgumentException("Cannot resolve parameter: \${$param->name}");
                         }
                     }
-                    if ($autoMake) {
-                        $this->set($paramTypeName);
-                    } else {
-                        throw new NotFoundException("Dependency not found in container: $paramTypeName");
-                    }
+                    $this->set($paramTypeName);
                     $dependencies[] = $this->get($paramTypeName);
                 } else {
                     $dependencies[] = $this->get($paramTypeName);
