@@ -71,7 +71,7 @@ class Router
      * @param Request|null $request
      * @throws ErrorException
      */
-    public static function init(?Request $request=null): void
+    public static function init(?Request $request = null): void
     {
         if (!isset(self::$routeLists[Config::$app->getDir()])) {
             self::$routeLists[Config::$app->getDir()] = [
@@ -83,9 +83,9 @@ class Router
                 'HEAD' => [],
                 'ALL' => [],];
         }
-        if ($request){
+        if ($request) {
             App::$container->set(Request::class, $request);
-        }else{
+        } else {
             App::$container->set(Request::class, new Request([]));
         }
         $request = self::$request = QApi\DI\Container::G()->get(Request::class);
@@ -692,7 +692,6 @@ class Router
                                 break;
                             }
                         }
-
                     } else {
                         $result = App::$container->call([$controller, $callback['method']]);
                     }
