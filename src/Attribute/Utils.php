@@ -16,6 +16,7 @@ use QApi\Attribute\Parameter\PostParamFromTableField;
 use QApi\Cache\Cache;
 use QApi\Command;
 use QApi\Config;
+use QApi\DI\Container;
 use ReflectionClass;
 use ReflectionException;
 
@@ -61,9 +62,9 @@ class Utils
                                 if ($v instanceof Route || $v instanceof GetParam || $v instanceof PostParam || $v
                                     instanceof HeaderParam || $v instanceof PathParam || $v instanceof PostParamFromTableField || $v instanceof GetParamFromTableField || $v instanceof PathParamFromTableField) {
                                     if ($v instanceof Route) {
-                                        if($path){
-                                            if (!str_ends_with($path, '/')){
-                                                $path.='/';
+                                        if ($path) {
+                                            if (!str_ends_with($path, '/')) {
+                                                $path .= '/';
                                             }
                                         }
                                         if ($v->path) {
@@ -199,9 +200,9 @@ class Utils
                                 if ($v instanceof Route || $v instanceof GetParam || $v instanceof PostParam || $v
                                     instanceof HeaderParam || $v instanceof PathParam || $v instanceof PostParamFromTableField || $v instanceof GetParamFromTableField || $v instanceof PathParamFromTableField) {
                                     if ($v instanceof Route) {
-                                        if($path){
-                                            if (!str_ends_with($path, '/')){
-                                                $path.='/';
+                                        if ($path) {
+                                            if (!str_ends_with($path, '/')) {
+                                                $path .= '/';
                                             }
                                         }
                                         if ($v->path) {
@@ -333,12 +334,24 @@ class Utils
     }
 
     /**
+     * @param string $className
+     * @return mixed
+     */
+    private static function getClassObject(string $className): mixed
+    {
+        if (!Container::G()->has($className)) {
+            Container::G()->set($className);
+        }
+        return Container::G()->get($className);
+    }
+
+    /**
      * @throws ReflectionException
      */
     public static function getDocAttribute(string $className): array
     {
         $data = [];
-        $refClass = new ReflectionClass(new $className);
+        $refClass = new ReflectionClass(self::getClassObject($className));
         $actions = $refClass->getMethods();
         foreach ($actions as $method) {
             if (str_ends_with($method->getName(), 'Action')) {
@@ -368,7 +381,7 @@ class Utils
             $columns = self::$columns[$columnClassName];
         } else {
             $columns = [];
-            $ref = new ReflectionClass($columnClassName);
+            $ref = new ReflectionClass(self::getClassObject($columnClassName));
             $constants = $ref->getReflectionConstants();
             foreach ($constants as $constant) {
                 $attributes = $constant->getAttributes(Field::class);
@@ -398,7 +411,7 @@ class Utils
     public static function getAttribute(string $className, string $method = null, array $attributeFilter =
     null): array
     {
-        $refClass = new ReflectionClass(new $className);
+        $refClass = new ReflectionClass(self::getClassObject($className));
         $classAttributes = $refClass->getAttributes();
         $data = [];
         if ($classAttributes) {

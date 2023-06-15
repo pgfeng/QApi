@@ -57,6 +57,45 @@ class Container implements ContainerInterface
     }
 
     /**
+     * @param string $containerId
+     * @param Container $container
+     * @return bool
+     */
+    public static function setContainer(string $containerId, Container $container): bool
+    {
+        self::$containers[$containerId] = $container;
+        return true;
+    }
+
+    /**
+     * @param string $containerId
+     * @param Container $container
+     * @return bool
+     */
+    public static function S(string $containerId, Container $container): bool
+    {
+        return self::setContainer($containerId, $container);
+    }
+
+    public static function deleteContainer(string $containerId): bool
+    {
+        if (isset(self::$containers[$containerId])) {
+            unset(self::$containers[$containerId]);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param string $containerId
+     * @return bool
+     */
+    public static function D(string $containerId): bool
+    {
+        return self::deleteContainer($containerId);
+    }
+
+    /**
      * $container->delete('foo', 'bar');
      * @param string ...$id
      * @return bool
@@ -202,7 +241,7 @@ class Container implements ContainerInterface
                     continue;
                 }
                 if (!$this->has($paramTypeName)) {
-                    if (in_array($paramTypeName, ['int', 'string', 'float', 'bool', 'array', 'object', 'callable', 'iterable','resource'])) {
+                    if (in_array($paramTypeName, ['int', 'string', 'float', 'bool', 'array', 'object', 'callable', 'iterable', 'resource'])) {
                         if ($param->isDefaultValueAvailable()) {
                             $dependencies[] = $param->getDefaultValue();
                             continue;
@@ -239,16 +278,6 @@ class Container implements ContainerInterface
         if (is_callable($value)) {
             return $value($this);
         }
-        if (is_object($value)) {
-            return $value;
-        }
-//        if (is_array($value)) {
-//            $resolved = [];
-//            foreach ($value as $key => $item) {
-//                $resolved[$key] = $this->resolveDependencies($item);
-//            }
-//            return $resolved;
-//        }
         return $value;
     }
 }
