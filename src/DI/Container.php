@@ -26,11 +26,6 @@ class Container implements ContainerInterface
     private array $dependencies;
 
     /**
-     * @var array 保存实例化后的静态对象
-     */
-    private array $globalInstances = [];
-
-    /**
      * Container constructor.
      * new Container(['Test' => Test::class,'Test2' => fn() => new Test2()]);
      * @param array $dependencies
