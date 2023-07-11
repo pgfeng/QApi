@@ -605,10 +605,10 @@ class DB
     {
         if ($data instanceof Data) {
             $data = $data->toArray();
-            foreach ($data as &$item){
-                if(is_array($item)){
-                    $item = json_encode($item, JSON_UNESCAPED_UNICODE);
-                }
+        }
+        foreach ($data as &$item){
+            if(is_array($item)){
+                $item = json_encode($item, JSON_UNESCAPED_UNICODE);
             }
         }
         if (!$table) {
@@ -661,10 +661,10 @@ class DB
     {
         if ($data instanceof Data) {
             $data = $data->toArray();
-            foreach ($data as &$item){
-                if(is_array($item)){
-                    $item = json_encode($item, JSON_UNESCAPED_UNICODE);
-                }
+        }
+        foreach ($data as &$item){
+            if(is_array($item)){
+                $item = json_encode($item, JSON_UNESCAPED_UNICODE);
             }
         }
         if (!$table) {
