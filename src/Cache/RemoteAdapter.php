@@ -143,7 +143,7 @@ class RemoteAdapter implements CacheInterface
 
     public static function route($configName, $username = '', $password = ''): void
     {
-        Router::all('/____QApiCache____/{configName}/{key}', function (Request $request, Response $response) use ($configName, $username, $password) {
+        Router::all('/____QApiCache____/' . $configName . '/{key}', function (Request $request, Response $response) use ($configName, $username, $password) {
             if ($request->server->get('PHP_AUTH_USER') !== $username || $request->server->get('PHP_AUTH_PW') !== $password) {
                 return $response->withHeader('WWW-Authenticate', 'Basic realm="QApiCacheServer"')->setCode(504);
             }
