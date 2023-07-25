@@ -16,7 +16,8 @@ class Remote extends Cache
         public string $scheme = 'http',
         public string $username = '',
         public string $password = '',
-        public string $path = '')
+        public string $configName = 'default',
+        public string $path = '____QApiCache____')
     {
     }
 }
