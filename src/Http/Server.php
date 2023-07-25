@@ -41,7 +41,7 @@ class Server
                 // Etag
                 $cacheMd5 = md5_file($path);
                 $response->withHeader('Etag', $cacheMd5);
-                if (trim($request->server->get('HTTP_IF_NONE_MATCH')) == $cacheMd5) {
+                if (trim($request->server->get('HTTP_IF_NONE_MATCH','')) == $cacheMd5) {
                     $response->setCode(304);
                     $response->setReason('Not Modified');
                 } else {
@@ -70,10 +70,10 @@ class Server
 
     private function socketRead($client): array
     {
-        socket_set_option($client, SOL_SOCKET, SO_RCVTIMEO, array('sec' => 1, 'usec' => 10));
+        socket_set_option($client, SOL_SOCKET, SO_RCVTIMEO, array('sec' => 5, 'usec' => 10));
         $requestHeader = '';
         $requestBody = '';
-        while (false !== ($buf = socket_read($client, 8))) {
+        while (false !== ($buf = socket_read($client, 1024))) {
             $requestHeader .= $buf;
             if (str_contains($requestHeader, "\r\n\r\n")) {
                 $data = explode("\r\n\r\n", $requestHeader);
