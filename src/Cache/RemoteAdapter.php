@@ -179,6 +179,8 @@ class RemoteAdapter implements CacheInterface
                 }
             }
             return $response->setCode(405);
-        });
+        },[
+            'key' => '.*',
+        ]);
     }
 }
