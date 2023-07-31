@@ -468,10 +468,31 @@ class DB
 
 
     /**
+     * @param string | ExpressionBuilder $expression
+     * @param ExpressionBuilder | string ...$expressions
+     * @return $this
+     */
+    public function or(ExpressionBuilder|string $expression, ...$expressions): self
+    {
+        $this->queryBuilder->orWhere($expression, ...$expressions);
+        return $this;
+    }
+
+    /**
+     * @param string | ExpressionBuilder $expression
+     * @param ExpressionBuilder | string ...$expressions
+     * @return $this
+     */
+    public function and(ExpressionBuilder|string $expression, ...$expressions): self
+    {
+        $this->queryBuilder->andWhere($expression, ...$expressions);
+        return $this;
+    }
+
+    /**
      * @param ExpressionBuilder|string|array|Closure $predicates
      * @param mixed|null $op
      * @param mixed|null $value
-     * @param bool $or
      * @return $this
      */
     public function where(ExpressionBuilder|string|array|Closure $predicates, mixed $op = null, mixed $value = null): self
