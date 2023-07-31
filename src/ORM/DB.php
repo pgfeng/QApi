@@ -491,7 +491,6 @@ class DB
                     }
                 }
             } else {
-                $predicates = $this->parseField($predicates);
                 if ($this->hasWhere) {
                     if ($this->isOr) {
                         $this->queryBuilder->orWhere($predicates);
@@ -606,8 +605,8 @@ class DB
         if ($data instanceof Data) {
             $data = $data->toArray();
         }
-        foreach ($data as &$item){
-            if(is_array($item)){
+        foreach ($data as &$item) {
+            if (is_array($item)) {
                 $item = json_encode($item, JSON_UNESCAPED_UNICODE);
             }
         }
@@ -662,8 +661,8 @@ class DB
         if ($data instanceof Data) {
             $data = $data->toArray();
         }
-        foreach ($data as &$item){
-            if(is_array($item)){
+        foreach ($data as &$item) {
+            if (is_array($item)) {
                 $item = json_encode($item, JSON_UNESCAPED_UNICODE);
             }
         }
