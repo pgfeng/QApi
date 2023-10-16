@@ -1330,9 +1330,9 @@ abstract class DBase
                 }
             }
             if ($realTrance) {
-                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
+                throw new SqlErrorException($e->getMessage(), (int)$e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
             } else {
-                throw new SqlErrorException($e->getMessage(), $e->getCode(), 0, $e['file'], $e['line'], $e);
+                throw new SqlErrorException($e->getMessage(), (int)$e->getCode(), 0, $e['file'], $e['line'], $e);
             }
         }
         if ($data === FALSE) {
