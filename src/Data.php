@@ -13,6 +13,16 @@ class Data extends ArrayObject implements JsonSerializableAlias
     private array $modifyKeys = [];
 
     /**
+     * @param string|null $key
+     * @param $default_value
+     * @return array|string|null
+     */
+    public function __invoke(string $key = null, $default_value = null): array|string|null
+    {
+        return $this->get($key, $default_value);
+    }
+
+    /**
      * @param $primary_key
      * @return Data
      */
