@@ -4,9 +4,7 @@
 namespace QApi;
 
 
-use QApi\Cache\Cache;
 use QApi\Http\Request\Methods;
-use QApi\Http\Request\MethodsEnum;
 
 /**
  * Class Request
@@ -95,7 +93,7 @@ class Request
 
     /**
      * 初始化
-     * @param Data|null $arguments
+     * @param Data|array|null $arguments
      * @param array|null $get
      * @param array|null $post
      * @param array|null $request
@@ -105,6 +103,7 @@ class Request
      * @param array|null $session
      * @param array|null $server
      * @param array|null $header
+     * @param bool $init
      */
     public function __construct(public Data|null|array $arguments = null, array $get = null, array $post = null, array $request =
     null,
@@ -240,7 +239,7 @@ class Request
                 $cookie[trim($key)] = trim($value);
             }
         }
-        return new self(get: $get, post: $post, input: $input, files: $file, cookie: $cookie, server: $server, header: $header,init: true);
+        return new self(get: $get, post: $post, input: $input, files: $file, cookie: $cookie, server: $server, header: $header, init: true);
     }
 
     /**
@@ -415,5 +414,85 @@ class Request
             return substr($this->server->get('HTTP_HOST'), $index + 1);
         }
         return (int)$this->server->get('SERVER_PORT');
+    }
+
+    /**
+     * @param $key
+     * @param $default
+     * @return array|string|null
+     */
+    public function get($key, $default = null): array|string|null
+    {
+        return $this->get->get($key, $default);
+    }
+
+    /**
+     * @param $key
+     * @param $default
+     * @return array|string|null
+     */
+    public function post($key, $default = null): array|string|null
+    {
+        return $this->post->get($key, $default);
+    }
+
+    /**
+     * @param $key
+     * @param $default
+     * @return array|string|null
+     */
+    public function header($key, $default = null): array|string|null
+    {
+        return $this->header->get($key, $default);
+    }
+
+    /**
+     * @param $key
+     * @param $default
+     * @return array|string|null
+     */
+    public function session($key, $default = null): array|string|null
+    {
+        return $this->session->get($key, $default);
+    }
+
+    /**
+     * @param $key
+     * @param $default
+     * @return array|string|null
+     */
+    public function cookie($key, $default = null): array|string|null
+    {
+        return $this->cookie->get($key, $default);
+    }
+
+    /**
+     * @param $key
+     * @param $default
+     * @return array|string|null
+     */
+    public function file($key, $default = null): array|string|null
+    {
+        return $this->file->get($key, $default);
+    }
+
+    /**
+     * @param $key
+     * @param $default
+     * @return array|string|null
+     */
+    public function request($key, $default = null): array|string|null
+    {
+        return $this->request->get($key, $default);
+    }
+
+    /**
+     * @param $key
+     * @param $default
+     * @return array|string|null
+     */
+    public function server($key, $default = null): array|string|null
+    {
+        return $this->server->get($key, $default);
     }
 }
