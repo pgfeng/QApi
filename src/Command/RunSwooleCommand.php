@@ -195,8 +195,9 @@ class RunSwooleCommand extends CommandHandler
                 foreach ($headers as $name => $header) {
                     if (strtoupper($name) === 'LOCATION') {
                         $response->redirect($header, 301);
-                    }
-                    if (is_array($header)) {
+                        $this->reload($http, $appDomain);
+                        return;
+                    }else if (is_array($header)) {
                         $response->header($name, implode(',', $header));
                     } else {
                         $response->header($name, $header);
@@ -205,12 +206,9 @@ class RunSwooleCommand extends CommandHandler
             }
             $response->end($res);
             $this->reload($http, $appDomain);
-
         });
         $http->on('Close', function ($server, $fd) use ($appDomain) {
             $this->cache->set('runNumber', $this->cache->get('runNumber') - 1);
-////            $server->close($fd, true);
-//            $this->reload($server, $appDomain);
         });
         $http->start();
         $this->cache->set('reloadTime', time());
