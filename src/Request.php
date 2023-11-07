@@ -255,7 +255,7 @@ class Request
         if ($cdn) {
             return $cdn;
         }
-        $forwarded = $this->header->get('x-forwarded-for');
+        $forwarded = $this->header->get('X-Forwarded-For');
         if (!$forwarded) {
             if ($ip = $this->header->get('x-real-ip')) {
                 return $ip;
