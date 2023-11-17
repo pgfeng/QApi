@@ -146,17 +146,19 @@ class DB
         $this->select('*');
         if (!isset(self::$dbColumns[$configName][$table])) {
             try {
-                $ref = new ReflectionClass(Config::command('BaseColumnNameSpace') . '_' . $configName . '\\' . $table);
-                $constants = $ref->getReflectionConstants();
-                $columns = [];
-                foreach ($constants as $constant) {
-                    $field = $constant->getAttributes(Field::class);
-                    if (isset($field[0])) {
-                        $arguments = $field[0]->getArguments();
-                        $columns[$arguments['name']] = $arguments;
+                if (class_exists(Config::command('BaseColumnNameSpace') . '_' . $configName . '\\' . $table)){
+                    $ref = new ReflectionClass(Config::command('BaseColumnNameSpace') . '_' . $configName . '\\' . $table);
+                    $constants = $ref->getReflectionConstants();
+                    $columns = [];
+                    foreach ($constants as $constant) {
+                        $field = $constant->getAttributes(Field::class);
+                        if (isset($field[0])) {
+                            $arguments = $field[0]->getArguments();
+                            $columns[$arguments['name']] = $arguments;
+                        }
                     }
+                    self::$dbColumns[$configName][$table] = $columns;
                 }
-                self::$dbColumns[$configName][$table] = $columns;
             } catch (ReflectionException $e) {
                 Logger::error($e->getMessage());
             }

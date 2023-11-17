@@ -28,6 +28,7 @@ use QApi\Command\RunSwooleCommand;
 /**
  * Class Console
  * @package QApi
+ * @deprecated
  */
 class Command
 {

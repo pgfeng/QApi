@@ -25,10 +25,12 @@
     "amphp/http-server": "^2.1",
     "amphp/http-server-form-parser": "^1.1",
     "psr/container": "^2.0",
-    "ext-curl": "*"
+    "ext-curl": "*",
+    "symfony/console": "v6.0.19"
   },
   "bin": [
-    "src/bin/QConsole"
+    "src/bin/QConsole",
+    "src/bin/QApi"
   ],
   "suggest": {
     "ext-json": "*",

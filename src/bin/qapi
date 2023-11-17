@@ -1,0 +1,27 @@
+#!/usr/bin/env php
+<?php
+require_once $GLOBALS['_composer_autoload_path'];
+
+use QApi\Console;
+use QApi\Enumeration\RunMode;
+
+$opt = getopt('m:', ['mode:']);
+if (!defined('PROJECT_PATH')) {
+    define('PROJECT_PATH', getcwd() . DIRECTORY_SEPARATOR);
+}
+if (!defined('RUN_MODE')) {
+    $m = $opt['m'] ?? $opt['mode'] ?? 'dev';
+    $mode = match ($m) {
+        'debug' => RunMode::DEBUG,
+        'prod' => RunMode::PRODUCTION,
+        'test' => RunMode::TEST,
+        default => RunMode::DEVELOPMENT,
+    };
+    define('RUN_MODE', $mode);
+}
+$Command = new Console();
+try {
+    $Command->run();
+} catch (Exception $e) {
+    echo $e->getMessage();
+}
