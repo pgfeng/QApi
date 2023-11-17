@@ -28,7 +28,7 @@ class ColumnCommand extends Command
     protected function configure(): void
     {
         $this->setName('make:column')
-            ->setAliases(['make-column', 'bc'])
+            ->setAliases(['make-column', 'mc'])
             ->setDescription('Generate database table field tool class.')
             ->setHelp('This command will generate the database table field utility class')
             ->addOption('config', 'c', InputOption::VALUE_OPTIONAL, 'The configuration file to generate the field utility class for.', null)
@@ -127,14 +127,9 @@ class ColumnCommand extends Command
      */
     private function buildTableColumn($table, $config, $nameSpace, $columnPath, InputInterface $input, OutputInterface $output): void
     {
-        $io = new SymfonyStyle($input, $output);
-        $io->write('[' . $nameSpace . '\\' . $table . ']');
-        $io->progressStart(100);
         $columns = (new DB($table, $config))->query('desc ' . Config::database($config)->tablePrefix . $table);
-        $io->progressAdvance(20);
         $columns_comment = (new DB($table, $config))->query('select column_name as column_name,column_comment as column_comment from information_schema.columns where table_schema =\'' . Config::database($config)->dbName . '\'  and table_name = \'' . Config::database($config)->tablePrefix . $table . '\';');
         $columns_comment = $columns_comment->transPrimaryIndex('column_name');
-        $io->progressAdvance(20);
         $const = '';
         foreach ($columns as $column) {
             $const .= '
@@ -179,10 +174,8 @@ class $table
 $const
 }
 Column;
-        $io->progressAdvance(20);
         mkPathDir($columnPath);
         file_put_contents($columnPath, $ColumnContent);
-        $io->progressFinish();
         $output->writeln('<info>[' . $nameSpace . '\\' . $table . '] Generation complete!</info>');
     }
 }
