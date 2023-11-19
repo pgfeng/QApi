@@ -87,7 +87,7 @@ class Logger
                 $message = json_encode($message, JSON_UNESCAPED_UNICODE);
             }
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
-                error_log(self::getData($message, CliColor::INFO));
+                error_log(self::getData($message, CliColor::INFO), 4);
             }
             self::$logger?->log($level, preg_replace('/\\x1b(.+)\s/iUs', '', $message), $context);
         }
@@ -103,7 +103,7 @@ class Logger
                 $message = json_encode($message, JSON_UNESCAPED_UNICODE);
             }
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
-                error_log(self::getData($message, CliColor::INFO));
+                error_log(self::getData($message, CliColor::INFO), 4);
             }
             self::$logger?->info(preg_replace('/\\x1b(.+)\s/iUs', '', $message), $context);
         }
@@ -116,7 +116,7 @@ class Logger
                 $message = json_encode($message, JSON_UNESCAPED_UNICODE);
             }
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
-                error_log(self::getData($message, CliColor::INFO));
+                error_log(self::getData($message, CliColor::INFO), 4);
             }
             self::$logger?->alert(preg_replace('/\\x1b(.+)\s/iUs', '', $message), $context);
         }
@@ -132,7 +132,7 @@ class Logger
                 $message = json_encode($message, JSON_UNESCAPED_UNICODE);
             }
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
-                error_log(self::getData(' SQL => ' . $message, CliColor::WARNING));
+                error_log(self::getData(' SQL => ' . $message, CliColor::WARNING), 4);
             }
             self::$logger?->info(' SQL => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message), $context);
         }
@@ -148,7 +148,7 @@ class Logger
                 $message = json_encode($message, JSON_UNESCAPED_UNICODE);
             }
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
-                error_log(self::getData(' CACHE => ' . $message, CliColor::SUCCESS));
+                error_log(self::getData(' CACHE => ' . $message, CliColor::SUCCESS), 4);
             }
             self::$logger?->info(' CACHE => ' . preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
@@ -166,7 +166,7 @@ class Logger
             }
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
 
-                error_log(self::getData($message, CliColor::WARNING));
+                error_log(self::getData($message, CliColor::WARNING), 4);
             }
             self::$logger?->warning(preg_replace('/\\x1b(.+)\s/iUs', '', $message), $context);
         }
@@ -184,7 +184,7 @@ class Logger
             }
             $message = ' Router => ' . $message;
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
-                error_log(self::getData($message, CliColor::SUCCESS));
+                error_log(self::getData($message, CliColor::SUCCESS), 4);
             }
             self::$logger?->alert(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
 
@@ -203,7 +203,7 @@ class Logger
             }
             $message = ' Request => ' . $message;
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
-                error_log(self::getData($message, CliColor::INFO));
+                error_log(self::getData($message, CliColor::INFO), 4);
             }
             self::$logger?->alert(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
@@ -220,7 +220,7 @@ class Logger
             }
             $message = ' Response => ' . $message;
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
-                error_log(self::getData($message, CliColor::INFO));
+                error_log(self::getData($message, CliColor::INFO), 4);
             }
             self::$logger?->alert(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
@@ -236,7 +236,7 @@ class Logger
                 $message = json_encode($message, JSON_UNESCAPED_UNICODE);
             }
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
-                error_log(self::getData($message, CliColor::SUCCESS));
+                error_log(self::getData($message, CliColor::SUCCESS), 4);
             }
             self::$logger?->alert(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
@@ -254,7 +254,7 @@ class Logger
             }
 
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
-                error_log(self::getData($message, CliColor::ERROR));
+                error_log(self::getData($message, CliColor::ERROR), 4);
             }
             self::$logger?->error(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
@@ -272,7 +272,7 @@ class Logger
             }
 
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
-                error_log(self::getData($message, CliColor::ERROR));
+                error_log(self::getData($message, CliColor::ERROR), 4);
             }
             self::$logger?->notice(preg_replace('/\\x1b(.+)\s/iUs', '', $message), $context);
         }
@@ -290,7 +290,7 @@ class Logger
             }
             if (self::getRunMode() === RunMode::DEVELOPMENT) {
 
-                error_log(self::getData($message, CliColor::ERROR));
+                error_log(self::getData($message, CliColor::ERROR), 4);
             }
             self::$logger?->emergency(preg_replace('/\\x1b(.+)\s/iUs', '', $message));
         }
