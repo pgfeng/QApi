@@ -39,42 +39,24 @@ class DocumentSystemUpdateCommand extends Command
         if (is_dir($dir)) {
             $this->deleteDir($dir);
         }
-        // 从github下载最新的文档系统 https://github.com/pgfeng/QApiDocument/archive/refs/heads/main.zip
-        $zipSavePath = 'DocSystemTemp.zip';
         if ($this->downloadFileWithProgress($input, $output)) {
-            // 解压到项目目录下
             $zipArchive = new \ZipArchive();
-//        $res = $zip->open($zipSavePath);
             if ($zipArchive->open($this->zipSavePath) === true) {
-                // Get the total number of entries in the ZIP file
                 $totalEntries = $zipArchive->numFiles;
-
-                // Initialize progress bar
                 $progressBar = new ProgressBar($output, $totalEntries);
                 $progressBar->setFormat('Extracting... %current%/%max% [%bar%] %percent%%');
                 $progressBar->start();
-
-                // Extract each entry in the ZIP file
                 for ($i = 0; $i < $totalEntries; $i++) {
-                    // Get the name of the entry
                     $entryName = $zipArchive->getNameIndex($i);
-                    // Extract the entry to the destination path
                     $zipArchive->extractTo($dir, [$entryName]);
-                    // Advance the progress bar
                     $progressBar->advance();
-                    // 将解压的文件重命名
                 }
-
-                // Complete the progress bar
                 $progressBar->finish();
                 $output->writeln("\n<info>Extraction complete.</info>");
-                // Close the ZIP file
                 $zipArchive->close();
-                // 删除下载的压缩包
                 unlink($this->zipSavePath);
                 $extractDir = $dir . DIRECTORY_SEPARATOR . 'QApiDocument-main';
                 $files = scandir($extractDir);
-
                 $progressBar = new ProgressBar($output, $totalEntries);
                 $progressBar->setFormat('Moving... %current%/%max% [%bar%] %percent%%');
                 $progressBar->setMessage(0, 'current');
@@ -96,6 +78,7 @@ class DocumentSystemUpdateCommand extends Command
                         rename($filePath, $dir . DIRECTORY_SEPARATOR . $file);
                     }
                 }
+                $this->deleteDir($extractDir);
                 $progressBar->finish();
                 $ss->newLine();
                 $ss->success("Document System Update complete!");
@@ -110,11 +93,13 @@ class DocumentSystemUpdateCommand extends Command
     private function downloadFileWithProgress(InputInterface $input, OutputInterface $output): bool
     {
         $fp = fopen($this->zipSavePath, 'w+');
-        $ch = curl_init('https://github.com/pgfeng/QApiDocument/archive/refs/heads/main.zip');
+        $ch = curl_init($this->downloadUrl);
         curl_setopt($ch, CURLOPT_TIMEOUT, 0);
         curl_setopt($ch, CURLOPT_FILE, $fp);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_NOPROGRESS, false);
+        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $progressBar = new ProgressBar($output);
         $progressBar->setFormat('<info>Downloading... %percent%% [%bar%] %downloaded% of %total%<info>');
         $progressBar->setRedrawFrequency(1); // Redraw every 1%
