@@ -98,8 +98,8 @@ class DocumentSystemUpdateCommand extends Command
         curl_setopt($ch, CURLOPT_FILE, $fp);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_NOPROGRESS, false);
-        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+//        curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
+//        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $progressBar = new ProgressBar($output);
         $progressBar->setFormat('<info>Downloading... %percent%% [%bar%] %downloaded% of %total%<info>');
         $progressBar->setRedrawFrequency(1); // Redraw every 1%
