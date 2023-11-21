@@ -20,7 +20,7 @@ class DocumentSystemUpdateCommand extends Command
 
     private string $downloadUrl = 'https://github.com/pgfeng/QApiDocument/archive/refs/heads/main.zip';
 
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('install:documentSystem')
