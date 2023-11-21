@@ -26,7 +26,8 @@
     "amphp/http-server-form-parser": "^1.1",
     "psr/container": "^2.0",
     "ext-curl": "*",
-    "symfony/console": "v6.0.19"
+    "symfony/console": "v6.0.19",
+    "ext-zip": "*"
   },
   "bin": [
     "src/bin/QConsole",

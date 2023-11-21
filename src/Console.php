@@ -3,6 +3,7 @@
 namespace QApi;
 
 use Exception;
+use QApi\Console\DocumentSystemUpdateCommand;
 use QApi\Console\make\ColumnCommand;
 use QApi\Console\RunCommand;
 use Symfony\Component\Console\Application;
@@ -28,6 +29,7 @@ class Console
         App::$configDir = trim($configDir, '/');
         $this->add(new RunCommand());
         $this->add(new ColumnCommand());
+        $this->add(new DocumentSystemUpdateCommand());
     }
 
     /**
