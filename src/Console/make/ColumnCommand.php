@@ -15,7 +15,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class ColumnCommand extends Command
 {
-
+    private string $tabCharacter = '    ';
     public function __construct(string $name = null)
     {
         parent::__construct($name);
@@ -41,14 +41,23 @@ class ColumnCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+
         $config = $input->getOption('config');
         $table = $input->getOption('table');
+        $output->writeln('Generation Parameters:'."\n$this->tabCharacter".'Config:'.($config?:'-')."\t".'Table:'.($table?:'-'));
+        $io = new SymfonyStyle($input, $output);
         if (!$config) {
             $systemDatabaseConfig = Config::database();
             foreach ($systemDatabaseConfig as $config => $value) {
                 $this->buildDatabaseColumn($config, $input, $output);
             }
+            return Command::SUCCESS;
         }
+        if (!$table) {
+            $this->buildDatabaseColumn($config, $input, $output);
+            return Command::SUCCESS;
+        }
+        $this->buildTableColumn($table, $config, $this->getNameSpace($config), $this->getColumnPath($config, $table), $input, $output);
         return Command::SUCCESS;
     }
 
@@ -101,18 +110,28 @@ class ColumnCommand extends Command
      */
     private function buildDatabaseColumn($config, InputInterface $input, OutputInterface $output): void
     {
-        $output->writeln('<comment>[' . $config . '] Database Start generating!</>');
+        $output->writeln("[$config]:");
+        $io = new SymfonyStyle($input, $output);
+        $bar = $io->createProgressBar();
+        $bar->setFormat("$this->tabCharacter<info>%current%/%max% [%bar%] %percent%% %notice%</info>");
+        $bar->setMessage('Database Start generating!', 'notice');
         $tables = (new DB('', $config))->getSchemaManager()->listTables();
+        $bar->setMaxSteps(count($tables));
         $this->clearDir(PROJECT_PATH . Config::command('ColumnDir') . '_' . $config . DIRECTORY_SEPARATOR);
-        $output->writeln('<comment>[' . $config . '] Clean up complete!</comment>');
-        foreach ($tables as $table) {
+        $bar->setMessage('Clean up complete!', 'notice');
+        $bar->setMessage('--', 'table');
+        foreach ($tables as $index => $table) {
             $table = $table->getName();
+            $bar->setProgress($index);
+            $bar->setMessage($table, 'notice');
             if (str_starts_with($table, Config::database($config)->tablePrefix)) {
                 $table = substr($table, strlen(Config::database($config)->tablePrefix));
-                $this->buildTableColumn($table, $config, $this->getNameSpace($config), $this->getColumnPath($config, $table), $input, $output);
+                $this->buildTableColumn($table, $config, $this->getNameSpace($config), $this->getColumnPath($config, $table), $input, $output, true);
             }
         }
-        $output->writeln('<info>[' . $config . '] Database Generation complete!</info>');
+        $bar->setMessage('Ok!', 'notice');
+        $bar->finish();
+        $output->writeln("");
     }
 
     /**
@@ -125,7 +144,7 @@ class ColumnCommand extends Command
      * @return void
      * @throws ErrorException|Exception
      */
-    private function buildTableColumn($table, $config, $nameSpace, $columnPath, InputInterface $input, OutputInterface $output): void
+    private function buildTableColumn($table, $config, $nameSpace, $columnPath, InputInterface $input, OutputInterface $output, $hideOutput = false): void
     {
         $columns = (new DB($table, $config))->query('desc ' . Config::database($config)->tablePrefix . $table);
         $columns_comment = (new DB($table, $config))->query('select column_name as column_name,column_comment as column_comment from information_schema.columns where table_schema =\'' . Config::database($config)->dbName . '\'  and table_name = \'' . Config::database($config)->tablePrefix . $table . '\';');
@@ -150,7 +169,6 @@ class ColumnCommand extends Command
         } else {
             $tableComment = '';
         }
-        //        exit;
         $ColumnContent = <<<Column
 <?php
 /**
@@ -176,6 +194,8 @@ $const
 Column;
         mkPathDir($columnPath);
         file_put_contents($columnPath, $ColumnContent);
-        $output->writeln('<info>[' . $nameSpace . '\\' . $table . '] Generation complete!</info>');
+        if (!$hideOutput) {
+            $output->writeln('<info>[' . $nameSpace . '\\' . $table . '] Generation complete!</info>');
+        }
     }
 }
