@@ -5,6 +5,7 @@ namespace QApi;
 use Exception;
 use QApi\Console\DocumentSystemUpdateCommand;
 use QApi\Console\make\ColumnCommand;
+use QApi\Console\make\DocumentCommand;
 use QApi\Console\RunCommand;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Command\Command;
@@ -30,6 +31,7 @@ class Console
         $this->add(new RunCommand());
         $this->add(new ColumnCommand());
         $this->add(new DocumentSystemUpdateCommand());
+        $this->add(new DocumentCommand());
     }
 
     /**

@@ -19,6 +19,8 @@ use QApi\Config;
 use QApi\DI\Container;
 use ReflectionClass;
 use ReflectionException;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class Utils
 {
@@ -28,6 +30,13 @@ class Utils
     public static array $columns = [];
 
 
+    /**
+     * @param $apps
+     * @param Command|null $commandHandler
+     * @return array
+     * @throws \ErrorException
+     * @deprecated
+     */
     public static function v0($apps, Command $commandHandler = null): array
     {
         foreach ($apps as $host => $app) {
@@ -153,7 +162,7 @@ class Utils
      * @param Command|null $commandHandler
      * @return array
      */
-    public static function v1(array $apps, Command $commandHandler = null): array
+    public static function v1(array $apps, Command $commandHandler = null, InputInterface $input = null, OutputInterface $output = null): array
     {
         $appData = [];
         $namespaces = [];
@@ -177,6 +186,7 @@ class Utils
         foreach ($namespaces as $namespace => $appDir) {
             $versions = Config::versions($app->runMode);
             foreach ($versions as $version) {
+                $output?->writeln("<info>[$appDir:$version->versionDir]</info>");
                 $path = PROJECT_PATH . $appDir . DIRECTORY_SEPARATOR . $version->versionDir .
                     DIRECTORY_SEPARATOR;
                 $doc[$namespace][$version->versionName] = [];
@@ -186,9 +196,11 @@ class Utils
                 self::buildVersionDoc(scandir($path), $path, $namespace . '\\' . $version->versionDir,
                     $version->versionDir, $data, $path);
                 foreach ($data as $controller => $methods) {
+                    $output?->writeln("    <info>{$controller}Controller:</info>");
                     $commandHandler?->info('Loading document for controller: ' . $controller);
                     foreach ($methods as $mname => $attr) {
-                        $commandHandler?->info('Loading document for method: ' . $mname);
+                        $commandHandler?->info("Loading document for method: $mname");
+                        $output->writeln("        <info>{$mname}Action:</info>");
                         $path = '';
                         $type = '';
                         $tag = '';
@@ -200,6 +212,7 @@ class Utils
                                 if ($v instanceof Route || $v instanceof GetParam || $v instanceof PostParam || $v
                                     instanceof HeaderParam || $v instanceof PathParam || $v instanceof PostParamFromTableField || $v instanceof GetParamFromTableField || $v instanceof PathParamFromTableField) {
                                     if ($v instanceof Route) {
+                                        $output?->writeln('<info>            ' . get_class($v) . '->' .json_encode($v->toArray(),JSON_UNESCAPED_UNICODE). '</info>');
                                         if ($path) {
                                             if (!str_ends_with($path, '/')) {
                                                 $path .= '/';
@@ -209,7 +222,7 @@ class Utils
                                             $path .= $v->path;
                                         }
                                         if ($v->path) {
-                                            $commandHandler?->info('Loading document for route: ' . $path);
+                                            $commandHandler?->info('            Loading document for route: ' . $path);
                                         }
                                         if (!$tag && $v->tag) {
                                             $tag = $v->tag;
@@ -224,12 +237,15 @@ class Utils
                                             $type = $v->methods;
                                         }
                                     } else {
+                                        $output?->writeln('<info>            ' . get_class($v) . '->' . $v->name .json_encode($v->toArray(),JSON_UNESCAPED_UNICODE). '</info>');
                                         $commandHandler?->info('Loading document for parameter: ' . get_class($v) . '->' . $v->name);
                                     }
                                     $item[$key] = $v->toArray();
                                 } else if ($v instanceof ResultDictionary || $v instanceof ResultDictionarys || $v
                                     instanceof ResultDictionaryFromTable) {
                                     $commandHandler?->info('Loading document for result dictionary: ' . get_class($v) . '->' . json_encode($data, JSON_UNESCAPED_UNICODE));
+
+                                    $output?->writeln('<info>            ' . get_class($v) . '->' . json_encode($data, JSON_UNESCAPED_UNICODE) . '</info>');
                                     $data = $v->toArray();
                                     foreach ($data as $resultField) {
                                         if (!empty($resultField['comment'])) {
@@ -270,6 +286,8 @@ class Utils
                         unset($doc[$namespace][$version->versionName][$tag]);
                     }
                 }
+
+                $output?->writeln('<info>Loading document completed for version: [' . $version->versionDir . ']</info>');
                 $commandHandler?->success('Loading document completed for version: [' . $version->versionDir . ']');
             }
         }
@@ -282,14 +300,15 @@ class Utils
     /**
      * @return array
      */
-    public static function loadDocument(Command $commandHandler = null, string $version = ''): array
+    public static function loadDocument(Command $commandHandler = null, string $version = '', InputInterface $input = null, OutputInterface $output = null): array
     {
-        $commandHandler?->info('Loading document...');
+        $output?->writeln('<info>Loading document...</info>');
         $apps = Config::apps();
         if (!$version) {
             return self::v0($apps, $commandHandler);
         } else {
-            return self::v1($apps, $commandHandler);
+            $commandHandler?->info('Loading document...');
+            return self::v1($apps, $commandHandler, $input, $output);
         }
     }
 
@@ -299,9 +318,9 @@ class Utils
      * @throws \ErrorException
      * @throws \QApi\Exception\CacheErrorException
      */
-    public static function rebuild(Command $commandHandler = null, string $version = ''): mixed
+    public static function rebuild(Command $commandHandler = null, string $version = '', InputInterface $input = null, OutputInterface $output = null): mixed
     {
-        $data = self::loadDocument($commandHandler, $version);
+        $data = self::loadDocument($commandHandler, $version, $input, $output);
         $cache = Cache::initialization('__document');
         $cache->set('__apiDocument' . $version, $data);
         return null;
