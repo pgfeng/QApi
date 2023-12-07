@@ -281,7 +281,7 @@ class filesModel extends Model
             }
             $path = App::$uploadDir . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
             if (Router::$request) {
-                $full_path = Router::$request->server->get('DOCUMENT_ROOT') . DIRECTORY_SEPARATOR . $path;
+                $full_path = Router::$request->server->get('DOCUMENT_ROOT') . '/' . $path;
             } else {
                 $full_path = $path;
             }
