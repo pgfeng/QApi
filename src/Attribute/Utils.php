@@ -200,7 +200,7 @@ class Utils
                     $commandHandler?->info('Loading document for controller: ' . $controller);
                     foreach ($methods as $mname => $attr) {
                         $commandHandler?->info("Loading document for method: $mname");
-                        $output->writeln("        <info>{$mname}Action:</info>");
+                        $output?->writeln("        <info>{$mname}Action:</info>");
                         $path = '';
                         $type = '';
                         $tag = '';
