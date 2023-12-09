@@ -219,19 +219,19 @@ class filesModel extends Model
                             return $result;
                         }
                         if ($secondaryDirectory == '') {
-                            $path = App::$uploadDir . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
+                            $path = App::$uploadDir . date("Ymd") . DIRECTORY_SEPARATOR . time() . random(10) . '.' . $ext;
                         } else {
-                            $path = App::$uploadDir . trim($secondaryDirectory) . '/' . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
+                            $path = App::$uploadDir . trim($secondaryDirectory) . DIRECTORY_SEPARATOR . date("Ymd") . DIRECTORY_SEPARATOR . time() . random(10) . '.' . $ext;
                         }
                         if (Router::$request) {
-                            $full_path = Router::$request->server->get('DOCUMENT_ROOT') . '/' . $path;
+                            $full_path = Router::$request->server->get('DOCUMENT_ROOT') . DIRECTORY_SEPARATOR . $path;
                         } else {
                             $full_path = $path;
                         }
                         mkPathDir($full_path);
                         if (@move_uploaded_file($file['tmp_name'][$key], $full_path) || @rename($file['tmp_name'][$key], $full_path)) {
                             $this->Insert([
-                                'file_name' => $file['name'][$key],
+                                'file_name' => str_replace(DIRECTORY_SEPARATOR, '/', $file['name'][$key]),
                                 'file_size' => $file['size'][$key],
                                 'file_ext' => $ext,
                                 'file_type' => $file['type'][$key],
@@ -279,16 +279,16 @@ class filesModel extends Model
             } else {
                 return $result;
             }
-            $path = App::$uploadDir . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
+            $path = App::$uploadDir . date("Ymd") . DIRECTORY_SEPARATOR . time() . random(10) . '.' . $ext;
             if (Router::$request) {
-                $full_path = Router::$request->server->get('DOCUMENT_ROOT') . '/' . $path;
+                $full_path = Router::$request->server->get('DOCUMENT_ROOT') . DIRECTORY_SEPARATOR . $path;
             } else {
                 $full_path = $path;
             }
             mkPathDir($full_path);
             if (@move_uploaded_file($file['tmp_name'], $full_path) || @rename($file['tmp_name'], $full_path)) {
                 $this->Insert([
-                    'file_name' => $file['name'],
+                    'file_name' => str_replace(DIRECTORY_SEPARATOR, '/', $file['name']),
                     'file_size' => $file['size'],
                     'file_ext' => $ext,
                     'file_type' => $file['type'],
