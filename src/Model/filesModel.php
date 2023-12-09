@@ -231,13 +231,13 @@ class filesModel extends Model
                         mkPathDir($full_path);
                         if (@move_uploaded_file($file['tmp_name'][$key], $full_path) || @rename($file['tmp_name'][$key], $full_path)) {
                             $this->Insert([
-                                'file_name' => str_replace(DIRECTORY_SEPARATOR, '/', $file['name'][$key]),
+                                'file_name' => $file['name'][$key],
                                 'file_size' => $file['size'][$key],
                                 'file_ext' => $ext,
                                 'file_type' => $file['type'][$key],
                                 'file_md5' => $md5,
                                 'file_time' => time(),
-                                'file_path' => $path,
+                                'file_path' => str_replace(DIRECTORY_SEPARATOR, '/', $path),
                             ]);
                             $f = [
                                 'status' => true,
@@ -294,7 +294,7 @@ class filesModel extends Model
                     'file_type' => $file['type'],
                     'file_md5' => $md5,
                     'file_time' => time(),
-                    'file_path' => $path,
+                    'file_path' => str_replace(DIRECTORY_SEPARATOR,'/',$path),
                 ]);
 
                 return [
