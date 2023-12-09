@@ -288,7 +288,7 @@ class filesModel extends Model
             mkPathDir($full_path);
             if (@move_uploaded_file($file['tmp_name'], $full_path) || @rename($file['tmp_name'], $full_path)) {
                 $this->Insert([
-                    'file_name' => str_replace(DIRECTORY_SEPARATOR, '/', $file['name']),
+                    'file_name' => $file['name'],
                     'file_size' => $file['size'],
                     'file_ext' => $ext,
                     'file_type' => $file['type'],
