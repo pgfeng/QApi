@@ -6,6 +6,7 @@ namespace QApi;
 
 use JetBrains\PhpStorm\Pure;
 use QApi\DI\Container;
+use QApi\DI\NotFoundException;
 use QApi\Enumeration\CliColor;
 use QApi\Enumeration\RunMode;
 use QApi\Logger\LogLevel;
@@ -213,14 +214,15 @@ class Logger
 
     private static function disabledLoggerUriStatus(): bool
     {
-        /**
-         * @var Request $request
-         */
-        $request = Container::G()->get(Request::class);
-        if (!$request) {
+        try {
+            /**
+             * @var Request $request
+             */
+            $request = Container::G()->get(Request::class);
+        }catch (NotFoundException){
             return false;
         }
-        $uri = Container::G()->get(Request::class)->server->get('REQUEST_URI');
+        $uri = $request->server->get('REQUEST_URI');
         $uri = trim(explode('?', $uri)[0],'/');
         return in_array($uri, self::$disabledLoggerUri);
     }
