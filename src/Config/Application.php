@@ -45,7 +45,14 @@ class Application
                                 public array       $allowMethods = [
                                     Methods::GET, Methods::POST, Methods::DELETE, Methods::HEAD, Methods::PUT
                                 ],
-                                public string      $applicationName = '', public string $scheme = 'http', public string $docPassword = '', public array $disabledLogType = [], public array $disabledLogLevel = [], public bool $injectionRunTime = true)
+                                public string      $applicationName = '',
+                                public string $scheme = 'http',
+                                public string $docPassword = '',
+                                public array $disabledLogType = [],
+                                public array $disabledLogLevel = [],
+                                public bool $injectionRunTime = true,
+                                public array $disabledLoggerUri = [],
+    )
     {
         $this->appDir = trim($this->appDir, '/');
         if ($this->nameSpace === false) {
