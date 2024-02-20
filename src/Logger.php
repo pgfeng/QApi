@@ -213,6 +213,13 @@ class Logger
 
     private static function disabledLoggerUriStatus(): bool
     {
+        /**
+         * @var Request $request
+         */
+        $request = Container::G()->get(Request::class);
+        if (!$request) {
+            return false;
+        }
         $uri = Container::G()->get(Request::class)->server->get('REQUEST_URI');
         $uri = trim(explode('?', $uri)[0],'/');
         return in_array($uri, self::$disabledLoggerUri);
