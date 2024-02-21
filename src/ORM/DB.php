@@ -983,6 +983,9 @@ class DB
                                 $item[$k] = (float)$v;
                             }
                         }
+                        if (stripos($type, 'JSON') > -1) {
+                            $item[$k] = json_decode($v, true);
+                        }
                     }
                 }
             }
