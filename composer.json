@@ -27,7 +27,8 @@
     "psr/container": "^2.0",
     "ext-curl": "*",
     "symfony/console": "v6.0.19",
-    "ext-zip": "*"
+    "ext-zip": "*",
+    "ext-openssl": "*"
   },
   "bin": [
     "src/bin/QConsole",

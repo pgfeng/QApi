@@ -14,6 +14,17 @@ function buildID(): string
 }
 
 /**
+ * 获取一个全局唯一键值
+ * @return string
+ */
+function openSSLRandomUniqueId($length = 6): string
+{
+    $bytes = openssl_random_pseudo_bytes(ceil($length / 2));
+    $id = bin2hex($bytes);
+    return strtoupper($id);
+}
+
+/**
  * @param $func
  * @return string
  */
