@@ -654,8 +654,9 @@ abstract class DBase
         }
         if (is_array($where)) {
             $where = implode(' and ', $where);
-        }
-        if (isset($this->section['where']) && !empty($this->section['where'])) {
+        }elseif ($where instanceof Closure) {
+            $where($this);
+        }else if (isset($this->section['where']) && !empty($this->section['where'])) {
             $this->section['where'] .= ' and ' . '(' . $where . ')';
         } else {
             $this->section['where'] = '(' . $where . ')';

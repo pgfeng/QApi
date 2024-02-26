@@ -197,7 +197,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
      * @param null $default_value
      * @return string|array|null
      */
-    public function get(string $key = null, $default_value = null): string|array|null
+    public function get(string $key = null, $default_value = null): mixed
     {
         if ($key === null) {
             return $this->getArrayCopy();
