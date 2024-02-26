@@ -15,13 +15,19 @@ function buildID(): string
 
 /**
  * 获取一个全局唯一键值
+ * @param int $length
+ * @param Closure|null $filter
  * @return string
  */
-function openSSLRandomUniqueId($length = 6): string
+function randomOpenSSL(int $length = 6,Closure|null $filter=null): string
 {
     $bytes = openssl_random_pseudo_bytes(ceil($length / 2));
     $id = bin2hex($bytes);
-    return strtoupper($id);
+    if ($filter){
+        return $filter($id);
+    }else{
+        return strtoupper($id);
+    }
 }
 
 /**
