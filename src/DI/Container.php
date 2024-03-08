@@ -3,6 +3,7 @@
 namespace QApi\DI;
 
 use InvalidArgumentException;
+use MongoDB\BSON\Type;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionException;
@@ -114,9 +115,10 @@ class Container implements ContainerInterface
     }
 
     /**
+     * @template Type
      * $container->get('foo');
      * @param string $id
-     * @return mixed
+     * @return Type
      * @throws NotFoundException
      */
     public function get(string $id): mixed
@@ -156,9 +158,11 @@ class Container implements ContainerInterface
     }
 
     /**
+     * @template Type
      * $container->make(Foo::class);
      * @param string $className
-     * @return mixed
+     * @param array $parameters
+     * @return Type
      * @throws NotFoundException
      * @throws ReflectionException
      */
