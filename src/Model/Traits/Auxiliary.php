@@ -5,6 +5,7 @@ namespace QApi\Model\Traits;
 
 
 use QApi\Data;
+use QApi\Logger;
 use QApi\Model;
 use QApi\Request;
 use QApi\Response;
@@ -127,7 +128,8 @@ trait Auxiliary
         if (method_exists($this, 'saveAuthorize')) {
             $status = $this->saveAuthorize($data, $primary_key);
         } else {
-            $status = $this->save($data, $primary_key);
+            $this->save($data, $primary_key);
+            return $response->success()->setMsg($this->modelName . $handle . $this->successString);
         }
         if ($status) {
             if ($primary_key) {
