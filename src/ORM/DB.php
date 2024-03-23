@@ -985,7 +985,11 @@ class DB
                                 $item[$k] = (float)$v;
                             }
                         }else if (stripos($type, 'JSON') > -1) {
-                            $item[$k] = json_decode($v, true);
+                            try {
+                                $item[$k] = json_decode($v, true);
+                            } catch (\Exception $e) {
+                                $item[$k] = null;
+                            }
                         } else {
                             $item[$k] = (string)$v;
                         }
