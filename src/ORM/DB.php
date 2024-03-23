@@ -976,18 +976,18 @@ class DB
                         $type = self::$dbColumns[$this->configName][$this->table][$field]['type'];
                         if (stripos($type, 'INT') === 0) {
                             $item[$k] = (int)$v;
-                        } else {
-                            $item[$k] = (string)$v;
-                        }
-                        if (stripos($type, 'TINYINT') === 0) {
+                        }else if (stripos($type, 'TINYINT') === 0) {
                             $item[$k] = (int)$v;
-                        }
-                        if (stripos($type, 'DECIMAL') > -1 || stripos($type, 'FLOAT') > -1) {
+                        }else if (stripos($type, 'DECIMAL') > -1 || stripos($type, 'FLOAT') > -1) {
                             if ($v > PHP_FLOAT_MAX || $v < PHP_FLOAT_MIN) {
                                 $item[$k] = (string)$v;
                             } else {
                                 $item[$k] = (float)$v;
                             }
+                        }else if (stripos($type, 'JSON') > -1) {
+                            $item[$k] = json_decode($v, true);
+                        } else {
+                            $item[$k] = (string)$v;
                         }
                     }
                 }
