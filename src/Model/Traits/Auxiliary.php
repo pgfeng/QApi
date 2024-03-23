@@ -128,10 +128,9 @@ trait Auxiliary
         if (method_exists($this, 'saveAuthorize')) {
             $status = $this->saveAuthorize($data, $primary_key);
         } else {
-            $this->save($data, $primary_key);
-            return $response->success()->setMsg($this->modelName . $handle . $this->successString);
+            $status = $this->save($data, $primary_key);
         }
-        if ($status) {
+        if ($status !== false) {
             if ($primary_key) {
                 if (!isset($this->lastInsertUUID)) {
                     if (isset($data[$primary_key])) {
