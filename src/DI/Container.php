@@ -3,7 +3,6 @@
 namespace QApi\DI;
 
 use InvalidArgumentException;
-use MongoDB\BSON\Type;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionException;
@@ -117,11 +116,11 @@ class Container implements ContainerInterface
     /**
      * @template Type
      * $container->get('foo');
-     * @param string $id
+     * @param Type $id
      * @return Type
      * @throws NotFoundException
      */
-    public function get(string $id): mixed
+    public function get($id): mixed
     {
         if (!$this->has($id)) {
             throw new NotFoundException("Service not found: $id");
@@ -160,13 +159,13 @@ class Container implements ContainerInterface
     /**
      * @template Type
      * $container->make(Foo::class);
-     * @param string $className
+     * @param Type $className
      * @param array $parameters
      * @return Type
      * @throws NotFoundException
      * @throws ReflectionException
      */
-    public function make(string $className, array $parameters = []): mixed
+    public function make($className, array $parameters = []): mixed
     {
         $reflectionClass = new ReflectionClass($className);
         $constructor = $reflectionClass->getConstructor();
