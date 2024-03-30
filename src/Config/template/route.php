@@ -45,4 +45,14 @@ return [
      * 请求对象读取文档参数
      */
     'RequestReadDocumentParameters' => true,
+
+    /**
+     * 路由变量匹配前缀
+     */
+    'routeVariablePrefix' => '{',
+
+    /**
+     * 路由变量匹配后缀
+     */
+    'routeVariableSuffix' => '}',
 ];

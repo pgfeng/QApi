@@ -472,19 +472,21 @@ class Router
         $uri = self::$URI;
         $method = self::$METHOD;
         if (!self::$hitCache) {
+            $routeVariablePrefix = self::$config['routeVariablePrefix'] ?? '{';
+            $routeVariableSuffix = self::$config['routeVariableSuffix'] ?? '}';
             foreach ($routeList[Config::$app->getDir()] as $key => $routeMethodData) {
                 $routeMethodData = array_reverse($routeMethodData);
                 $methodData = [];
                 foreach ($routeMethodData as $path => $route) {
                     $params = [];
-                    if (preg_match_all('/{([a-zA-Z_][a-zA-Z0-9_]+)}/', $path, $match)) {
+                    if (preg_match_all('/' . $routeVariablePrefix . '([a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*)' . $routeVariableSuffix . '/', $path, $match)) {
                         foreach ($match[1] as $k => $p) {
                             if (isset($route['pattern'][$p])) {
                                 $path = str_replace($match[0][$k], '(' . $route['pattern'][$p] . ')', $path);
                             }
                             $params[$k + 1] = $p;
                         }
-                        $path = preg_replace('/{([a-zA-Z_][a-zA-Z0-9_]+)}/', '(\w+)', $path);
+                        $path = preg_replace('/' . $routeVariablePrefix . '[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff]*' . $routeVariableSuffix . '/', '(\w+)', $path);
                     }
                     $methodData[$path] = [
                         'callback' => $route['callback'],
