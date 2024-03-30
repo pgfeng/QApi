@@ -976,15 +976,15 @@ class DB
                         $type = self::$dbColumns[$this->configName][$this->table][$field]['type'];
                         if (stripos($type, 'INT') === 0) {
                             $item[$k] = (int)$v;
-                        }else if (stripos($type, 'TINYINT') === 0) {
+                        } else if (stripos($type, 'TINYINT') === 0) {
                             $item[$k] = (int)$v;
-                        }else if (stripos($type, 'DECIMAL') > -1 || stripos($type, 'FLOAT') > -1) {
+                        } else if (stripos($type, 'DECIMAL') > -1 || stripos($type, 'FLOAT') > -1) {
                             if ($v > PHP_FLOAT_MAX || $v < PHP_FLOAT_MIN) {
                                 $item[$k] = (string)$v;
                             } else {
                                 $item[$k] = (float)$v;
                             }
-                        }else if (stripos($type, 'JSON') > -1) {
+                        } else if (stripos($type, 'JSON') > -1) {
                             try {
                                 $item[$k] = json_decode($v, true);
                             } catch (\Exception $e) {
@@ -1248,28 +1248,27 @@ class DB
      * @param $field_name
      * @return mixed
      * @throws SqlErrorException
+     * @deprecated please use value() instead
      */
     final public function getField($field_name): mixed
     {
+        return $this->value($field_name);
+    }
+
+
+    /**
+     * @param $fieldName
+     * @return mixed
+     * @throws SqlErrorException
+     */
+    final public function value($fieldName): mixed
+    {
         $this->hasWhere = false;
-        $field_name = $this->parseField($field_name);
-        try {
-            return $this->select($field_name)->setMaxResults(1)->fetchOne();
-        } catch (\Exception $e) {
-            $traces = $e->getTrace();
-            $realTrance = null;
-            foreach ($traces as $trace) {
-                if (isset($trace['class']) && in_array($trace['class'], [
-                        'QApi\\ORM\\Model', 'QApi\\ORM\\DB'
-                    ])) {
-                    $realTrance = $trace;
-                }
-            }
-            if ($realTrance) {
-                throw new SqlErrorException($e->getMessage(), (int)$e->getCode(), 0, $realTrance['file'], $realTrance['line'], $e);
-            } else {
-                throw new SqlErrorException($e->getMessage(), (int)$e->getCode(), 0, $e['file'], $e['line'], $e);
-            }
+        $data = $this->select($fieldName)->paginate(1);
+        if (count($data)) {
+            return $data[0][$fieldName];
+        } else {
+            return null;
         }
     }
 
