@@ -47,12 +47,12 @@ return [
     'RequestReadDocumentParameters' => true,
 
     /**
-     * 路由变量匹配前缀
+     * 路由参数变量匹配前缀
      */
     'routeVariablePrefix' => '{',
 
     /**
-     * 路由变量匹配后缀
+     * 路由参数变量匹配后缀
      */
     'routeVariableSuffix' => '}',
 ];
