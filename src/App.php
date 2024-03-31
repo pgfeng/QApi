@@ -102,6 +102,7 @@ class App
             self::$apiPassword = trim(self::$app->docPassword ?: $apiPassword);
             self::$app->init();
             self::$getVersionFunction = $getVersionFunction;
+            App::$container->set(Response::class, new Response());
             Router::init($request);
             return Router::run();
         } catch (\Exception $e) {

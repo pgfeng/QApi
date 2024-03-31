@@ -472,7 +472,6 @@ class Router
         $compileList = [];
         $uri = self::$URI;
         $method = self::$METHOD;
-        App::$container->set(Response::class, new Response());
         if (!self::$hitCache) {
             $routeVariablePrefix = self::$config['routeVariablePrefix'] ?? '{';
             $routeVariableSuffix = self::$config['routeVariableSuffix'] ?? '}';
