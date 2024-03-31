@@ -157,7 +157,7 @@ class Response
     public function withAddedHeader(string $name, string|array $value): Response
     {
         if (is_string($value)) {
-            $value = explode(',', $value);
+            $value = [$value];
         }
         if (isset($this->headers[$name])) {
             $this->headers[$name] = array_merge($this->headers[$name], $value);
@@ -254,9 +254,9 @@ class Response
     }
 
     /**
-     * @deprecated use success() instead
      * @param string|null $msg
      * @return $this
+     * @deprecated use success() instead
      */
     public function ok(?string $msg = null): Response
     {
@@ -346,7 +346,13 @@ class Response
                     '')));
         foreach ($this->headers as $name => $header) {
             if (is_array($header)) {
-                header($name . ':' . implode(',', $header));
+                if ($name === 'Set-Cookie') {
+                    foreach ($header as $value) {
+                        header($name . ':' . $value, false);
+                    }
+                } else {
+                    header($name . ':' . implode(',', $header));
+                }
             } else {
                 header($name . ':' . $header);
             }
@@ -387,7 +393,7 @@ class Response
 
     /**
      * @param mixed|null $sendData
-     * @return mixed
+     * @return void
      * @deprecated
      */
     public function send(mixed $sendData = null): void
