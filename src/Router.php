@@ -16,6 +16,7 @@ use QApi\Cache\CacheContainer;
 use QApi\Cache\CacheInterface;
 use QApi\Cache\FileSystemAdapter;
 use QApi\Config\Cache\FileSystem;
+use QApi\DI\Container;
 use QApi\Exception\CompileErrorException;
 use ReflectionClass;
 use ReflectionException;
@@ -88,7 +89,7 @@ class Router
         } else {
             App::$container->set(Request::class, new Request([]));
         }
-        $request = self::$request = QApi\DI\Container::G()->get(Request::class);
+        $request = self::$request = Container::G()->get(Request::class);
         Logger::router($request->method . ' -> ' . $request->domain() . $request->requestUri);
         Logger::request('Headers -> ' . $request->header);
         if ($request->input) {
@@ -471,6 +472,7 @@ class Router
         $compileList = [];
         $uri = self::$URI;
         $method = self::$METHOD;
+        App::$container->set(Response::class, new Response());
         if (!self::$hitCache) {
             $routeVariablePrefix = self::$config['routeVariablePrefix'] ?? '{';
             $routeVariableSuffix = self::$config['routeVariableSuffix'] ?? '}';
@@ -549,7 +551,7 @@ class Router
                         'middleware' => [],
                     ];
                 } else {
-                    return (new Response())->setCode(404)->setMsg('404 Not Found');
+                    return (App::$container->get(Response::class))->setCode(404)->setMsg('404 Not Found');
                 }
             }
 
@@ -603,7 +605,6 @@ class Router
             'params' => $params,
             'middleware' => $middleware,
         ];
-        App::$container->set(Response::class);
         if (!is_array($callback)) {
             if (is_callable($callback)) {
                 if ($params) {
@@ -709,7 +710,7 @@ class Router
                 }
             }
         }
-        return (new Response())->setCode(404)->setMsg($callback['nameSpace'] . '\\' . $nowVersion->versionDir . '\\' . $callback['controller']
+        return App::$container->get(Response::class)->setCode(404)->setMsg($callback['nameSpace'] . '\\' . $nowVersion->versionDir . '\\' . $callback['controller']
             . 'Controller@'
             . $callback['method']
             . ' Not Found.');
