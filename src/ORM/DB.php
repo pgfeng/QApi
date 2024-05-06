@@ -530,13 +530,25 @@ class DB
                 }
             }
         } else if ($arg_number === 2) {
-            $values = func_get_arg(1);
-            if (is_array($values)) {
-                $this->where($predicates, 'in', $values);
-            } else if (is_null($values)) {
-                $this->where($predicates, '=', null);
-            } else {
-                $this->where($predicates, '=', $values);
+            if (is_array($predicates)) {
+                $wheres = [];
+                foreach ($predicates as $key => $value) {
+                    if (is_null($value)) {
+                        $wheres[] = $this->parseField($key) . ' IS NULL';
+                    } else {
+                        $wheres[] = $this->parseField($key) . ' = ' . $this->quote($value);
+                    }
+                }
+                $this->or(...$wheres);
+            }else{
+                $values = func_get_arg(1);
+                if (is_array($values)) {
+                    $this->where($predicates, 'in', $values);
+                } else if (is_null($values)) {
+                    $this->where($predicates, '=', null);
+                } else {
+                    $this->where($predicates, '=', $values);
+                }
             }
         } elseif ($arg_number === 3) {
             $predicates = $this->parseField($predicates);
