@@ -4,6 +4,7 @@
 namespace QApi;
 
 use ErrorException;
+use Exception;
 use QApi\Config\Abstracts\Cache;
 use QApi\Config\Application;
 use QApi\Config\Cache\FileSystem;
@@ -72,7 +73,7 @@ class Config
 
     /**
      * @return Application
-     * @throws ErrorException
+     * @throws Exception
      */
     public static function &app(): Application
     {
@@ -94,7 +95,7 @@ class Config
                 return App::$app;
             }
         }
-        throw new ErrorException('host ' . $_SERVER['HTTP_HOST'] . ' not bind app!', 0, 1,
+        throw new Exception('host ' . $_SERVER['HTTP_HOST'] . ' not bind app!', 0, 1,
             $configPath);
     }
 
