@@ -998,7 +998,7 @@ class DB
                             }
                         } else if (stripos($type, 'JSON') > -1) {
                             try {
-                                $item[$k] = json_decode($v, true);
+                                $item[$k] = json_decode($v, true,JSON_UNESCAPED_UNICODE);
                             } catch (\Exception $e) {
                                 $item[$k] = null;
                             }
