@@ -240,8 +240,12 @@ class FileSystemAdapter implements CacheInterface
      */
     public function delete(string $key): bool
     {
-        $filename = $this->getFilename($key);
-        return !file_exists($filename) || @unlink($filename);
+        try {
+            $filename = $this->getFilename($key);
+            return !file_exists($filename) || @unlink($filename);
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**
@@ -249,14 +253,17 @@ class FileSystemAdapter implements CacheInterface
      */
     public function clear(): bool
     {
-        foreach ($this->getIterator() as $name => $file) {
-            if ($file->isDir()) {
-                @rmdir($name);
-            } elseif ($this->isFilenameEndingWithExtension($name)) {
-                @unlink($name);
+        try {
+            foreach ($this->getIterator() as $name => $file) {
+                if ($file->isDir()) {
+                    @rmdir($name);
+                } elseif ($this->isFilenameEndingWithExtension($name)) {
+                    @unlink($name);
+                }
             }
+        } catch (\Exception $e) {
+            return false;
         }
-
         return true;
     }
 
