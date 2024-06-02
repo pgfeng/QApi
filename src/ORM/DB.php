@@ -541,7 +541,7 @@ class DB
                     }
                 }
                 $this->or(...$wheres);
-            }else{
+            } else {
                 if (is_array($values)) {
                     $this->where($predicates, 'in', $values);
                 } else if (is_null($values)) {
@@ -998,7 +998,7 @@ class DB
                             }
                         } else if (stripos($type, 'JSON') > -1) {
                             try {
-                                $item[$k] = json_decode($v, true,JSON_UNESCAPED_UNICODE);
+                                $item[$k] = json_decode($v, true, JSON_UNESCAPED_UNICODE);
                             } catch (\Exception $e) {
                                 $item[$k] = null;
                             }
@@ -1292,9 +1292,23 @@ class DB
      * @param bool $format
      * @return int
      * @throws SqlErrorException
+     * @deprecated please use setValue() instead
      */
     final public function setField($field_name, $field_value, bool $format = true): int
     {
+        return $this->setValue($field_name, $field_value, $format);
+    }
+
+    /**
+     * @param $field_name
+     * @param $field_value
+     * @param bool $format
+     * @return int
+     * @throws SqlErrorException
+     */
+    final public function setValue($field_name, $field_value, bool $format = true): int
+    {
+
         $field_name = $this->parseField($field_name);
         return $this->update([
             $field_name => $field_value,
