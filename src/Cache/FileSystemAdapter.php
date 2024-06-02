@@ -172,36 +172,33 @@ class FileSystemAdapter implements CacheInterface
      */
     public function get(string $key, mixed $default = null): mixed
     {
-        $data = '';
-        $lifetime = -1;
-        $filename = $this->getFilename($key);
-
-        if (!is_file($filename)) {
-            return $default;
-        }
-
-        $resource = fopen($filename, 'rb');
-        $line = fgets($resource);
-
-        if ($line !== false) {
-            $lifetime = (int)$line;
-        }
-
-        if ($lifetime !== 0 && $lifetime < time()) {
+        try {
+            $data = '';
+            $lifetime = -1;
+            $filename = $this->getFilename($key);
+            if (!is_file($filename)) {
+                return $default;
+            }
+            $resource = fopen($filename, 'rb');
+            $line = fgets($resource);
+            if ($line !== false) {
+                $lifetime = (int)$line;
+            }
+            if ($lifetime !== 0 && $lifetime < time()) {
+                fclose($resource);
+                $this->delete($key);
+                return $default;
+            }
+            while (($line = fgets($resource)) !== false) {
+                $data .= $line;
+            }
             fclose($resource);
-            $this->delete($key);
+            return unserialize($data, [
+                'allowed_classes' => true,
+            ]);
+        } catch (\Exception $e) {
             return $default;
         }
-
-        while (($line = fgets($resource)) !== false) {
-            $data .= $line;
-        }
-
-        fclose($resource);
-
-        return unserialize($data, [
-            'allowed_classes' => true,
-        ]);
     }
 
     /**
