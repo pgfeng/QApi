@@ -336,9 +336,9 @@ class Data extends ArrayObject implements JsonSerializableAlias
     /**
      * @param array $fields ['a'] ['a'=>'b']
      * @param bool $forceSet If set by force, the content will be set regardless of whether the field value exists, defaulting to null
-     * @return array
+     * @return Data
      */
-    public function getByFields(array $fields, bool $forceSet = false, mixed $default = null): array
+    public function getByFields(array $fields, bool $forceSet = false, mixed $default = null): Data
     {
         $data = [];
         foreach ($fields as $key => $field) {
@@ -350,7 +350,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
                     $data[$field] = $this->get($key, $default);
             }
         }
-        return $data;
+        return new Data($data);
     }
 
     /**
