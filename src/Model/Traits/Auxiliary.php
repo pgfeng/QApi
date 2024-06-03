@@ -3,9 +3,7 @@
 
 namespace QApi\Model\Traits;
 
-
 use QApi\Data;
-use QApi\Logger;
 use QApi\Model;
 use QApi\Request;
 use QApi\Response;
@@ -88,11 +86,11 @@ trait Auxiliary
     /**
      * 自动保存数据，返回Response
      * @param Data|array $data
-     * @param bool|string $primary_key
+     * @param false|string $primary_key
      * @param Response|null $response
      * @return Response
      */
-    public function autoSave(Data|array $data, bool|string $primary_key = false, ?Response $response = null): Response
+    public function autoSave(Data|array $data, false|string $primary_key = false, ?Response $response = null): Response
     {
         !$primary_key && $primary_key = $this->primary_key;
         if ($response === null) {
@@ -113,7 +111,7 @@ trait Auxiliary
 
         if (isset($data[$primary_key]) && $data[$primary_key]) {
             $handle = $this->editString;
-            if ($this->autoSaveTime) {
+            if ($this->autoSaveTime && $this->updateTimeField) {
                 $data[$this->updateTimeField] = $data[$this->autoSaveTime] ?? $time;
             }
         } else {
@@ -121,8 +119,12 @@ trait Auxiliary
             if (isset($data[$primary_key]))
                 unset($data[$primary_key]);
             if ($this->autoSaveTime) {
-                $data[$this->insertTimeField] = $data[$this->insertTimeField] ?? $time;
-                $data[$this->updateTimeField] = $data[$this->updateTimeField] ?? $time;
+                if ($this->insertTimeField) {
+                    $data[$this->insertTimeField] = $data[$this->insertTimeField] ?? $time;
+                }
+                if ($this->updateTimeField) {
+                    $data[$this->updateTimeField] = $data[$this->updateTimeField] ?? $time;
+                }
             }
         }
         if (method_exists($this, 'saveAuthorize')) {

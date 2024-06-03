@@ -61,13 +61,23 @@ class Model extends DB
 
     /**
      * @param Data|array $data
+     * @return Data|array
+     */
+    protected function beforeSave(Data|array $data): Data|array
+    {
+        return $data;
+    }
+
+    /**
+     * @param Data|array $data
      * @param string|null $primary_key
      * @param array $types
      * @return int
      */
     public function save(Data|array $data, ?string $primary_key = null, array $types = []): int
     {
-        if ($data instanceof Data){
+        $data = $this->beforeSave($data);
+        if ($data instanceof Data) {
             $data = $data->clone();
         }
         if (!$primary_key) {

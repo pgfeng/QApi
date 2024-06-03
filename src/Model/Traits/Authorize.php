@@ -39,15 +39,7 @@ trait Authorize
      */
     protected int $password_salt_length = 16;
 
-
-    /**
-     * 重写保存
-     * @param array|Data $data
-     * @param string|null $primary_key
-     * @return int
-     * @throws \Exception
-     */
-    public function saveAuthorize(Data|array $data, ?string $primary_key = null, array $types = []): int
+    protected function beforeSave(Data|array $data): Data|array
     {
         if (isset($data[$this->password_field])) {
             $salt = random($this->password_salt_length, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz$_=-0123456789');
@@ -58,7 +50,7 @@ trait Authorize
                 $data[$this->password_field] = password_hash($data[$this->password_field], PASSWORD_DEFAULT);
             }
         }
-        return $this->save($data, $primary_key);
+        return $data;
     }
 
     /**
@@ -110,9 +102,6 @@ trait Authorize
      */
     public function getAccountToken(Data $account, string $account_field): bool|string
     {
-        if (!$account) {
-            return false;
-        }
         return base64_encode($account[$account_field] . ' || ' . md5($account[$this->password_field]));
     }
 
@@ -122,6 +111,15 @@ trait Authorize
      * @return Data|bool|null
      */
     public function checkToken(string $token): Data|bool|null
+    {
+        return $this->getAccountByToken($token);
+    }
+
+    /**
+     * @param string $token
+     * @return Data|bool|null
+     */
+    public function getAccountByToken(string $token): Data|bool|null
     {
         if (!$token) {
             return false;
