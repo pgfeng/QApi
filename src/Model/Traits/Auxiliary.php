@@ -127,11 +127,7 @@ trait Auxiliary
                 }
             }
         }
-        if (method_exists($this, 'saveAuthorize')) {
-            $status = $this->saveAuthorize($data, $primary_key);
-        } else {
-            $status = $this->save($data, $primary_key);
-        }
+        $status = $this->save($data, $primary_key);
         if ($status !== false) {
             if ($primary_key) {
                 if (!isset($this->lastInsertUUID)) {
