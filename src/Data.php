@@ -334,6 +334,26 @@ class Data extends ArrayObject implements JsonSerializableAlias
     }
 
     /**
+     * @param array $fields ['a'] ['a'=>'b']
+     * @param bool $forceSet If set by force, the content will be set regardless of whether the field value exists, defaulting to null
+     * @return array
+     */
+    public function getByFields(array $fields, bool $forceSet = false, mixed $default = null): array
+    {
+        $data = [];
+        foreach ($fields as $key => $field) {
+            if (is_numeric($key)) {
+                if ($forceSet || $this->has($field))
+                    $data[$field] = $this->get($field, $default);
+            } else {
+                if ($forceSet || $this->has($key))
+                    $data[$field] = $this->get($key, $default);
+            }
+        }
+        return $data;
+    }
+
+    /**
      * @return string
      * @throws \JsonException
      */
