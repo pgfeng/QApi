@@ -1,6 +1,7 @@
 <?php
 
 
+use Composer\Autoload\ClassLoader;
 use JetBrains\PhpStorm\Deprecated;
 use JetBrains\PhpStorm\Pure;
 
@@ -14,18 +15,100 @@ function buildID(): string
 }
 
 /**
+ * 排序数组
+ * @param array $list
+ * @param string $field
+ * @param string $sort
+ * @return array
+ */
+function listSortBy(array $list, string $field, string $sort = 'asc'): array
+{
+    $refer = $resultSet = array();
+    foreach ($list as $i => $data)
+        $refer[$i] = $data[$field];
+    switch ($sort) {
+        case 'asc': // 正向排序
+            asort($refer);
+            break;
+        case 'desc': // 逆向排序
+            arsort($refer);
+            break;
+        case 'nat': // 自然排序
+            natcasesort($refer);
+            break;
+    }
+    foreach ($refer as $key => $val)
+        $resultSet[] = &$list[$key];
+    return $resultSet;
+}
+/**
+ * 获取命名空间
+ * @param $nameSpace
+ * @return string
+ */
+function getComposerNameSpaceDir($nameSpace): string
+{
+    $load = ClassLoader::getRegisteredLoaders();
+    $vendorDir = PROJECT_PATH . 'vendor';
+    foreach ($load as $item) {
+        preg_match('/vendorDir".*"(.*)"/iUs', serialize($item), $matches);
+        if (count($matches) == 2) {
+            $vendorDir = $matches[1];
+            break;
+        }
+    }
+    $psr4 = include $vendorDir . DIRECTORY_SEPARATOR . 'composer' . DIRECTORY_SEPARATOR . 'autoload_psr4.php';
+    $psr4Dir = [];
+    foreach ($psr4 as $space => $dirArray) {
+        $in = false;
+        foreach ($dirArray as $dir) {
+            if (str_starts_with($dir, $vendorDir)) {
+                $in = true;
+                break;
+            }
+        }
+        if (!$in) {
+            $psr4Dir[$space] = end($dirArray);
+        }
+    }
+    return $psr4Dir[$nameSpace];
+}
+
+/**
+ * 蛇形命名转换为驼峰命名
+ */
+function convertToCamelCase(string $name): string
+{
+    $name = strtolower($name);
+    $name = preg_replace_callback('/_([a-z])/', function ($match) {
+        return strtoupper($match[1]);
+    }, $name);
+    return ucfirst($name);
+}
+
+
+/**
+ * 大驼峰转换为蛇形命名
+ */
+function convertToSnakeCase(string $name): string
+{
+    $name = preg_replace('/[A-Z]/', '_$0', $name);
+    return strtolower(trim($name, "_"));
+}
+
+/**
  * 获取一个全局唯一键值
  * @param int $length
  * @param Closure|null $filter
  * @return string
  */
-function randomOpenSSL(int $length = 6,Closure|null $filter=null): string
+function randomOpenSSL(int $length = 6, Closure|null $filter = null): string
 {
     $bytes = openssl_random_pseudo_bytes(ceil($length / 2));
     $id = bin2hex($bytes);
-    if ($filter){
+    if ($filter) {
         return $filter($id);
-    }else{
+    } else {
         return strtoupper($id);
     }
 }

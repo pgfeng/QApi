@@ -28,6 +28,9 @@ class Cache
         if ($configName === '__document') {
             return self::$adapters[$configName] = new FileSystemAdapter(new FileSystem(PROJECT_PATH . '.document'));
         }
+        if ($configName == '__cli') {
+            return self::$adapters[$configName] = new FileSystemAdapter(new FileSystem(PROJECT_PATH . '.cli'));
+        }
         if (!is_cli()) {
             $runMode = Config::app()->getRunMode();
         } else if (defined('RUN_MODE')) {
@@ -43,7 +46,7 @@ class Cache
                 0, 1, PROJECT_PATH . App::$configDir . DIRECTORY_SEPARATOR . $runMode
                 . DIRECTORY_SEPARATOR . 'cache.php');
         }
-        return (self::$adapters[$configName] = new CacheContainer(new $cache->driver($cache),$configName));
+        return (self::$adapters[$configName] = new CacheContainer(new $cache->driver($cache), $configName));
     }
 
     /**
