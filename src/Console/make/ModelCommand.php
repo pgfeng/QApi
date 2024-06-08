@@ -61,10 +61,8 @@ class ModelCommand extends Command
         }
         $table = $options['table'];
         if (empty($table)) {
-            // 提示所有表名 打印所有表名
             $db = new DB('', $config);
             $tables = $db->getSchemaManager()->listTableNames();
-            // 移除tables中的前缀
             $prefix = Config::database($config)->tablePrefix;
             $tables = array_map(function ($table) use ($prefix) {
                 return str_replace($prefix, '', $table);
@@ -75,7 +73,6 @@ class ModelCommand extends Command
                 return Command::FAILURE;
             }
         }else{
-            // 判断表是否存在
             $db = new DB('', $config);
             $tables = $db->getSchemaManager()->listTableNames();
             $prefix = Config::database($config)->tablePrefix;
@@ -106,11 +103,9 @@ class ModelCommand extends Command
                 $io->error('Namespace cannot be empty');
                 return Command::FAILURE;
             } else {
-                // 记录命名空间 以便下次使用
                 $this->cache->set($nameSpaceCacheKey, $namespace);
             }
         }
-        // 选择命名空间
         $rootNameSpace = $this->choseNameSpace($io);
         $result = $this->saveModelFile($config, $table, $traits, $namespace, $rootNameSpace, Model::class,$input, $output);
         if ($result){
@@ -149,7 +144,6 @@ class ModelCommand extends Command
         $psr4Dir = $this->sortModelNameSpaceDir($psr4Dir);
         $cacheKey = $this->getName() . '::root_namespace';
         $rootNameSpace = $this->cache->get($cacheKey);
-        // 请选择模型命名空间
         $rootNameSpace = $io->choice('Please select a model root namespace', $psr4Dir,$rootNameSpace);
         $this->cache->set($cacheKey, $rootNameSpace);
         return $rootNameSpace;
@@ -157,6 +151,7 @@ class ModelCommand extends Command
 
     /**
      * @param array $psr4Dir
+     * @return array
      */
     public function sortModelNameSpaceDir(array $psr4Dir): array
     {
@@ -193,11 +188,11 @@ class ModelCommand extends Command
         ]);
         $choiceQuestion = new ChoiceQuestion('Please select your choices', $choices);
         $choiceQuestion->setMultiselect(true);
-        // 允许不选
         $choiceQuestion->setValidator(function ($answer) {
             return $answer;
         });
-        return $this->getHelper('question')->ask($input, $output, $choiceQuestion)??[];
+        $traits = $this->getHelper('question')->ask($input, $output, $choiceQuestion);
+        return explode(',',$traits)??[];
     }
 
     /**
