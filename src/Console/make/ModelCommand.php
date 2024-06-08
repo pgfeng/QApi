@@ -4,6 +4,7 @@ namespace QApi\Console\make;
 
 use Composer\Autoload\ClassLoader;
 use Doctrine\DBAL\Exception;
+use ErrorException;
 use QApi\Cache\Cache;
 use QApi\Cache\CacheInterface;
 use QApi\Config;
@@ -16,6 +17,7 @@ use QApi\Model\Traits\Validate;
 use QApi\ORM\DB;
 use QApi\ORM\Model;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -41,8 +43,8 @@ class ModelCommand extends Command
 
 
     /**
-     * @throws \ErrorException
-     * @throws Exception
+     * @throws ErrorException
+     * @throws Exception|ExceptionInterface
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -200,7 +202,7 @@ class ModelCommand extends Command
 
     /**
      * @throws Exception
-     * @throws \ErrorException
+     * @throws ErrorException
      */
     public function saveModelFile($configName, $table, $traits, $dirPath, $rootNameSpace, $extendModelClass, InputInterface $input, OutputInterface $output): string
     {
