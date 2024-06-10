@@ -3,6 +3,8 @@
 namespace QApi;
 
 use Exception;
+use QApi\Console\db\DatabaseBackupCommand;
+use QApi\Console\db\DatabaseRestorationCommand;
 use QApi\Console\DocumentSystemUpdateCommand;
 use QApi\Console\make\ColumnCommand;
 use QApi\Console\make\DocumentCommand;
@@ -34,6 +36,8 @@ class Console
         $this->add(new DocumentSystemUpdateCommand());
         $this->add(new DocumentCommand());
         $this->add(new ModelCommand());
+        $this->add(new DatabaseBackupCommand());
+        $this->add(new DatabaseRestorationCommand());
     }
 
     /**

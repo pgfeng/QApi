@@ -13,11 +13,11 @@
   ],
   "require": {
     "php": ">=8.0",
-    "monolog/monolog": "^2.8",
+    "monolog/monolog": "2.9.3",
     "symfony/mime": "^v5.4",
     "league/climate": "^3.8",
     "predis/predis": "^1.1",
-    "doctrine/dbal": "^3.4",
+    "doctrine/dbal": "3.8.4",
     "symfony/uid": "v5.4",
     "psr/event-dispatcher": "1.0.0",
     "phpunit/phpunit": "^9.5",
