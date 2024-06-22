@@ -27,20 +27,19 @@ class RunCommand extends Command
         $io = new SymfonyStyle($input, $output);
         if (!$port) {
             $configs = Config::apps();
-            // 端口号为键 下面为应用的数组
             $applications = [];
             foreach ($configs as $domain => $app) {
                 $port = (string)((parse_url($domain, PHP_URL_PORT)) ?? '80');
-                if (isset($applications[$port])) {
-                    $applications[$port] = [ $app->appDir . ':'.$app->getRunMode().'-' . $domain];
+                if (!isset($applications[$port])) {
+                    $applications[$port] = [$this->color($app->appDir . ' ' . $domain, $app->getRunMode())];
                 } else {
-                    $applications[$port][] = $app->appDir . ':'.$app->getRunMode().'-' . $domain;
+                    $applications[$port][] = $this->color($app->appDir . ' ' . $domain, $app->getRunMode());
                 }
             }
             foreach ($applications as $port => $apps) {
-                $applications[$port] = implode(",", $apps);
+                $applications[$port] = implode("<fg=gray> | </>", $apps);
             }
-            $port = $io->choice('Please select the port on which it is running', $applications, $port);
+            $port = $io->choice('Please select the port on which it is running', $applications, null);
             $port = array_search($port, $applications);
         }
         $command = sprintf(
@@ -52,5 +51,18 @@ class RunCommand extends Command
         );
         passthru($command);
         return Command::SUCCESS;
+    }
+
+    //按照运行模式给文字增加颜色
+    public function color(string $string, string $devMode): string
+    {
+        // 添加Symfony Console颜色
+        if ($devMode === 'development') {
+            return "<fg=blue>$string</>";
+        } elseif ($devMode === 'production') {
+            return "$string";
+        } else {
+            return "<fg=yellow>$string</>";
+        }
     }
 }
