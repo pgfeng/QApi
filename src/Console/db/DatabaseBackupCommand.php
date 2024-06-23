@@ -3,8 +3,8 @@
 namespace QApi\Console\db;
 
 use QApi\Config;
+use QApi\Console\Command;
 use QApi\ORM\DB;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;

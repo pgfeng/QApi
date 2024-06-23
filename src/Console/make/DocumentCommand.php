@@ -3,15 +3,15 @@
 namespace QApi\Console\make;
 
 use QApi\Attribute\Utils;
+use QApi\Console\Command;
 use QApi\Exception\CacheErrorException;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class DocumentCommand extends Command
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this->setName('make:document')
             ->setAliases(['md', 'make-document'])

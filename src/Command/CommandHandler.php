@@ -19,6 +19,7 @@ use QApi\ORM\Model;
 
 /**
  * @package QApi\Command
+ * @deprecated 2.0
  */
 abstract class CommandHandler
 {
