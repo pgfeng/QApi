@@ -3,6 +3,7 @@
 namespace QApi;
 
 use Exception;
+use QApi\Command\CommandHandler;
 use QApi\Console\db\DatabaseBackupCommand;
 use QApi\Console\db\DatabaseRestorationCommand;
 use QApi\Console\DocumentSystemUpdateCommand;
@@ -38,6 +39,21 @@ class Console
         $this->add(new ModelCommand());
         $this->add(new DatabaseBackupCommand());
         $this->add(new DatabaseRestorationCommand());
+
+        $Handlers = Config::command('CommandHandlers');
+
+        /**
+         * 将配置中的handle导入
+         */
+        foreach ($Handlers as $handle) {
+            try {
+                $handle = new $handle($this);
+                if ($handle instanceof Command) {
+                    $this->add($handle);
+                }
+            } catch (\Error) {
+            }
+        }
     }
 
     /**

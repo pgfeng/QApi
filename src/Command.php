@@ -93,7 +93,10 @@ class Command
          * 将配置中的handle导入
          */
         foreach ($Handlers as $handle) {
-            $this->addHandler(new $handle($this));
+            $handle = new $handle($this);
+            if ($handle instanceof CommandHandler){
+                $this->addHandler($handle);
+            }
         }
     }
 
