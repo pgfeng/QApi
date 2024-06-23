@@ -3,7 +3,7 @@
 namespace QApi;
 
 use Exception;
-use QApi\Command\CommandHandler;
+use QApi\Console\Command;
 use QApi\Console\db\DatabaseBackupCommand;
 use QApi\Console\db\DatabaseRestorationCommand;
 use QApi\Console\DocumentSystemUpdateCommand;
@@ -12,9 +12,7 @@ use QApi\Console\make\DocumentCommand;
 use QApi\Console\make\ModelCommand;
 use QApi\Console\RunCommand;
 use Symfony\Component\Console\Application;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputOption;
-use function Co\run;
 
 class Console
 {
@@ -47,11 +45,11 @@ class Console
          */
         foreach ($Handlers as $handle) {
             try {
-                $handle = new $handle($this);
+                $handle = new $handle();
                 if ($handle instanceof Command) {
                     $this->add($handle);
                 }
-            } catch (\Error) {
+            } catch (\Error $e) {
             }
         }
     }
