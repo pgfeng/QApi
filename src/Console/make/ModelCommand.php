@@ -65,7 +65,7 @@ class ModelCommand extends Command
             $tables = $db->getSchemaManager()->listTableNames();
             $prefix = Config::database($config)->tablePrefix;
             $tables = array_map(function ($table) use ($prefix) {
-                return str_replace($prefix, '', $table);
+                return preg_replace('/^'.$prefix.'/', '', $table);
             }, $tables);
             $table = $io->choice('Please select a table', $tables);
             if (empty($table)) {
@@ -77,7 +77,7 @@ class ModelCommand extends Command
             $tables = $db->getSchemaManager()->listTableNames();
             $prefix = Config::database($config)->tablePrefix;
             $tables = array_map(function ($table) use ($prefix) {
-                return str_replace($prefix, '', $table);
+                return preg_replace('/^'.$prefix.'/', '', $table);
             }, $tables);
             if (!in_array($table, $tables)) {
                 $io->error('Table does not exist');
