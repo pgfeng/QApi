@@ -406,4 +406,10 @@ class Data extends ArrayObject implements JsonSerializableAlias
         }
         return $this->model->save($data, $primary_key, $types);
     }
+
+    #[\ReturnTypeWillChange]
+    public function __debugInfo():array
+    {
+        return $this->toArray();
+    }
 }
