@@ -87,9 +87,24 @@ class DB
     protected ?int $lockMode = null;
 
     /**
-     * @var Closure|null
+     * @var callable(Data):void|null $bindRecordCallback
      */
-    protected ?Closure $afterRecordEachCallback = null;
+    private ?Closure $bindRecordCallback = null;
+
+    /**
+     * @var callable(Data):void|null $bindCollectionCallback
+     */
+    private ?Closure $bindCollectionCallback = null;
+
+    /**
+     * @var callable(Data):void|null $recordCallback
+     */
+    private ?Closure $recordCallback = null;
+
+    /**
+     * @var callable(Data):void|null $collectionCallback
+     */
+    private ?Closure $collectionCallback = null;
 
     /**
      * @var bool|null
@@ -137,6 +152,28 @@ class DB
             }
         }
         return $this->select(...$columns);
+    }
+
+    /**
+     * Set a one-time callback function to process each element in the collection.
+     * @param callable(Data $data):void $callback
+     * @return $this
+     */
+    public function record(callable $callback): self
+    {
+        $this->recordCallback = $callback;
+        return $this;
+    }
+
+    /**
+     * Set the callback function to be executed before returning the records.
+     * @param callable $callback
+     * @return $this
+     */
+    public function collection(callable $callback): self
+    {
+        $this->collectionCallback = $callback;
+        return $this;
     }
 
     /**
@@ -190,8 +227,7 @@ class DB
      * @throws Exception
      * @throws InvalidLockMode
      */
-    public
-    function lock(int $lockMode = LockMode::PESSIMISTIC_WRITE): self
+    public function lock(int $lockMode = LockMode::PESSIMISTIC_WRITE): self
     {
         $this->lockMode = $lockMode;
         $this->from($this->connection->getDatabasePlatform()->appendLockHint($this->table, $lockMode), $this->aliasName);
@@ -1024,8 +1060,19 @@ class DB
             $data = [];
         }
         $data = new Data($data);
-        if ($this->afterRecordEachCallback) {
-            $data->each($this->afterRecordEachCallback);
+        if ($this->bindCollectionCallback instanceof Closure) {
+            call_user_func($this->bindCollectionCallback, $data);
+        }
+        if ($this->collectionCallback instanceof Closure) {
+            call_user_func($this->collectionCallback, $data);
+            $this->collectionCallback = null;
+        }
+        if ($this->bindRecordCallback instanceof Closure) {
+            $data->each($this->bindRecordCallback);
+        }
+        if ($this->recordCallback instanceof Closure) {
+            $data->each($this->recordCallback);
+            $this->recordCallback = null;
         }
         return $data;
     }
@@ -1294,12 +1341,22 @@ class DB
     }
 
     /**
-     * @param callable(Data):Data $callback
+     * @param callable(Data):void $callback
+     * @return $this
+     */
+    public function bindRecord(callable $callback): self
+    {
+        $this->bindRecordCallback = $callback;
+        return $this;
+    }
+
+    /**
+     * @param callable(Data):void $callback
      * @return self
      */
-    public function bindRecordEach(callable $callback): self
+    public function bindCollection(callable $callback): self
     {
-        $this->afterRecordEachCallback = Closure::fromCallable($callback);
+        $this->bindCollectionCallback = $callback;
         return $this;
     }
 
