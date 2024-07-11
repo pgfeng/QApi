@@ -87,6 +87,11 @@ class DB
     protected ?int $lockMode = null;
 
     /**
+     * @var Closure|null
+     */
+    protected ?Closure $afterRecordEachCallback = null;
+
+    /**
      * @var bool|null
      */
     protected ?bool $cacheSwitch = false;
@@ -1018,7 +1023,11 @@ class DB
         if (!is_array($data)) {
             $data = [];
         }
-        return new Data($data);
+        $data = new Data($data);
+        if ($this->afterRecordEachCallback) {
+            $data->each($this->afterRecordEachCallback);
+        }
+        return $data;
     }
 
     /**
@@ -1285,8 +1294,16 @@ class DB
     }
 
     /**
-     * 设置字段值
-     *
+     * @param callable(Data):Data $callback
+     * @return self
+     */
+    public function bindRecordEach(callable $callback): self
+    {
+        $this->afterRecordEachCallback = Closure::fromCallable($callback);
+        return $this;
+    }
+
+    /**
      * @param $field_name
      * @param $field_value
      * @param bool $format
