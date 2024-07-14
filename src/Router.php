@@ -599,6 +599,11 @@ class Router
         if ($callback instanceof QApi\serializeClosure\Closure) {
             $callback = $callback->getClosure();
         }
+        if (count($middleware)>1){
+            usort($middleware, function ($a, $b) {
+                return $a::PRIORITY <=> $b::PRIORITY;
+            });
+        }
         self::$router[Config::$app->getDir()] = [
             'callback' => $callback,
             'params' => $params,
@@ -684,6 +689,9 @@ class Router
                     $methodMiddleware = self::$middlewareList[Config::$app->getDir()][$controllerName . '@' . $callback['method']] ?? [];
                     $middlewareLists = array_unique(array_merge($classMiddleware, $methodMiddleware));
                     ksort($middlewareLists);
+                    usort($middlewareLists, function ($a, $b) {
+                            return $a::PRIORITY <=> $b::PRIORITY;
+                    });
                     self::$router[Config::$app->getDir()]['middleware'] = &$middlewareLists;
                     Logger::router('Running -> ' . json_encode(self::$router[Config::$app->getDir()], JSON_THROW_ON_ERROR));
                     self::$request->arguments = new Data($params);
