@@ -9,6 +9,7 @@
 namespace QApi\Model;
 
 
+use JetBrains\PhpStorm\ArrayShape;
 use QApi\Data;
 use QApi\Model;
 
@@ -112,6 +113,29 @@ abstract class Authorize extends Model
         }
 
         return false;
+    }
+
+    /**
+     * @param string $account
+     * @param string $password
+     * @return array
+     */
+    #[ArrayShape(['status' => "bool", 'data' => "array", 'message' => "string", 'code' => "int"])]
+    public function login(string $account, string $password): array
+    {
+        $account = $this->getAccount($account);
+        if (!$account) {
+            return ['status' => false, 'data' => [], 'message' => '账号不存在！', 'code' => -2];
+        }
+        $hash_password = $account[$this->password_field];
+        if ($this->password_salt_field) {
+            $password .= $account[$this->password_salt_field];
+        }
+        if (password_verify($password, $hash_password)) {
+            return ['status' => true, 'data' => $account, 'message' => '登录成功！', 'code' => 0];
+        } else {
+            return ['status' => false, 'data' => [], 'message' => '密码错误！', 'code' => -1];
+        }
     }
 
     /**
