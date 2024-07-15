@@ -274,6 +274,20 @@ class Data extends ArrayObject implements JsonSerializableAlias
     }
 
     /**
+     * @param $key
+     * @return bool
+     */
+    public function hasEmpty(...$key): bool
+    {
+        foreach ($key as $k) {
+            if (!isset($this[$k]) || empty($this[$k])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * @param array $data
      * @return void
      */
@@ -408,7 +422,7 @@ class Data extends ArrayObject implements JsonSerializableAlias
     }
 
     #[\ReturnTypeWillChange]
-    public function __debugInfo():array
+    public function __debugInfo(): array
     {
         return $this->toArray();
     }
