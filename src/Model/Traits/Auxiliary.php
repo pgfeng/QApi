@@ -159,10 +159,10 @@ trait Auxiliary
      */
     public function toTableData(Request $request, Response $response): Response
     {
-        $sortField = $request->get->get('sortField');
-        $sortOrder = $request->get->get('sortOrder');
-        $page = $request->get->get('page', 1);
-        $size = $request->get->get('size', 10);
+        $sortField = $request->request->get('sortField');
+        $sortOrder = $request->request->get('sortOrder');
+        $page = $request->request->get('page', 1);
+        $size = $request->request->get('size', 10);
         if ($sortField) {
             $this->orderBy($sortField, $sortOrder === 'ascend' ? 'asc' : 'desc');
         }
