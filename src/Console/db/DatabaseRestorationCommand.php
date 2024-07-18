@@ -62,32 +62,47 @@ class DatabaseRestorationCommand extends Command
         if (!$io->confirm('Are you sure you want to restore the database?')) {
             return Command::FAILURE;
         }
-        $file = $dirPath . $file;
-        $progressBar = new ProgressBar($output, 0);
-        $progressBar->setFormat('[%indicator%] %message%');
-        $progressBar->setMessage('Loading', 'message');
-        $indicators = ['-', '\\', '|', '/'];
-        $progressBar->start();
-        $file = fopen($file, 'r');
-        $sql = '';
-        $number = 0;
-        $connection = $db->getConnection();
-        while (!feof($file)) {
-            $sql .= fgets($file);
-            // 以分号结尾
-            if (str_ends_with(trim($sql), ';')) {
-                $number++;
-                $connection->executeStatement($sql);
-                $sql = '';
-                $progressBar->setMessage($indicators[$number % 4], 'indicator');
-                $progressBar->setMessage('Executed SQL Number:' . $number, 'message');
-                $progressBar->advance();
-            }
+        $backupDir = $dirPath . $file;
+        $files = glob($backupDir . '/*.sql');
+        if (empty($files)) {
+            $io->error('No SQL files found.');
+            return Command::FAILURE;
         }
-        fclose($file);
-        $progressBar->finish();
-        $io->writeln('');
-        $io->success('Database restoration completed.');
+        $files = array_values($files);
+        $totalFiles = count($files);
+        $output->writeln('Total SQL files:' . $totalFiles);
+        $io->writeln('<fg=green>[' . $config . '] Start restoring the database...</>');
+        foreach ($files as $key=>$file) {
+            $table = str_replace('.sql', '', basename($file));
+            $f = fopen($file, 'r');
+            $sqlCount = 0;
+            while (!feof($f)) {
+                $sql = fgets($f);
+                if (str_ends_with(trim($sql), ';')) {
+                    $sqlCount++;
+                }
+            }
+            fclose($f);
+            $file = fopen($file, 'r');
+            $progressBar = new ProgressBar($io, $sqlCount);
+            $progressBar->setFormat(" %percent:3s%% [%bar%] <fg=yellow;options=bold>%current%/%max%</> %elapsed:6s%");
+            $io->writeln('<fg=blue>Table['.($key+1).'/'.$totalFiles.']: ' . $table . '</> <fg=yellow>Total SQL: ' . $sqlCount . '</>');
+            $progressBar->start();
+            $sql = '';
+            $connection = $db->getConnection();
+            while (!feof($file)) {
+                $sql .= fgets($file);
+                if (str_ends_with(trim($sql), ';')) {
+                    $connection->executeStatement($sql);
+                    $sql = '';
+                    $progressBar->advance();
+                }
+            }
+            fclose($file);
+            $progressBar->finish();
+            $io->writeln('');
+        }
+        $io->success('[' . $config . ']Database restoration completed.');
         return Command::SUCCESS;
     }
 }

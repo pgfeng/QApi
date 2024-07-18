@@ -49,8 +49,10 @@ class DatabaseBackupCommand extends Command
         $path = $input->getOption('path');
         $path = rtrim($path, '/') . '/';
         $dirPath = $path . $config . DIRECTORY_SEPARATOR;
-        $path = $path . $config . DIRECTORY_SEPARATOR . date('YmdHis') . '.sql';
-        mkPathDir($path);
+        $backupDir = $path . $config . DIRECTORY_SEPARATOR . date('YmdHis');
+        if (!is_dir($backupDir)) {
+            mkdir($backupDir, 0777, true);
+        }
 //        遍历目录
         $files = scandir($dirPath);
         $files = array_filter($files, function ($file) {
@@ -59,26 +61,40 @@ class DatabaseBackupCommand extends Command
         $max = $input->getOption('max');
 //        按照时间排序 大的在前
         rsort($files);
-        while (count($files) >= $max) {
+        while (count($files) > $max) {
             $io->writeln('The number of backups exceeds the maximum limit, deleting the oldest backup.');
             $deleteFile = array_pop($files);
-            unlink($dirPath . $deleteFile);
-        }
-        $io->writeln('Backup path: ' . $path);
-        if (file_exists($path)) {
-            // 文件已存在 提示是否覆盖
-            if (!$io->confirm('The backup file already exists, do you want to overwrite it?')) {
-                $io->error('Backup canceled.');
-                return Command::FAILURE;
-            } else {
-                unlink($path);
+            // 删除目录
+            $deleteDir = $dirPath . $deleteFile;
+            if (is_dir($deleteDir)) {
+                $io->writeln('Delete directory: ' . $deleteDir);
+                // 先清空目录
+                $deleteFiles = scandir($deleteDir);
+                $deleteFiles = array_filter($deleteFiles, function ($file) {
+                    return $file !== '.' && $file !== '..';
+                });
+                foreach ($deleteFiles as $file) {
+                    unlink($deleteDir . DIRECTORY_SEPARATOR . $file);
+                }
+                rmdir($deleteDir);
             }
         }
-        $file = fopen($path, 'w');
-        fwrite($file, "-- QApi Database backup " . PHP_EOL);
-        //备份时间
-        fwrite($file, "-- Date: " . date('Y-m-d H:i:s') . PHP_EOL . PHP_EOL);
+//        $io->writeln('Backup path: ' . $path);
+//        if (file_exists($path)) {
+//            // 文件已存在 提示是否覆盖
+//            if (!$io->confirm('The backup file already exists, do you want to overwrite it?')) {
+//                $io->error('Backup canceled.');
+//                return Command::FAILURE;
+//            } else {
+//                unlink($path);
+//            }
+//        }
         foreach ($tables as $table) {
+            $path = $backupDir . DIRECTORY_SEPARATOR . $table . '.sql';
+            $file = fopen($path, 'w');
+            fwrite($file, "-- QApi Database backup " . PHP_EOL);
+            //备份时间
+            fwrite($file, "-- Date: " . date('Y-m-d H:i:s') . PHP_EOL . PHP_EOL);
             $io->writeln(PHP_EOL . 'Backup table: ' . $table);
             fwrite($file, "-- ----------------------------" . PHP_EOL);
             fwrite($file, "-- Table `$table` START" . PHP_EOL);
@@ -124,9 +140,9 @@ class DatabaseBackupCommand extends Command
             // 备份表完成
             fwrite($file, "-- Table `$table` END" . PHP_EOL);
             fwrite($file, "-- ----------------------------" . PHP_EOL . PHP_EOL);
+            fclose($file);
         }
-        fclose($file);
-        $io->success('Backup completed.' . PHP_EOL . 'Backup path: ' . $path);
+        $io->success('Backup completed.' . PHP_EOL . 'Backup path: ' . $backupDir);
         return Command::SUCCESS;
     }
 }
