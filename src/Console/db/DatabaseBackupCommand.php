@@ -44,7 +44,6 @@ class DatabaseBackupCommand extends Command
             $config = $io->choice('Please select a database configuration', $configs, $config);
         }
         $db = new DB('', $config);
-        // 获取数据库表
         $tables = $db->getSchemaManager()->listTableNames();
         $path = $input->getOption('path');
         $path = rtrim($path, '/') . '/';
@@ -53,13 +52,11 @@ class DatabaseBackupCommand extends Command
         if (!is_dir($backupDir)) {
             mkdir($backupDir, 0777, true);
         }
-//        遍历目录
         $files = scandir($dirPath);
         $files = array_filter($files, function ($file) {
             return $file !== '.' && $file !== '..';
         });
         $max = $input->getOption('max');
-//        按照时间排序 大的在前
         rsort($files);
         while (count($files) > $max) {
             $io->writeln('The number of backups exceeds the maximum limit, deleting the oldest backup.');
@@ -79,44 +76,28 @@ class DatabaseBackupCommand extends Command
                 rmdir($deleteDir);
             }
         }
-//        $io->writeln('Backup path: ' . $path);
-//        if (file_exists($path)) {
-//            // 文件已存在 提示是否覆盖
-//            if (!$io->confirm('The backup file already exists, do you want to overwrite it?')) {
-//                $io->error('Backup canceled.');
-//                return Command::FAILURE;
-//            } else {
-//                unlink($path);
-//            }
-//        }
         foreach ($tables as $table) {
             $path = $backupDir . DIRECTORY_SEPARATOR . $table . '.sql';
             $file = fopen($path, 'w');
             fwrite($file, "-- QApi Database backup " . PHP_EOL);
-            //备份时间
             fwrite($file, "-- Date: " . date('Y-m-d H:i:s') . PHP_EOL . PHP_EOL);
             $io->writeln(PHP_EOL . 'Backup table: ' . $table);
             fwrite($file, "-- ----------------------------" . PHP_EOL);
             fwrite($file, "-- Table `$table` START" . PHP_EOL);
             fwrite($file, "-- ----------------------------" . PHP_EOL);
             $createSql = @$db->getConnection()->executeQuery("SHOW CREATE TABLE `$table`")->fetchAllAssociative();
-            // 如果表存在 删除表
             fwrite($file, "DROP TABLE IF EXISTS `$table`;" . PHP_EOL);
             fwrite($file, $createSql[0]['Create Table'].';' . PHP_EOL);
-            // 备份表数据
             $total = @$db->getConnection()->executeQuery("SELECT COUNT(*) FROM `$table`")->fetchOne();
-            // 打印进度
             $progress = $io->createProgressBar($total);
             if ($total) {
                 fwrite($file, PHP_EOL . "-- ----------------------------" . PHP_EOL);
                 fwrite($file, "-- Table `$table` Data" . PHP_EOL);
                 fwrite($file, "-- ----------------------------" . PHP_EOL);
-                // 每次获取200条数据
                 $limit = 200;
                 $offset = 0;
                 while ($offset < $total) {
                     $data = @$db->getConnection()->executeQuery("SELECT * FROM `$table` LIMIT $offset, $limit")->fetchAllAssociative();
-                    // 获取总数量
                     foreach ($data as $row) {
                         $keys = array_keys($row);
                         $values = array_map(function ($value) use ($db) {
@@ -134,10 +115,8 @@ class DatabaseBackupCommand extends Command
                 $progress->finish();
                 fwrite($file, "-- ----------------------------" . PHP_EOL);
             } else {
-                // io 打印黄色警告 使用write
                 $io->write(' <comment>Table data is empty.</comment>');
             }
-            // 备份表完成
             fwrite($file, "-- Table `$table` END" . PHP_EOL);
             fwrite($file, "-- ----------------------------" . PHP_EOL . PHP_EOL);
             fclose($file);
