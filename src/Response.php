@@ -423,4 +423,30 @@ class Response
         ];
         $this->send(array_merge($sendData, $this->extra));
     }
+
+    public function setCookie($name, $value = '', int|\DateInterval $expire = 0, $path = '/', $domain = '', $secure = false, $httponly = false): Response
+    {
+        $cookieString = "$name=$value;";
+        if ($expire) {
+            if ($expire instanceof \DateInterval) {
+                $expire = (new \DateTime())->add($expire)->getTimestamp();
+            } else {
+                $expire = time() + $expire;
+            }
+            $cookieString .= " expires=" . gmdate('D, d-M-Y H:i:s T', $expire) . ";";
+        }
+        if ($path) {
+            $cookieString .= " path=$path;";
+        }
+        if ($domain) {
+            $cookieString .= " domain=$domain;";
+        }
+        if ($secure) {
+            $cookieString .= " secure;";
+        }
+        if ($httponly) {
+            $cookieString .= " httponly;";
+        }
+        return $this->withAddedHeader('Set-Cookie', $cookieString);
+    }
 }
