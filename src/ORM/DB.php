@@ -214,6 +214,18 @@ class DB
     }
 
     /**
+     * @param string $name
+     * @param array $arguments
+     * @return mixed
+     */
+    public function setTable(string $table):self
+    {
+        $this->from($table);
+        $this->table = $table;
+        return $this;
+    }
+
+    /**
      * @param $configName
      * @param Database $config
      * @return mixed
