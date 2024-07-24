@@ -5,8 +5,8 @@ namespace QApi\ORM;
 
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Query\QueryBuilder;
 use QApi\Config;
+use QApi\Config\Abstracts\Database;
 
 class DriverManager
 {
@@ -25,6 +25,20 @@ class DriverManager
     {
         $config = Config::database($configName);
         return self::$DBC[$configName] ?? (self::$DBC[$configName] = (new ($config->connectorClass)())?->getConnector
-            ($config));
+        ($config));
+    }
+
+    /**
+     * @param $configName
+     * @param Database $config
+     * @return Connection
+     * @throws \ErrorException
+     */
+    public static function addConnect($configName, Database $config): Connection
+    {
+        if (isset(self::$DBC[$configName])) {
+            return self::$DBC[$configName];
+        }
+        return self::$DBC[$configName] = (new ($config->connectorClass)())?->getConnector($config);
     }
 }

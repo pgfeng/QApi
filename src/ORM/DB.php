@@ -18,6 +18,7 @@ use ErrorException;
 use QApi\Attribute\Column\Field;
 use QApi\Attribute\Utils;
 use QApi\Config;
+use QApi\Config\Abstracts\Database;
 use QApi\Config\Database\MysqliDatabase;
 use QApi\Config\Database\PdoMysqlDatabase;
 use QApi\Config\Database\PdoSqliteDatabase;
@@ -185,8 +186,7 @@ class DB
     public function __construct(string $table, private string $configName)
     {
         $this->config = Config::database($configName);
-        $this->connection = DriverManager::connect($configName);
-        $this->queryBuilder = $this->connection->createQueryBuilder();
+        $this->setConnect($configName, $this->config);
         $this->select('*');
         if (!isset(self::$dbColumns[$configName][$table])) {
             try {
@@ -211,6 +211,21 @@ class DB
             $this->table = $table;
             $this->from($table);
         }
+    }
+
+    /**
+     * @param $configName
+     * @param Database $config
+     * @return mixed
+     * @throws ErrorException
+     */
+    public function setConnect($configName, Database $config): self
+    {
+        $this->config = $config;
+        $this->connection = DriverManager::addConnect($configName, $config);
+        $this->queryBuilder = $this->connection->createQueryBuilder();
+        $this->configName = $configName;
+        return $this;
     }
 
     /**

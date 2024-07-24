@@ -22,6 +22,11 @@ abstract class Database
     public string $driver;
 
     /**
+     * @var string connector class name
+     */
+    public string $connectorClass;
+
+    /**
      * @var CacheInterface|null
      */
     public ?CacheInterface $cacheAdapter = null;
