@@ -1498,16 +1498,16 @@ class DB
     }
 
     /**
-     * @param int $number
+     * @param int $size
      * @param int $page
      * @return Data|array
      * @throws SqlErrorException
      */
-    public function paginate(int $number = 10, int $page = 1): Data|array
+    public function paginate(int $size = 10, int $page = 1): Data|array
     {
         $page = $page > 0 ? $page : 1;
-        $min = ($page - 1) * $number;
-        return $this->limit($min, $number)->query();
+        $min = ($page - 1) * $size;
+        return $this->limit($min, $size)->query();
     }
 
 
