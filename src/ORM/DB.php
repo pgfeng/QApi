@@ -1503,7 +1503,7 @@ class DB
      * @return Data|array
      * @throws SqlErrorException
      */
-    final public function paginate(int $number = 10, int $page = 1): Data|array
+    public function paginate(int $number = 10, int $page = 1): Data|array
     {
         $page = $page > 0 ? $page : 1;
         $min = ($page - 1) * $number;
