@@ -218,7 +218,7 @@ class DB
      * @param array $arguments
      * @return mixed
      */
-    public function setTable(string $table):self
+    public function setTable(string $table): self
     {
         $this->from($table);
         $this->table = $table;
@@ -631,8 +631,10 @@ class DB
                 $where = $expr->like($predicates, $this->quote($value));
             } else if ($tmpOp === 'NOT-LIKE') {
                 $where = $expr->like($predicates, $this->quote($value));
-            } else if (str_contains($op, 'BETWEEN')) {
+            } else if ($tmpOp === 'BETWEEN') {
                 $where = $expr->comparison($predicates, $op, $this->quote($value[0]) . ' AND ' . $this->quote($value[1]));
+            } else if ($tmpOp === 'NOT-BETWEEN') {
+                $where = $expr->comparison($predicates, 'NOT BETWEEN', $this->quote($value[0]) . ' AND ' . $this->quote($value[1]));
             } else if (is_null($value)) {
                 if ($op === '=') {
                     $where = $expr->isNull($predicates);
@@ -900,7 +902,7 @@ class DB
         }
         $Between = $this->quote($Between, $type);
         $pBetween = $Between[0] . ' AND ' . $Between[1];
-        return $this->where("$field BETWEEN $pBetween");
+        return $this->where($field, 'BETWEEN', $pBetween);
     }
 
     /**
