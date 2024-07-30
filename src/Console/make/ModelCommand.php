@@ -9,6 +9,7 @@ use QApi\Cache\Cache;
 use QApi\Cache\CacheInterface;
 use QApi\Config;
 use QApi\Console\Command;
+use QApi\Logger;
 use QApi\Model\Traits\Authorize;
 use QApi\Model\Traits\Auxiliary;
 use QApi\Model\Traits\Partition;
@@ -48,6 +49,7 @@ class ModelCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        Logger::$disabledType = ['SQL'];
         $io = new SymfonyStyle($input, $output);
         $options = $input->getOptions();
         $config = $options['config'];

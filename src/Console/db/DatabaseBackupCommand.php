@@ -4,6 +4,7 @@ namespace QApi\Console\db;
 
 use QApi\Config;
 use QApi\Console\Command;
+use QApi\Logger;
 use QApi\ORM\DB;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -36,6 +37,7 @@ class DatabaseBackupCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        Logger::$disabledType = ['SQL'];
         $config = $input->getOption('config');
         $io = new SymfonyStyle($input, $output);
         if (!$config) {

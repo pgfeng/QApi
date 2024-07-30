@@ -19,7 +19,6 @@ class ColumnCommand extends Command
     public function __construct(string $name = null)
     {
         parent::__construct($name);
-        Logger::$disabledType = ['SQL'];
     }
 
     /**
@@ -41,7 +40,7 @@ class ColumnCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-
+        Logger::$disabledType = ['SQL'];
         $config = $input->getOption('config');
         $table = $input->getOption('table');
         $output->writeln('Generation Parameters:'."\n$this->tabCharacter".'Config:'.($config?:'-')."\t".'Table:'.($table?:'-'));
