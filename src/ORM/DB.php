@@ -66,7 +66,7 @@ use RuntimeException;
 class DB
 {
     private string $table;
-    protected QueryBuilder $queryBuilder;
+    protected ?QueryBuilder $queryBuilder = null;
     public MysqliDatabase|PdoMysqlDatabase|PdoSqliteDatabase|Config\Database\PdoSqlServDatabase|SqlServDatabase
         $config;
     private bool $hasWhere = false;
@@ -235,8 +235,16 @@ class DB
     {
         $this->config = $config;
         $this->connection = DriverManager::addConnect($configName, $config);
+        $oldParts = [];
+        if ($this->queryBuilder){
+            $oldParts = $this->queryBuilder->getQueryParts();
+        }
         $this->queryBuilder = $this->connection->createQueryBuilder();
+        foreach ($oldParts as $key => $value) {
+            $this->queryBuilder->add($key, $value);
+        }
         $this->configName = $configName;
+        $this->schemaManager = $this->connection->createSchemaManager();
         return $this;
     }
 
@@ -1103,6 +1111,7 @@ class DB
             $data->each($this->recordCallback);
             $this->recordCallback = null;
         }
+        $this->cacheSwitch = false;
         return $data;
     }
 

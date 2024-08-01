@@ -168,7 +168,7 @@ trait Auxiliary
         }
         $countModel = clone $this;
         return $response->success()->setExtra([
-            'total' => $countModel->resetQueryPart('orderBy')->count(),
+            'total' => $countModel->count(),
         ])->setData($this->paginate($size, $page));
     }
 
