@@ -27,8 +27,7 @@
     "psr/container": "^2.0",
     "ext-curl": "*",
     "symfony/console": "v6.0.19",
-    "ext-zip": "*",
-    "ext-openssl": "*"
+    "ext-fileinfo": "*"
   },
   "bin": [
     "src/bin/QConsole",
@@ -37,16 +36,17 @@
   "suggest": {
     "ext-json": "*",
     "ext-mbstring": "*",
-    "ext-pdo": "*",
     "ext-pdo_mysql": "*",
     "ext-pdo_sqlite": "*",
+    "ext-pdo": "*",
     "ext-mysqli": "*",
     "ext-sqlite3": "*",
     "ext-swoole": ">=4",
     "ext-bcmath": "*",
     "ext-sqlsrv": "*",
     "ext-mongodb": "*",
-    "ext-apcu": "*"
+    "ext-apcu": "*",
+    "ext-openssl": "*"
   },
   "require-dev": {
     "swoole/ide-helper": "~4.4.7",
