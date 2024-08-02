@@ -273,6 +273,11 @@ class Router
                 self::$METHOD . ':' . self::$URI);
         }
         if (!self::$hitCache && (!isset(self::$router[Config::$app->getDir()])) || empty(self::$router[Config::$app->getDir()])) {
+            $globalRoutes = glob(PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . '*.php');
+            foreach ($globalRoutes as $route) {
+                include $route;
+            }
+            unset($globalRoutes);
             $versions = Config::versions();
             foreach ($versions as $version) {
                 $base_path = PROJECT_PATH . App::$routeDir . DIRECTORY_SEPARATOR . Config::$app->getDir() . DIRECTORY_SEPARATOR
@@ -690,7 +695,7 @@ class Router
                     $middlewareLists = array_unique(array_merge($classMiddleware, $methodMiddleware));
                     ksort($middlewareLists);
                     usort($middlewareLists, function ($a, $b) {
-                            return $a::PRIORITY <=> $b::PRIORITY;
+                        return $a::PRIORITY <=> $b::PRIORITY;
                     });
                     self::$router[Config::$app->getDir()]['middleware'] = &$middlewareLists;
                     Logger::router('Running -> ' . json_encode(self::$router[Config::$app->getDir()], JSON_THROW_ON_ERROR));
