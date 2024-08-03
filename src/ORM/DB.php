@@ -236,7 +236,7 @@ class DB
         $this->config = $config;
         $this->connection = DriverManager::addConnect($configName, $config);
         $oldParts = [];
-        if ($this->queryBuilder){
+        if ($this->queryBuilder) {
             $oldParts = $this->queryBuilder->getQueryParts();
         }
         $this->queryBuilder = $this->connection->createQueryBuilder();
@@ -640,9 +640,17 @@ class DB
             } else if ($tmpOp === 'NOT-LIKE') {
                 $where = $expr->like($predicates, $this->quote($value));
             } else if ($tmpOp === 'BETWEEN') {
-                $where = $expr->comparison($predicates, $op, $this->quote($value[0]) . ' AND ' . $this->quote($value[1]));
+                if (is_array($value)) {
+                    $where = $expr->comparison($predicates, $op, $this->quote($value[0]) . ' AND ' . $this->quote($value[1]));
+                } else {
+                    $where = $expr->comparison($predicates, $op, $value);
+                }
             } else if ($tmpOp === 'NOT-BETWEEN') {
-                $where = $expr->comparison($predicates, 'NOT BETWEEN', $this->quote($value[0]) . ' AND ' . $this->quote($value[1]));
+                if (is_array($value)) {
+                    $where = $expr->comparison($predicates, 'NOT BETWEEN', $this->quote($value[0]) . ' AND ' . $this->quote($value[1]));
+                } else {
+                    $where = $expr->comparison($predicates, 'NOT BETWEEN', $value);
+                }
             } else if (is_null($value)) {
                 if ($op === '=') {
                     $where = $expr->isNull($predicates);
