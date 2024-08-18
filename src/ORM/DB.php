@@ -1077,11 +1077,7 @@ class DB
                         } else if (stripos($type, 'TINYINT') === 0) {
                             $item[$k] = (int)$v;
                         } else if (stripos($type, 'DECIMAL') > -1 || stripos($type, 'FLOAT') > -1) {
-                            if ($v > PHP_FLOAT_MAX || $v < PHP_FLOAT_MIN) {
-                                $item[$k] = (string)$v;
-                            } else {
-                                $item[$k] = (float)$v;
-                            }
+                            $item[$k] = (float)$v;
                         } else if (stripos($type, 'JSON') > -1) {
                             try {
                                 $item[$k] = json_decode($v, true, JSON_UNESCAPED_UNICODE);
