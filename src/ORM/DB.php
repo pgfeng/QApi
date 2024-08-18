@@ -1072,9 +1072,7 @@ class DB
                     $field = $field[count($field) - 1];
                     if (!is_null($v) && isset(self::$dbColumns[$this->configName][$this->table][$field])) {
                         $type = self::$dbColumns[$this->configName][$this->table][$field]['type'];
-                        if (stripos($type, 'INT') === 0) {
-                            $item[$k] = (int)$v;
-                        } else if (stripos($type, 'TINYINT') === 0) {
+                        if (stripos($type, 'INT') >-1) {
                             $item[$k] = (int)$v;
                         } else if (stripos($type, 'DECIMAL') > -1 || stripos($type, 'FLOAT') > -1) {
                             $item[$k] = (float)$v;
