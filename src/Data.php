@@ -182,6 +182,17 @@ class Data extends ArrayObject implements JsonSerializableAlias
     }
 
     /**
+     * 排序
+     * @param callable $callable
+     * @return Data
+     */
+    public function usort(Callable $callable): Data
+    {
+        $array = $this->getArrayCopy();
+        usort($array, $callable);
+        return new Data($array);
+    }
+    /**
      * 弹出最后一个元素
      * @return mixed
      */
