@@ -93,9 +93,13 @@ class Command
          * 将配置中的handle导入
          */
         foreach ($Handlers as $handle) {
-            $handle = new $handle($this);
-            if ($handle instanceof CommandHandler){
-                $this->addHandler($handle);
+            try {
+                $reflection = new \ReflectionClass($handle);
+                if ($reflection->getParentClass()->name === CommandHandler::class) {
+                    $this->addHandler(new $handle($this));
+                }
+            } catch (\ReflectionException $e) {
+                continue;
             }
         }
     }
