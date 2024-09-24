@@ -638,7 +638,7 @@ class DB
             } else if ($tmpOp === 'LIKE') {
                 $where = $expr->like($predicates, $this->quote($value));
             } else if ($tmpOp === 'NOT-LIKE') {
-                $where = $expr->like($predicates, $this->quote($value));
+                $where = $expr->notLike($predicates, $this->quote($value));
             } else if ($tmpOp === 'BETWEEN') {
                 if (is_array($value)) {
                     $where = $expr->comparison($predicates, $op, $this->quote($value[0]) . ' AND ' . $this->quote($value[1]));
@@ -976,7 +976,7 @@ class DB
      */
     public function notLike(string $field, $value): self
     {
-        $this->queryBuilder->where($this->expr()->notLike($field, $this->quote($value)));
+        $this->where($field, 'NOT LIKE', $value);
         return $this;
     }
 
