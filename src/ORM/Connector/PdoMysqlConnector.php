@@ -33,6 +33,7 @@ class PdoMysqlConnector extends \QApi\ORM\Connector\Connection implements Connec
             'port' => $config->port,
             'driverClass' => Driver::class,
             'charset' => $config->charset,
+            'persistent' => $config->persistent,
         ], $this->getConfiguration(), $this->getEventManager());
     }
 }

@@ -26,7 +26,7 @@ class MysqliDatabase extends Database
      * @param int $wait_timeout
      */
     public function __construct(public string $host, public int $port, public string $dbName, public string $user,
-                                public string $password, public string $tablePrefix = 'p_', public string $charset = 'utf8mb4', public int $wait_timeout = 3600)
+                                public string $password, public string $tablePrefix = 'p_', public string $charset = 'utf8mb4',public bool $persistent = false, public int $wait_timeout = 3600)
     {
     }
 

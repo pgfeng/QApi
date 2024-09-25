@@ -17,6 +17,11 @@ use QApi\ORM\SQLLogger;
 class MysqliConnector extends \QApi\ORM\Connector\Connection implements ConnectorInterface
 {
 
+    /**
+     * @param MysqliDatabase $config
+     * @return Connection
+     * @throws \Doctrine\DBAL\Exception
+     */
     public function getConnector(mixed $config): Connection
     {
         $this->config = $config;
@@ -28,6 +33,7 @@ class MysqliConnector extends \QApi\ORM\Connector\Connection implements Connecto
             'port' => $config->port,
             'driverClass' => Driver::class,
             'charset' => $config->charset,
+            'persistent' => true,
         ], $this->getConfiguration(), $this->getEventManager());
     }
 }
