@@ -33,7 +33,7 @@ class MysqliConnector extends \QApi\ORM\Connector\Connection implements Connecto
             'port' => $config->port,
             'driverClass' => Driver::class,
             'charset' => $config->charset,
-            'persistent' => true,
+            'persistent' => $config->persistent,
         ], $this->getConfiguration(), $this->getEventManager());
     }
 }
