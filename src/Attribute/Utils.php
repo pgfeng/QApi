@@ -51,6 +51,11 @@ class Utils
                 $path = PROJECT_PATH . $app->appDir . DIRECTORY_SEPARATOR . $version->versionDir .
                     DIRECTORY_SEPARATOR;
                 $data = [];
+                $files = [];
+                if (!file_exists($path)) {
+                    $commandHandler?->error('Path not found: ' . $path);
+                    continue;
+                }
                 self::buildVersionDoc(scandir($path), $path, $app->nameSpace . '\\' . $version->versionDir,
                     $version->versionDir, $data, $path);
                 if (!isset($apis[$version->versionDir])) {
