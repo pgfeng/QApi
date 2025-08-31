@@ -85,49 +85,49 @@ class filesModel extends Model
                 'msg' => "类型错误，无法上传！"
             ];
         }
-        if (in_array(strtolower($ext), $allowType, true)) {
-            $md5 = md5($data);
-            if ($file = $this->getFileByMd5($md5)) {
-                return [
-                    'status' => true,
-                    'path' => $file['file_path'],
-                    'msg' => '上传成功！！',
-                ];
-            }
-            if ($secondaryDirectory) {
-                $path = App::$uploadDir . trim($secondaryDirectory, '/') . '/' . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
-            } else {
-                $path = App::$uploadDir . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
-            }
-            $full_path = $path;
-            mkPathDir($full_path);
-            if (file_put_contents($full_path, $data)) {
-                $this->Insert([
-                    'file_name' => time(),
-                    'file_size' => strlen($data),
-                    'file_ext' => $ext,
-                    'file_type' => $mime,
-                    'file_md5' => $md5,
-                    'file_time' => time(),
-                    'file_path' => $path,
-                ]);
-                return [
-                    'status' => true,
-                    'path' => $path,
-                    'msg' => '上传成功',
-                ];
-            } else {
-                return [
-                    'status' => false,
-                    'msg' => '上传失败',
-                ];
-            }
+        // if (in_array(strtolower($ext), $allowType, true)) {
+        $md5 = md5($data);
+        if ($file = $this->getFileByMd5($md5)) {
+            return [
+                'status' => true,
+                'path' => $file['file_path'],
+                'msg' => '上传成功！！',
+            ];
+        }
+        if ($secondaryDirectory) {
+            $path = App::$uploadDir . trim($secondaryDirectory, '/') . '/' . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
+        } else {
+            $path = App::$uploadDir . date("Ymd") . '/' . time() . random(10) . '.' . $ext;
+        }
+        $full_path = $path;
+        mkPathDir($full_path);
+        if (file_put_contents($full_path, $data)) {
+            $this->Insert([
+                'file_name' => time(),
+                'file_size' => strlen($data),
+                'file_ext' => $ext,
+                'file_type' => $mime,
+                'file_md5' => $md5,
+                'file_time' => time(),
+                'file_path' => $path,
+            ]);
+            return [
+                'status' => true,
+                'path' => $path,
+                'msg' => '上传成功',
+            ];
         } else {
             return [
                 'status' => false,
-                'msg' => '只允许上传' . implode('|', $allowType) . '格式！',
+                'msg' => '上传失败',
             ];
         }
+        // } else {
+        //     return [
+        //         'status' => false,
+        //         'msg' => '只允许上传' . implode('|', $allowType) . '格式！',
+        //     ];
+        // }
     }
 
     /**
