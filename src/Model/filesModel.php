@@ -50,13 +50,12 @@ class filesModel extends Model
     {
         $file = $this->Where('file_id', $file_id)->getOne();
         if ($file) {
-            if (unlink('./' . $file['file_path'])) {
-                return $this->Where('file_id', $file_id)->delete();
+            $path = App::$uploadDir . DIRECTORY_SEPARATOR . $file['file_path'];
+            if (file_exists($path)) {
+                unlink($path);
             }
-
-            return FALSE;
+            return $this->Where('file_id', $file_id)->delete();
         }
-
         return TRUE;
     }
 
@@ -294,7 +293,7 @@ class filesModel extends Model
                     'file_type' => $file['type'],
                     'file_md5' => $md5,
                     'file_time' => time(),
-                    'file_path' => str_replace(DIRECTORY_SEPARATOR,'/',$path),
+                    'file_path' => str_replace(DIRECTORY_SEPARATOR, '/', $path),
                 ]);
 
                 return [
