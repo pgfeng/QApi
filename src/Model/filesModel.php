@@ -52,7 +52,7 @@ class filesModel extends Model
         if ($file) {
             $path = App::$uploadDir . DIRECTORY_SEPARATOR . $file['file_path'];
             if (file_exists($path)) {
-                unlink($path);
+                @unlink($path);
             }
             return $this->Where('file_id', $file_id)->delete();
         }
