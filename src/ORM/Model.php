@@ -92,9 +92,9 @@ class Model extends DB
         return $this->insert($data, $types);
     }
 
-    public static function model(): static
+    public static function model($configName = 'default'): static
     {
-        return new static();
+        return new static(null,$configName);
     }
 
     /**
