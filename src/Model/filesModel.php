@@ -50,7 +50,7 @@ class filesModel extends Model
     {
         $file = $this->Where('file_id', $file_id)->getOne();
         if ($file) {
-            $path = $file['file_path'];
+            $path = PROJECT_PATH.$file['file_path'];
             if (file_exists($path)) {
                 @unlink($path);
             }
