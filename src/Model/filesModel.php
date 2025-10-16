@@ -46,11 +46,11 @@ class filesModel extends Model
      * @param $file_id
      * @return boolean
      */
-    public function del($file_id): bool
+    public function del($file_id,$publicDir = 'public'): bool
     {
         $file = $this->Where('file_id', $file_id)->getOne();
         if ($file) {
-            $path = PROJECT_PATH.$file['file_path'];
+            $path = PROJECT_PATH . trim($publicDir) . DIRECTORY_SEPARATOR . $file['file_path'];
             if (file_exists($path)) {
                 @unlink($path);
             }
