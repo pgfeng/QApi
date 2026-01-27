@@ -35,6 +35,7 @@
   ],
   "suggest": {
     "ext-json": "*",
+    "ext-redis": "*",
     "ext-mbstring": "*",
     "ext-pdo_mysql": "*",
     "ext-pdo_sqlite": "*",
