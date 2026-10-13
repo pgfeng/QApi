@@ -62,19 +62,33 @@ class RedisAdapter implements CacheInterface
      */
     public function set(string $key, mixed $value, DateInterval|int|null $ttl = null): bool
     {
-        if ($ttl === null) {
-            $seconds = -1;
-        } else if ($ttl instanceof \DateInterval) {
-            $dateTime = new DateTime();
-            $seconds = $dateTime->add($ttl)->getTimestamp() - $dateTime->getTimestamp();
+        $payload = serialize($value);
+        $seconds = $this->ttlToSeconds($ttl);
+        // 原子写入：带 TTL 用 SETEX，避免「SET 成功、EXPIRE 未执行/失败」时留下没有过期时间的键
+        if ($seconds > 0) {
+            $this->client->setex($key, $seconds, $payload);
         } else {
-            $seconds = $ttl;
-        }
-        $this->client->set($key, serialize($value));
-        if ($seconds > -1) {
-            $this->client->expire($key, $seconds);
+            $this->client->set($key, $payload);
         }
         return true;
+    }
+
+    /**
+     * TTL 转秒：null/0/负数 = 不过期（与 RedisNativeAdapter 保持一致）
+     *
+     * @param DateInterval|int|null $ttl
+     * @return int
+     */
+    private function ttlToSeconds(DateInterval|int|null $ttl): int
+    {
+        if ($ttl === null) {
+            return 0;
+        }
+        if ($ttl instanceof DateInterval) {
+            // DateTime::add() 是原地修改：必须用两个独立的时间基点，否则差值恒为 0（会退化成 EXPIRE 0 直接删键）
+            return max(0, (new DateTime())->add($ttl)->getTimestamp() - (new DateTime())->getTimestamp());
+        }
+        return (int)$ttl;
     }
 
     /**
