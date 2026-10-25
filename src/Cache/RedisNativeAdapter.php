@@ -18,6 +18,7 @@ class RedisNativeAdapter implements CacheInterface
     /** @var Redis */
     protected \Redis $client;
 
+    protected RedisNative $config;
     /**
      * RedisAdapter constructor.
      * @param RedisNative $config
